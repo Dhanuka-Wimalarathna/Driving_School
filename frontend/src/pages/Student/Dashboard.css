@@ -1,0 +1,49 @@
+.dashboard {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.welcome-header {
+  color: #2c3e50;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Remove progress-section */
+.progress-section {
+  display: none;
+}
+
+/* Student Details Section */
+.student-details {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.student-info p {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.lesson-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.lesson-card {
+  background: white;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.lesson-card:hover {
+  transform: translateY(-5px);
+}

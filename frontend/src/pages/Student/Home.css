@@ -1,0 +1,26 @@
+.home-container {
+    min-height: 100vh;
+  }
+  
+  .hero-section {
+   
+    height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .hero-section .container {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 3rem;
+    border-radius: 10px;
+  }
+  
+  .about-section {
+    text-align: center;
+  }
+  
+  .footer {
+    margin-top: 3rem;
+  }
+  

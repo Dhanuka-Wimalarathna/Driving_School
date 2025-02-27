@@ -1,0 +1,31 @@
+.booking-card {
+    max-width: 500px;
+    width: 100%;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-container {
+    display: flex;
+    justify-content: center;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.react-calendar {
+    border: none;
+    width: 100%;
+    max-width: 350px;
+}
+
+.react-calendar__tile--active {
+    background-color: #0d6efd !important;
+    color: white !important;
+}
+
+.btn-primary {
+    width: 100%;
+    border-radius: 8px;
+}
