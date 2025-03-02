@@ -1,0 +1,44 @@
+/* Home.css */
+.home-container {
+    min-height: 100vh;
+}
+
+.hero-section {
+    height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-section .container {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 3rem;
+    border-radius: 10px;
+}
+
+.modal-content {
+    border-radius: 15px;
+}
+
+.modal-header {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.modal-title {
+    font-weight: 600;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+/* Rest of your existing CSS */
+.about-section {
+    text-align: center;
+}
+
+.footer {
+    margin-top: 3rem;
+}
