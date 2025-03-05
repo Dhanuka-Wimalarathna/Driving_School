@@ -1,22 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Import axios
 import './OTPVerificationForm.css'; // Import the CSS file
 
 const OTPVerificationForm = () => {
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']); // Array to store each OTP digit
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const inputRefs = useRef([]); // Refs for each input field
 
+  // Handle OTP input change
+  const handleChange = (index, value) => {
+    if (/^\d*$/.test(value) && value.length <= 1) { // Allow only digits and max length of 1
+      const newOtp = [...otp];
+      newOtp[index] = value;
+      setOtp(newOtp);
+
+      // Auto-focus the next input field
+      if (value && index < 5) {
+        inputRefs.current[index + 1].focus();
+      }
+    }
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      // Simulate OTP verification
-      const response = await axios.post('http://localhost:8081/api/auth/verify-otp', { otp });
+      const otpCode = otp.join(''); // Combine the OTP digits into a single string
+      const response = await axios.post('http://localhost:8081/api/auth/verify-otp', { otp: otpCode });
       console.log('OTP verified:', response.data);
       navigate('/reset-password/new-password'); // Navigate to New Password page
     } catch (error) {
@@ -53,19 +69,19 @@ const OTPVerificationForm = () => {
 
           {/* OTP Verification Form */}
           <form onSubmit={handleSubmit}>
-            <div className="compact-mb-2">
-              <label htmlFor="otp" className="form-label fw-medium">
-                Enter OTP
-              </label>
-              <input
-                type="text"
-                className="form-control form-control-sm"
-                id="otp"
-                placeholder="Enter OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                required
-              />
+            <div className="d-flex justify-content-center gap-2 compact-mb-2">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  className="form-control form-control-sm text-center otp-input"
+                  value={digit}
+                  onChange={(e) => handleChange(index, e.target.value)}
+                  maxLength={1}
+                  ref={(el) => (inputRefs.current[index] = el)} // Assign ref to each input
+                  autoFocus={index === 0} // Auto-focus the first input
+                />
+              ))}
             </div>
 
             <div className="d-grid gap-2 compact-mb-2">

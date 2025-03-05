@@ -1,54 +1,163 @@
 .sidebar {
-    width: 250px;
-    height: 100vh; /* Full height */
-    transition: all 0.3s;
-    z-index: 1000;
-    position: fixed;
-    left: 0; /* Move sidebar to the left */
-    top: 0;
-    background-color: #212529; /* Dark background */
-    padding: 20px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Shadow on the right */
-    transition: all 0.3s ease-in-out;
+  width: 280px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: linear-gradient(180deg, #2c3e50 0%, #1a2533 100%);
+  color: #fff;
+  z-index: 1000;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.5rem;
+}
+
+/* Logo styling */
+.logo-container {
+  padding: 0.5rem 0 2rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #4cc9f0;
+}
+
+.logo i {
+  font-size: 1.75rem;
+}
+
+/* Navigation links */
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-grow: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  border-radius: 12px;
+  gap: 1rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.nav-item i {
+  font-size: 1.25rem;
+  min-width: 24px;
+  transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transform: translateX(5px);
+}
+
+.nav-item.active {
+  background: rgba(76, 201, 240, 0.15);
+  color: #4cc9f0;
+  font-weight: 600;
+}
+
+.nav-item.active i {
+  color: #4cc9f0;
+}
+
+/* Bottom section with user profile */
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-profile:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.avatar {
+  font-size: 1.5rem;
+  color: #4cc9f0;
+}
+
+.user-info h6 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.user-info p {
+  margin: 0;
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80px;
   }
   
-  .nav-link {
-    transition: all 0.2s;
+  .logo-text,
+  .nav-item span,
+  .user-info {
+    display: none;
   }
   
-  .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
-    text-decoration: none;
+  .nav-item {
+    justify-content: center;
+    padding: 0.9rem;
   }
   
-  /* Active state */
-  .nav-link.active {
-    background-color: #0d6efd !important;
-    color: white !important;
+  .nav-item i {
+    font-size: 1.5rem;
+    margin: 0;
   }
   
-  /* Main content adjustment */
+  .user-profile {
+    justify-content: center;
+  }
+  
+  .logo {
+    justify-content: center;
+  }
+  
   .main-content {
-    margin-left: 250px;
-    width: calc(100% - 250px);
+    margin-left: 80px;
+    width: calc(100% - 80px);
   }
-  
-  @media (max-width: 768px) {
-    .sidebar {
-      width: 70px;
-    }
-    
-    .sidebar span {
-      display: none;
-    }
-    
-    .main-content {
-      margin-left: 70px;
-      width: calc(100% - 70px);
-    }
-    
-    .sidebar .fs-4 {
-      font-size: 1.2rem !important;
-    }
-  }
+}
+
+/* Add this to your main layout CSS to adjust content */
+.main-content {
+  margin-left: 280px;
+  width: calc(100% - 280px);
+  transition: all 0.3s ease;
+}

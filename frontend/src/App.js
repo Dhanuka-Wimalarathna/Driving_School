@@ -8,6 +8,9 @@ import Dashboard from './pages/Student/Dashboard';
 import Booking from './pages/Student/Booking';
 import Progress from './pages/Student/Progress';
 import Payments from './pages/Student/Payments';
+import ResetPasswordForm from './pages/Auth/ResetPassword/ResetPasswordForm';
+import OTPVerificationForm from './pages/Auth/ResetPassword/OTPVerificationForm';
+import Package from './pages/Student/Package';
 
 function App() {
   return (
@@ -18,13 +21,16 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path='/reset-password' element={<ResetPasswordForm />} />
+          <Route path='/reset-password/otp-verification' element={<OTPVerificationForm />} />
 
           {/* Student Routes */}
           <Route path="/student" element={<Dashboard />} />
           <Route path="/student/home" element={<StudentHome />} />
-          <Route path="/student/booking" element={<Booking />} />
+          <Route path="/student/package" element={<Package />} />
           <Route path="/student/progress" element={<Progress />} />
           <Route path="/student/payments" element={<Payments />} />
+          <Route path="/student/booking" element={<Booking />} />
 
           {/* Redirect any unknown route to Home */}
           <Route path="*" element={<Navigate to="/" replace />} />

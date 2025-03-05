@@ -4,60 +4,75 @@ import './Sidebar.css';
 
 const Sidebar = () => {
   return (
-    <nav className="sidebar bg-dark text-white vh-100 p-3 position-fixed start-0">
-      <div className="d-flex flex-column gap-3">
+    <nav className="sidebar">
+      <div className="sidebar-content">
         {/* Logo */}
-        <div className="text-center mb-4">
-          <span className="fs-4 fw-bold text-primary">
-            <i className="bi bi-speedometer2 me-2"></i>
-            Madushani Driving School
+        <div className="logo-container">
+          <span className="logo">
+            <i className="bi bi-speedometer2"></i>
+            <span className="logo-text">Madushani Driving School</span>
           </span>
         </div>
-
+        
         {/* Navigation Links */}
-        <NavLink 
-          to="/student" 
-          end  /* Ensures only this exact route is active */
-          className={({ isActive }) => 
-            `nav-link d-flex align-items-center gap-2 p-3 rounded ${isActive ? 'bg-primary text-white' : 'text-white-50 hover-bg'}`
-          }
-        >
-          <i className="bi bi-house-door fs-5"></i>
-          <span>Dashboard</span>
-        </NavLink>
-
-        <NavLink 
-          to="/student/booking" 
-          end  /* Ensures only this exact route is active */
-          className={({ isActive }) => 
-            `nav-link d-flex align-items-center gap-2 p-3 rounded ${isActive ? 'bg-primary text-white' : 'text-white-50 hover-bg'}`
-          }
-        >
-          <i className="bi bi-calendar-plus fs-5"></i>
-          <span>Book Lesson</span>
-        </NavLink>
-
-        <NavLink 
-          to="/student/progress" 
-          end
-          className={({ isActive }) => 
-            `nav-link d-flex align-items-center gap-2 p-3 rounded ${isActive ? 'bg-primary text-white' : 'text-white-50 hover-bg'}`
-          }
-        >
-          <i className="bi bi-graph-up fs-5"></i>
-          <span>Progress</span>
-        </NavLink>
-
-        <NavLink 
-          to="/student/payments" 
-          end
-          className={({ isActive }) => 
-            `nav-link d-flex align-items-center gap-2 p-3 rounded ${isActive ? 'bg-primary text-white' : 'text-white-50 hover-bg'}`
-          }
-        >
-          <i className="bi bi-credit-card fs-5"></i>
-          <span>Payments</span>
-        </NavLink>
+        <div className="nav-links">
+          <NavLink
+            to="/student"
+            end
+            className={({ isActive }) =>
+              `nav-item ${isActive ? 'active' : ''}`
+            }
+          >
+            <i className="bi bi-house-door"></i>
+            <span>Dashboard</span>
+          </NavLink>
+          
+          <NavLink
+            to="/student/package"
+            end
+            className={({ isActive }) =>
+              `nav-item ${isActive ? 'active' : ''}`
+            }
+          >
+            <i className="bi bi-box"></i>
+            <span>Package</span>
+          </NavLink>
+          
+          <NavLink
+            to="/student/progress"
+            end
+            className={({ isActive }) =>
+              `nav-item ${isActive ? 'active' : ''}`
+            }
+          >
+            <i className="bi bi-graph-up"></i>
+            <span>Progress</span>
+          </NavLink>
+          
+          <NavLink
+            to="/student/payments"
+            end
+            className={({ isActive }) =>
+              `nav-item ${isActive ? 'active' : ''}`
+            }
+          >
+            <i className="bi bi-credit-card"></i>
+            <span>Payments</span>
+          </NavLink>
+        </div>
+        
+        {/* Bottom section */}
+        <div className="sidebar-footer">
+          <div className="user-profile">
+            <div className="avatar">
+              <i className="bi bi-person-circle"></i>
+            </div>
+            <div className="user-info">
+              <h6>Student</h6>
+              <p>View Profile</p>
+            </div>
+          </div>
+        </div>
       </div>
     </nav>
   );
