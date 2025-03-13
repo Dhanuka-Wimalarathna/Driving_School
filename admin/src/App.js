@@ -1,27 +1,32 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import SignIn from './components/Auth/SignIn';
-import SignUp from './components/Auth/SignUp';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import AdminSignIn from './components/Auth/AdminSignIn';
+import AdminSignUp from './components/Auth/AdminSignUp';
+import Dashboard from './pages/Dashboard';
+import Packages from './pages/Packages';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import FirstPage from './components/Auth/FirstPage';
+import InstructorSignIn from './components/Auth/InstrutorSignIn';
+import InstructorSignUp from './components/Auth/InstructorSignUp';
+import Vehicles from './pages/Vehicles';
 
 function App() {
   return (
     <Router>
-      <div className="container mt-5">
-        <h1>Welcome to the Admin Panel</h1>
-        <div className="mt-4">
-          <Link to="/sign-in" className="btn btn-primary me-2">
-            Sign In
-          </Link>
-          <Link to="/sign-up" className="btn btn-success">
-            Sign Up
-          </Link>
-        </div>
-      </div>
-
       <Routes>
-        <Route path="/sign-in" element={<SignIn />} />
-        <Route path="/sign-up" element={<SignUp />} />
+        {/* First Page (Welcome Page) */}
+        <Route path="/" element={<FirstPage/>} />
+
+        {/* Authentication Pages */}
+        <Route path="/admin/sign-in" element={<AdminSignIn />} />
+        <Route path="/admin/sign-up" element={<AdminSignUp />} />
+        <Route path="/instructor/sign-in" element={<InstructorSignIn />} />
+        <Route path="/instructor/sign-up" element={<InstructorSignUp/>} />
+
+        {/* Admin Pages */}
+        <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/admin/package" element={<Packages />} />
+        <Route path="/admin/vehicles" element={<Vehicles />} />
       </Routes>
     </Router>
   );

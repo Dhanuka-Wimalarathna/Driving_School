@@ -1,3 +1,5 @@
+/* Dashboard.css */
+
 /* Dashboard Layout */
 .dashboard-container {
   min-height: 100vh;
@@ -93,7 +95,7 @@
 /* Dashboard Cards */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 3fr 2fr;
   gap: 1.5rem;
 }
 
@@ -149,6 +151,10 @@
 }
 
 /* Student Details Card */
+.student-details-card {
+  min-height: 280px;
+}
+
 .student-info {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -173,7 +179,6 @@
   font-weight: 600;
 }
 
-/* Lessons Card */
 .lesson-grid {
   display: grid;
   gap: 1rem;
@@ -242,6 +247,17 @@
   
   .student-info {
     grid-template-columns: 1fr;
+  }
+  
+  /* Show mobile notification card */
+  .notifications-card-mobile {
+    display: block;
+    order: -1;
+  }
+  
+  .dashboard-grid {
+    display: flex;
+    flex-direction: column;
   }
 }
 

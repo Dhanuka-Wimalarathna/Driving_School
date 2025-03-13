@@ -44,6 +44,20 @@
   background-color: #fff;
 }
 
+/* Adjust spacing for name fields */
+.row .col {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+/* Responsive fix for small screens */
+@media (max-width: 576px) {
+  .row .col {
+    padding-right: 0;
+    padding-left: 0;
+  }
+}
+
 /* Password toggle button */
 .password-toggle {
   position: absolute;
@@ -110,7 +124,8 @@
   border-color: #4361ee;
 }
 
-.btn-primary:hover, .btn-primary:active {
+.btn-primary:hover,
+.btn-primary:active {
   background-color: #3a56d6;
   border-color: #3a56d6;
   transform: translateY(-1px);
@@ -156,7 +171,7 @@ a:hover {
     max-width: 100%;
     margin: 0 10px;
   }
-  
+
   .compact-spacing {
     padding: 1.5rem;
   }

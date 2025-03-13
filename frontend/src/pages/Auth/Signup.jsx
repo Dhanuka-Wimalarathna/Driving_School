@@ -7,7 +7,8 @@ import axios from 'axios';
 
 const Signup = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,8 +21,9 @@ const Signup = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
-        name,
+      const response = await axios.post('http://localhost:8081/api/auth/register', {
+        firstName,
+        lastName,
         email,
         password
       });
@@ -43,7 +45,6 @@ const Signup = () => {
           <div className="col-12">
             <div className="card shadow auth-card mx-auto">
               <div className="card-body compact-spacing">
-                {/* Brand/Logo */}
                 <div className="text-center compact-mb-2">
                   <div className="brand-logo">
                     <i className="bi bi-mortarboard-fill me-1"></i>
@@ -52,7 +53,6 @@ const Signup = () => {
                   <h2 className="fs-6 fw-bold text-dark mb-0">Create Your Account</h2>
                 </div>
                 
-                {/* Error Alert */}
                 {error && (
                   <div className="alert alert-danger alert-compact d-flex align-items-center" role="alert">
                     <i className="bi bi-exclamation-triangle-fill me-1" style={{ fontSize: '0.75rem' }}></i>
@@ -60,19 +60,32 @@ const Signup = () => {
                   </div>
                 )}
                 
-                {/* Signup Form */}
                 <form onSubmit={handleSubmit}>
-                  <div className="compact-mb-2">
-                    <label htmlFor="name" className="form-label fw-medium">Full Name</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      id="name"
-                      placeholder="John Doe"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                    />
+                  <div className="row compact-mb-2">
+                    <div className="col">
+                      <label htmlFor="firstName" className="form-label fw-medium">First Name</label>
+                      <input
+                        type="text"
+                        className="form-control form-control-sm"
+                        id="firstName"
+                        placeholder="John"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="col">
+                      <label htmlFor="lastName" className="form-label fw-medium">Last Name</label>
+                      <input
+                        type="text"
+                        className="form-control form-control-sm"
+                        id="lastName"
+                        placeholder="Doe"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required
+                      />
+                    </div>
                   </div>
                   
                   <div className="compact-mb-2">
@@ -128,12 +141,10 @@ const Signup = () => {
                   </div>
                 </form>
                 
-                {/* Divider */}
                 <div className="divider-text">
                   <span className="px-2 bg-white text-muted">or</span>
                 </div>
                 
-                {/* Links */}
                 <div className="text-center compact-text">
                   <p className="mb-0">
                     Already have an account?{' '}

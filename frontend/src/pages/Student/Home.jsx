@@ -17,7 +17,7 @@ const Home = () => {
   };
 
   return (
-    <div className="home-container">
+  <div className="home-container">
   <nav className="navbar navbar-expand-lg navbar-light bg-light px-4">
     <a className="navbar-brand fs-3 fw-bold" href="/">
       <img src="/images/icon02.png" alt="Madushani Driving School Logo" className="me-2" />

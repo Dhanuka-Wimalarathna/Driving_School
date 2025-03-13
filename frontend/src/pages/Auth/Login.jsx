@@ -19,7 +19,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      const response = await axios.post('http://localhost:8081/api/auth/login', { email, password });
       localStorage.setItem('authToken', response.data.token);
       console.log('Login successful:', response.data);
       navigate('/student');

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import LessonCard from '../../components/Student/LessonCard';
 import Sidebar from '../../components/Sidebar';
+import Notification from './Notification'; // Import the new Notification component
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Dashboard.css';
 import '../../components/Sidebar.css';
@@ -11,6 +12,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
+  // Sample upcoming lessons data
   const [upcomingLessons] = React.useState([
     {
       id: 1,
@@ -20,10 +22,57 @@ const Dashboard = () => {
       status: "Upcoming"
     },
   ]);
-  
+
+  // Sample notifications data
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      message: "Your lesson tomorrow has been confirmed",
+      date: "2023-10-04",
+      read: false,
+      type: "confirmation"
+    },
+    {
+      id: 2,
+      message: "Instructor Mr. Smith has left you feedback",
+      date: "2023-10-03",
+      read: true,
+      type: "feedback"
+    },
+    {
+      id: 3,
+      message: "You've completed 3 lessons so far!",
+      date: "2023-10-02",
+      read: true,
+      type: "achievement"
+    }
+  ]);
+
+  // State to handle notification dropdown
+  const [notificationOpen, setNotificationOpen] = useState(false);
+
   const handleBookLesson = () => {
     navigate('/student/booking');
   };
+
+  // Toggle notification panel
+  const toggleNotifications = () => {
+    setNotificationOpen(!notificationOpen);
+  };
+
+  // Mark a notification as read
+  const markAsRead = (id) => {
+    setNotifications(
+      notifications.map(notification => 
+        notification.id === id 
+          ? { ...notification, read: true } 
+          : notification
+      )
+    );
+  };
+
+  // Count unread notifications
+  const unreadCount = notifications.filter(notification => !notification.read).length;
   
   return (
     <div className="dashboard-container">
@@ -46,6 +95,15 @@ const Dashboard = () => {
               </div>
               
               <div className="quick-actions">
+                {/* Notification Bell */}
+                <Notification 
+                  notifications={notifications}
+                  markAsRead={markAsRead}
+                  unreadCount={unreadCount}
+                  notificationOpen={notificationOpen}
+                  toggleNotifications={toggleNotifications}
+                />
+                
                 <button 
                   className="action-button book-lesson"
                   onClick={handleBookLesson}
