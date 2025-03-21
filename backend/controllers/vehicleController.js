@@ -11,10 +11,10 @@ export const addVehicle = (req, res) => {
     const query = 'INSERT INTO vehicles (name, model, plate_number, type, status) VALUES (?, ?, ?, ?, ?)';
     sqldb.query(query, [name, model, plate_number, type, status], (err, result) => {
         if (err) {
-            console.error('Error adding vehicle:', err);
-            return res.status(500).json({ message: 'Internal server error' });
+            console.error("Error adding vehicle:", err);
+            return res.status(500).json({ message: "Internal server error" });
         }
-        res.status(201).json({ message: 'Vehicle added successfully', id: result.insertId });
+        res.status(201).json({ message: "Vehicle added successfully", id: result.insertId });
     });
 };
 
@@ -23,8 +23,8 @@ export const getVehicles = (req, res) => {
     const query = 'SELECT * FROM vehicles';
     sqldb.query(query, (err, results) => {
         if (err) {
-            console.error('Error fetching vehicles:', err);
-            return res.status(500).json({ message: 'Internal server error' });
+            console.error("Error fetching vehicles:", err);
+            return res.status(500).json({ message: "Internal server error" });
         }
         res.status(200).json(results);
     });

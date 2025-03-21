@@ -36,14 +36,22 @@
   border: 1px solid #e2e8f0;
   background-color: #f8fafc;
   transition: all 0.2s;
+  color: #333; /* Text color for input fields */
 }
 
+/* Change text color when input is focused */
 .form-control-sm:focus {
   border-color: #4361ee;
   box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
   background-color: #fff;
+  color: #000; /* Text color when focused */
 }
 
+/* Placeholder styling */
+.form-control-sm::placeholder {
+  color: #888; /* Light gray placeholder text */
+  opacity: 1; /* Ensure full visibility */
+}
 /* Adjust spacing for name fields */
 .row .col {
   padding-right: 5px;

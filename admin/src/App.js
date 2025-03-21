@@ -9,6 +9,9 @@ import FirstPage from './components/Auth/FirstPage';
 import InstructorSignIn from './components/Auth/InstrutorSignIn';
 import InstructorSignUp from './components/Auth/InstructorSignUp';
 import Vehicles from './pages/Vehicles';
+import Instructor from './pages/Instructor';
+import Students from './pages/Students';
+import StudentDetails from './pages/StudentDetails';
 
 function App() {
   return (
@@ -27,6 +30,9 @@ function App() {
         <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route path="/admin/package" element={<Packages />} />
         <Route path="/admin/vehicles" element={<Vehicles />} />
+        <Route path="/admin/instructors" element={<Instructor />} />
+        <Route path="/admin/students" element={<Students />} />
+        <Route path='/admin/students/:id' element={<StudentDetails />} />
       </Routes>
     </Router>
   );

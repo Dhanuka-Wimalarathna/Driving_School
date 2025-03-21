@@ -35,7 +35,7 @@ const Sidebar = () => {
             }
           >
             <i className="bi bi-box"></i>
-            <span>Package</span>
+            <span>Packages</span>
           </NavLink>
           
           <NavLink

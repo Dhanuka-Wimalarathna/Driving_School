@@ -8,6 +8,7 @@ import authRoutes from './routes/authRoutes.js'; // Import the auth routes
 import forgotPasswordRoutes from './routes/forgotPasswordRoutes.js'; // Import the forgot password routes
 import packageRoutes from './routes/packageRoutes.js'; // Import the package routes
 import vehicleRoutes from './routes/vehicleRoutes.js'; // Import the vehicle routes
+import studentRoutes from './routes/studentRoutes.js'; // Import the student routes
 
 dotenv.config(); // Load environment variables
 
@@ -42,6 +43,9 @@ app.use('/api/forgot-password', forgotPasswordRoutes);
 // Package and Vehicle routes
 app.use('/api/packages', packageRoutes); // Handle package-related requests
 app.use('/api/vehicles', vehicleRoutes); // Handle vehicle-related requests
+
+// Student routes
+app.use("/api/students", studentRoutes); // Handle student-related requests");
 
 // Set the port
 const PORT = process.env.PORT || 8081;

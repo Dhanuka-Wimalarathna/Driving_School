@@ -3,46 +3,119 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Add a new package
+// Add a new package along with its vehicles
 export const addPackage = (req, res) => {
     console.log(req.body);
-    const { title, description, price, details } = req.body;
+    const { title, description, price, details, vehicles } = req.body;
 
-    const query = 'INSERT INTO packages (title, description, price, details) VALUES (?, ?, ?, ?)';
-    sqldb.query(query, [title, description, price, details], (err, result) => {
+    if (!title || !price || !vehicles || vehicles.length === 0) {
+        return res.status(400).json({ message: "Please provide all required fields including vehicles" });
+    }
+
+    // Insert the new package into the database
+    const packageQuery = 'INSERT INTO packages (title, description, price, details) VALUES (?, ?, ?, ?)';
+    
+    sqldb.query(packageQuery, [title, description, price, details], (err, packageResult) => {
         if (err) {
-            console.error('Error adding package:', err);
-            return res.status(500).json({ message: 'Internal server error' });
+            console.error("Error adding package:", err);
+            return res.status(500).json({ message: "Internal server error" });
         }
-        res.status(201).json({ message: 'Package added successfully', id: result.insertId });
+
+        const packageId = packageResult.insertId; // Get the new package ID
+
+        // Insert vehicle-package relationships
+        const vehicleQueries = vehicles.map(vehicle => {
+            return new Promise((resolve, reject) => {
+                const vehicleQuery = "INSERT INTO package_vehicles (package_id, vehicle_id, lesson_count) VALUES (?, ?, ?)";
+                sqldb.query(vehicleQuery, [packageId, vehicle.vehicle_id, vehicle.lesson_count], (err, result) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        });
+
+        // Execute all vehicle insertions
+        Promise.all(vehicleQueries)
+            .then(() => {
+                res.status(201).json({ message: "Package and vehicles added successfully", id: packageId });
+            })
+            .catch(error => {
+                console.error("Error adding vehicles:", error);
+                res.status(500).json({ message: "Error adding package-vehicle relationships" });
+            });
     });
 };
 
-// Get all packages
+// Get all packages along with their assigned vehicles
 export const getPackages = (req, res) => {
-    const query = 'SELECT * FROM packages';
+    const query = `
+        SELECT 
+            p.id AS package_id, p.title, p.description, p.price, p.details, 
+            v.id AS vehicle_id, v.name AS vehicle_name, v.model, pv.lesson_count
+        FROM packages p
+        LEFT JOIN package_vehicles pv ON p.id = pv.package_id
+        LEFT JOIN vehicles v ON pv.vehicle_id = v.id
+    `;
+
     sqldb.query(query, (err, results) => {
         if (err) {
-            console.error('Error fetching packages:', err);
-            return res.status(500).json({ message: 'Internal server error' });
+            console.error("Error fetching packages:", err);
+            return res.status(500).json({ message: "Internal server error" });
         }
-        res.status(200).json(results);
+
+        // Group packages and their vehicles
+        const packagesMap = {};
+        results.forEach(row => {
+            if (!packagesMap[row.package_id]) {
+                packagesMap[row.package_id] = {
+                    id: row.package_id,
+                    title: row.title,
+                    description: row.description,
+                    price: row.price,
+                    details: row.details,
+                    vehicles: []
+                };
+            }
+            if (row.vehicle_id) {
+                packagesMap[row.package_id].vehicles.push({
+                    vehicle_id: row.vehicle_id,
+                    name: row.vehicle_name,
+                    model: row.model,
+                    lesson_count: row.lesson_count
+                });
+            }
+        });
+
+        res.status(200).json(Object.values(packagesMap));
     });
 };
 
-// Delete a package
+// Delete a package and its vehicle associations
 export const deletePackage = (req, res) => {
     const { id } = req.params;
 
-    const query = 'DELETE FROM packages WHERE id = ?';
-    sqldb.query(query, [id], (err, result) => {
+    // Delete package-vehicle relationships first
+    const deleteVehiclesQuery = 'DELETE FROM package_vehicles WHERE package_id = ?';
+    sqldb.query(deleteVehiclesQuery, [id], (err) => {
         if (err) {
-            console.error('Error deleting package:', err);
-            return res.status(500).json({ message: 'Internal server error' });
+            console.error("Error deleting package vehicles:", err);
+            return res.status(500).json({ message: "Internal server error" });
         }
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Package not found' });
-        }
-        res.status(200).json({ message: 'Package deleted successfully' });
+
+        // Then delete the package itself
+        const deletePackageQuery = 'DELETE FROM packages WHERE id = ?';
+        sqldb.query(deletePackageQuery, [id], (err, result) => {
+            if (err) {
+                console.error("Error deleting package:", err);
+                return res.status(500).json({ message: "Internal server error" });
+            }
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: "Package not found" });
+            }
+            res.status(200).json({ message: "Package deleted successfully" });
+        });
     });
 };
