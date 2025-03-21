@@ -1,0 +1,55 @@
+USE driving_school;
+
+drop table student;
+drop table otp_verifications;
+
+CREATE TABLE IF NOT EXISTS student (
+    STU_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    EMAIL VARCHAR(150) NOT NULL UNIQUE,  -- Email is unique, but not referenced in otp_verifications
+    FIRST_NAME VARCHAR(150) NOT NULL,
+    LAST_NAME VARCHAR(150) NOT NULL,
+    PHONE VARCHAR(30),
+    PASSWORD VARCHAR(255) NOT NULL,
+    DATE_OF_BIRTH DATE,
+    ADDRESS TEXT,
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS otp_verifications (
+    OTP_ID INT AUTO_INCREMENT PRIMARY KEY,
+    STU_ID INT NOT NULL,  -- Reference to student via STU_ID
+    OTP_CODE VARCHAR(6) NOT NULL,
+    EXPIRES_AT DATETIME NOT NULL,
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (STU_ID) REFERENCES student(STU_ID) ON DELETE CASCADE  -- Foreign key relationship to STU_ID
+);
+
+CREATE TABLE packages (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    price DECIMAL(10,2) NOT NULL,
+    details TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+drop table packages;
+
+CREATE TABLE vehicles (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    model VARCHAR(255) NOT NULL,
+    plate_number VARCHAR(255) NOT NULL,
+    type ENUM('Van', 'Car', 'Three-Wheeler', 'Bike') NOT NULL,
+    status ENUM('Available', 'Unavailable', 'In Service') NOT NULL DEFAULT 'Available',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+drop table vehicles;
+
+CREATE TABLE package_vehicles (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    package_id INT,
+    vehicle_id INT,
+    FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE,
+    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
+);
+drop table package_vehicles;
