@@ -1,52 +1,32 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './Auth.css';
 
 const AdminSignIn = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    rememberMe: false
-  });
-  
+  const [formData, setFormData] = useState({ email: '', password: '', rememberMe: false });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value
-    });
-    
-    // Clear error when user starts typing
+    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+
     if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: ''
-      });
+      setErrors({ ...errors, [name]: '' });
     }
   };
-  
+
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    }
-    
+    if (!formData.email) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email';
+
+    if (!formData.password) newErrors.password = 'Password is required';
     return newErrors;
   };
-  
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     const formErrors = validateForm();
@@ -54,17 +34,35 @@ const AdminSignIn = () => {
       setErrors(formErrors);
       return;
     }
-    
+
     setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Form submitted:', formData);
+    try {
+      const response = await fetch('http://localhost:8081/api/admins/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, password: formData.password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Store admin details and token in local storage
+      localStorage.setItem('adminToken', data.token);
+      localStorage.setItem('admin', JSON.stringify(data.admin));
+
+      // Redirect to admin dashboard
+      navigate('/admin/dashboard');
+
+    } catch (error) {
+      setErrors({ general: error.message });
+    } finally {
       setLoading(false);
-      // Call your authentication API here
-    }, 1000);
+    }
   };
-  
+
   return (
     <div className="auth-container d-flex align-items-center justify-content-center py-4 px-2">
       <div className="container">
@@ -72,18 +70,15 @@ const AdminSignIn = () => {
           <div className="col-12">
             <div className="card shadow auth-card mx-auto">
               <div className="card-body compact-spacing">
-                {/* Header/Logo */}
                 <div className="text-center compact-mb-2">
                   <div className="brand-logo">
-                    <i className="bi bi-shield-lock me-1"></i>
-                    Admin Portal
+                    <i className="bi bi-shield-lock me-1"></i> Admin Portal
                   </div>
                   <h2 className="fs-6 fw-bold text-dark mb-0">Admin Sign In</h2>
                 </div>
-                
-                {/* Form */}
+                {errors.general && <div className="alert alert-danger">{errors.general}</div>}
+
                 <form onSubmit={handleSubmit}>
-                  {/* Email Field */}
                   <div className="compact-mb-2">
                     <label htmlFor="email" className="form-label fw-medium">Email Address</label>
                     <input
@@ -97,8 +92,7 @@ const AdminSignIn = () => {
                     />
                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                   </div>
-                  
-                  {/* Password Field */}
+
                   <div className="compact-mb-3">
                     <label htmlFor="password" className="form-label fw-medium">Password</label>
                     <div className="position-relative">
@@ -121,8 +115,7 @@ const AdminSignIn = () => {
                       {errors.password && <div className="invalid-feedback">{errors.password}</div>}
                     </div>
                   </div>
-                  
-                  {/* Remember Me / Forgot Password */}
+
                   <div className="d-flex justify-content-between align-items-center compact-mb-3">
                     <div className="form-check">
                       <input 
@@ -141,42 +134,22 @@ const AdminSignIn = () => {
                       Forgot Password?
                     </Link>
                   </div>
-                  
-                  {/* Submit Button */}
+
                   <div className="d-grid gap-2 compact-mb-2">
-                    <button 
-                      type="submit" 
-                      className="btn btn-primary btn-compact"
-                      disabled={loading}
-                    >
+                    <button type="submit" className="btn btn-primary btn-compact" disabled={loading}>
                       {loading ? (
                         <>
-                          <span className="spinner-border spinner-border-sm me-1" style={{ width: '0.7rem', height: '0.7rem' }} role="status" aria-hidden="true"></span>
+                          <span className="spinner-border spinner-border-sm me-1" role="status"></span>
                           Signing In...
                         </>
-                      ) : (
-                        "Sign In"
-                      )}
+                      ) : "Sign In"}
                     </button>
                   </div>
                 </form>
-                
-                {/* Divider */}
-                <div className="divider-text">
-                  <span className="px-2 bg-white text-muted">or</span>
-                </div>
-                
-                {/* Links */}
+
                 <div className="text-center compact-text">
-                  <p className="mb-0">
-                    Don't have an account?{' '}
-                    <Link to="/admin/sign-up" className="text-decoration-none">Create Account</Link>
-                  </p>
-                  <p className="compact-mt">
-                    <Link to="/" className="text-decoration-none text-muted">
-                      <i className="bi bi-arrow-left me-1"></i>Return to Home
-                    </Link>
-                  </p>
+                  <p className="mb-0">Don't have an account? <Link to="/admin/sign-up" className="text-decoration-none">Create Account</Link></p>
+                  <p className="compact-mt"><Link to="/" className="text-decoration-none text-muted"><i className="bi bi-arrow-left me-1"></i>Return to Home</Link></p>
                 </div>
               </div>
             </div>

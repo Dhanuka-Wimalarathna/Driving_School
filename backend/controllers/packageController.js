@@ -93,6 +93,63 @@ export const getPackages = (req, res) => {
     });
 };
 
+// Update an existing package
+export const updatePackage = (req, res) => {
+    const { id } = req.params;
+    const { title, description, price, details, vehicles } = req.body;
+
+    if (!title || !price || !vehicles || vehicles.length === 0) {
+        return res.status(400).json({ message: "Please provide all required fields including vehicles" });
+    }
+
+    // Step 1: Update package details
+    const updatePackageQuery = `
+        UPDATE packages 
+        SET title = ?, description = ?, price = ?, details = ? 
+        WHERE id = ?`;
+
+    sqldb.query(updatePackageQuery, [title, description, price, details, id], (err, result) => {
+        if (err) {
+            console.error("Error updating package:", err);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+
+        // Step 2: Delete old vehicle relationships for the package
+        const deleteVehiclesQuery = `DELETE FROM package_vehicles WHERE package_id = ?`;
+
+        sqldb.query(deleteVehiclesQuery, [id], (deleteErr) => {
+            if (deleteErr) {
+                console.error("Error deleting old package vehicles:", deleteErr);
+                return res.status(500).json({ message: "Internal server error" });
+            }
+
+            // Step 3: Insert updated vehicle relationships
+            const vehicleQueries = vehicles.map(vehicle => {
+                return new Promise((resolve, reject) => {
+                    const insertVehicleQuery = `INSERT INTO package_vehicles (package_id, vehicle_id, lesson_count) VALUES (?, ?, ?)`;
+                    sqldb.query(insertVehicleQuery, [id, vehicle.vehicle_id, vehicle.lesson_count], (insertErr, result) => {
+                        if (insertErr) {
+                            reject(insertErr);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+                });
+            });
+
+            // Execute all vehicle insertions
+            Promise.all(vehicleQueries)
+                .then(() => {
+                    res.status(200).json({ message: "Package updated successfully" });
+                })
+                .catch(error => {
+                    console.error("Error updating vehicles:", error);
+                    res.status(500).json({ message: "Error updating package-vehicle relationships" });
+                });
+        });
+    });
+};
+
 // Delete a package and its vehicle associations
 export const deletePackage = (req, res) => {
     const { id } = req.params;

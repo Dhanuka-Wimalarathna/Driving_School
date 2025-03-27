@@ -9,6 +9,7 @@ import forgotPasswordRoutes from './routes/forgotPasswordRoutes.js'; // Import t
 import packageRoutes from './routes/packageRoutes.js'; // Import the package routes
 import vehicleRoutes from './routes/vehicleRoutes.js'; // Import the vehicle routes
 import studentRoutes from './routes/studentRoutes.js'; // Import the student routes
+import adminRoutes from './routes/adminRoutes.js'; // Import the admin routes
 
 dotenv.config(); // Load environment variables
 
@@ -20,18 +21,18 @@ app.use(cors()); // Enable CORS
 app.use(morgan('dev')); // Logging middleware
 app.use(express.json()); // JSON body parser
 
-// MySQL connection
+// Test route (can be used to verify server is working)
+app.get('/', (req, res) => {
+    res.send('Welcome to Madushani Driving School API!');
+});
+
+// MySQL connection with callbacks
 sqldb.connect((err) => {
     if (err) {
         console.error('Error connecting to the database:', err.stack);
         process.exit(1); // Exit the application if DB connection fails
     }
     console.log('Connected to the database');
-});
-
-// Test route (can be used to verify server is working)
-app.get('/', (req, res) => {
-    res.send('Welcome to Madushani Driving School API!');
 });
 
 // Auth routes (login/signup, etc.)
@@ -45,7 +46,15 @@ app.use('/api/packages', packageRoutes); // Handle package-related requests
 app.use('/api/vehicles', vehicleRoutes); // Handle vehicle-related requests
 
 // Student routes
-app.use("/api/students", studentRoutes); // Handle student-related requests");
+app.use("/api/students", studentRoutes); // Handle student-related requests
+
+// Admin Routes
+app.use("/api/admins", adminRoutes); // Handle admin-related requests
+
+// Handle 404 errors if no route matches
+app.use((req, res, next) => {
+    res.status(404).json({ message: 'Route not found' });
+});
 
 // Set the port
 const PORT = process.env.PORT || 8081;

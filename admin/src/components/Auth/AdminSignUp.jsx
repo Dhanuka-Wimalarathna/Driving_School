@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Auth.css';
+import axios from 'axios'; // Import axios
 
 const AdminSignUp = () => {
   const navigate = useNavigate();
@@ -12,19 +13,19 @@ const AdminSignUp = () => {
     confirmPassword: '',
     acceptTerms: false
   });
-  
+
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
       [name]: type === 'checkbox' ? checked : value
     });
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors({
@@ -33,60 +34,70 @@ const AdminSignUp = () => {
       });
     }
   };
-  
+
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
     }
-    
+
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
     }
-    
+
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    
+
     if (!formData.acceptTerms) {
       newErrors.acceptTerms = 'You must accept the terms and conditions';
     }
-    
+
     return newErrors;
   };
-  
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const formErrors = validateForm();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
     }
-    
+
     setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Form submitted:', formData);
+
+    // Make a POST request to the backend to register the admin
+    try {
+      const response = await axios.post('http://localhost:8081/api/admins/register', formData);
+      
+      // Handle success
+      console.log('Admin registration successful:', response.data);
       setLoading(false);
-      // Call your registration API here
-    }, 1000);
+      navigate('/admin/sign-in'); // Redirect to admin login page after successful registration
+    } catch (error) {
+      // Handle error
+      console.error('Error registering admin:', error);
+      setLoading(false);
+      if (error.response && error.response.data) {
+        setErrors({ global: error.response.data.message || 'Something went wrong!' });
+      }
+    }
   };
-  
+
   return (
     <div className="auth-container d-flex align-items-center justify-content-center py-4 px-2">
       <div className="container">
@@ -102,7 +113,7 @@ const AdminSignUp = () => {
                   </div>
                   <h2 className="fs-6 fw-bold text-dark mb-0">Create Admin Account</h2>
                 </div>
-                
+
                 {/* Form */}
                 <form onSubmit={handleSubmit}>
                   {/* Name Fields */}
@@ -134,7 +145,7 @@ const AdminSignUp = () => {
                       {errors.lastName && <div className="invalid-feedback">{errors.lastName}</div>}
                     </div>
                   </div>
-                  
+
                   {/* Email Field */}
                   <div className="compact-mb-2">
                     <label htmlFor="email" className="form-label fw-medium">Email Address</label>
@@ -149,7 +160,7 @@ const AdminSignUp = () => {
                     />
                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                   </div>
-                  
+
                   {/* Password Field */}
                   <div className="compact-mb-2">
                     <label htmlFor="password" className="form-label fw-medium">Password</label>
@@ -173,7 +184,7 @@ const AdminSignUp = () => {
                       {errors.password && <div className="invalid-feedback">{errors.password}</div>}
                     </div>
                   </div>
-                  
+
                   {/* Confirm Password Field */}
                   <div className="compact-mb-2">
                     <label htmlFor="confirmPassword" className="form-label fw-medium">Confirm Password</label>
@@ -197,7 +208,7 @@ const AdminSignUp = () => {
                       {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
                     </div>
                   </div>
-                  
+
                   {/* Terms and Conditions */}
                   <div className="compact-mb-3">
                     <div className="form-check">
@@ -215,7 +226,7 @@ const AdminSignUp = () => {
                       {errors.acceptTerms && <div className="invalid-feedback">{errors.acceptTerms}</div>}
                     </div>
                   </div>
-                  
+
                   {/* Submit Button */}
                   <div className="d-grid gap-2 compact-mb-2">
                     <button 
@@ -234,12 +245,12 @@ const AdminSignUp = () => {
                     </button>
                   </div>
                 </form>
-                
+
                 {/* Divider */}
                 <div className="divider-text">
                   <span className="px-2 bg-white text-muted">or</span>
                 </div>
-                
+
                 {/* Links */}
                 <div className="text-center compact-text">
                   <p className="mb-0">
