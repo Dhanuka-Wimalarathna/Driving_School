@@ -20,9 +20,13 @@ const Login = () => {
 
     try {
       const response = await axios.post('http://localhost:8081/api/auth/login', { email, password });
-      localStorage.setItem('authToken', response.data.token);
-      console.log('Login successful:', response.data);
-      navigate('/student');
+      
+      const { token, user } = response.data; // Assuming the response includes user details
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(user)); // Store user details
+      
+      console.log('Login successful:', user);
+      navigate('/student'); // Redirect to student dashboard
     } catch (error) {
       if (error.response && error.response.data) {
         setError(error.response.data.message);

@@ -1,272 +1,194 @@
-/* Dashboard.css */
-
-/* Dashboard Layout */
-.dashboard-container {
+/* General Dashboard Styles */
+.dashboard {
+  display: flex;
   min-height: 100vh;
-  background-color: #f5f7fa;
-  display: flex;
-  width: 100%;
+  background: #f4f7fc;
 }
 
-.dashboard-layout {
-  display: flex;
-  width: 100%;
-}
-
-.sidebar-wrapper {
-  position: relative;
-  z-index: 10;
-}
-
-.dashboard-content {
+/* Main Content */
+.dashboard .dashboard-main {
   flex: 1;
-  margin-left: 280px;
   padding: 2rem;
-  transition: all 0.3s ease;
-}
-
-.content-wrapper {
-  max-width: 1400px;
-  margin: 0 auto;
+  margin-left: 280px; /* Adjust if sidebar width changes */
+  transition: margin-left 0.3s ease;
 }
 
 /* Dashboard Header */
-.dashboard-header {
+.dashboard .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.welcome-header {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-}
-
-.user-name {
-  color: #4cc9f0;
-  position: relative;
-}
-
-.user-name::after {
-  content: " 👋";
-  position: relative;
-  top: 0;
-}
-
-.greeting-subtitle {
-  color: #6c757d;
-  font-size: 1.1rem;
-  margin-top: 0.25rem;
-}
-
-.quick-actions {
-  display: flex;
-  gap: 1rem;
-}
-
-.action-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  background: #ffffff;
+  padding: 1.5rem;
   border-radius: 12px;
-  font-weight: 600;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.dashboard .dashboard-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.dashboard .highlight {
+  color: #007bff;
+}
+
+.dashboard .dashboard-subtitle {
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+/* View Profile Button */
+.dashboard .view-profile-button {
+  background: none;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  font-size: 24px;
+  color: #007bff;
+  transition: transform 0.3s ease, color 0.3s ease;
 }
 
-.book-lesson {
-  background: linear-gradient(135deg, #4cc9f0 0%, #3a86ff 100%);
-  color: white;
+.dashboard .view-profile-button:hover {
+  transform: scale(1.2);
+  color: #0056b3;
 }
 
-.book-lesson:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 15px rgba(76, 201, 240, 0.3);
-}
-
-/* Dashboard Cards */
-.dashboard-grid {
+/* Dashboard Grid */
+.dashboard .dashboard-grid {
   display: grid;
-  grid-template-columns: 3fr 2fr;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 1.5rem;
 }
 
-.card {
-  background-color: #fff;
-  border-radius: 16px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-  border: none;
-  height: 100%;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.card:hover {
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  transform: translateY(-5px);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  background-color: transparent;
-}
-
-.card-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.card-title i {
-  color: #4cc9f0;
-  font-size: 1.4rem;
-}
-
-.card-body {
-  padding: 1.5rem;
-}
-
-.view-all-btn {
-  background: none;
-  border: none;
-  color: #4cc9f0;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* Student Details Card */
-.student-details-card {
-  min-height: 280px;
-}
-
-.student-info {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.info-label {
-  color: #6c757d;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.info-value {
-  color: #2c3e50;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.lesson-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-}
-
-.lesson-card {
+/* Card Styles */
+.dashboard .dashboard-card {
   background: white;
+  padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  padding: 1.25rem;
-}
-
-.lesson-card:hover {
-  transform: translateY(-3px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-.no-lessons {
+.dashboard .card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.dashboard .card-title {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #34495e;
+  display: flex;
+  align-items: center;
+}
+
+.dashboard .card-icon {
+  font-size: 1.5rem;
+  margin-right: 10px;
+}
+
+/* Profile Details inside Dashboard */
+.dashboard .profile-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dashboard .detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 6px;
+}
+
+.dashboard .detail-label {
+  font-weight: bold;
+  color: #555;
+}
+
+.dashboard .detail-value {
+  color: #333;
+}
+
+/* Empty State */
+.dashboard .empty-state {
+  text-align: center;
+  color: #6c757d;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.dashboard .text-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.dashboard .text-button:hover {
+  text-decoration: underline;
+}
+
+/* Loading Spinner */
+.dashboard .dashboard-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem 2rem;
-  text-align: center;
-  color: #6c757d;
+  height: 100vh;
+  color: #555;
 }
 
-.no-lessons i {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  color: #e9ecef;
+.dashboard .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 123, 255, 0.3);
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
 }
 
-.no-lessons p {
-  font-size: 1.1rem;
-  margin-bottom: 1.5rem;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-.book-lesson-small {
-  background: linear-gradient(135deg, #4cc9f0 0%, #3a86ff 100%);
-  color: white;
-  padding: 0.75rem 1.25rem;
-  font-size: 0.9rem;
-}
-
-/* Responsive Layouts */
-@media (max-width: 1200px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .dashboard .dashboard-main {
+      margin-left: 200px;
+      padding: 1.5rem;
   }
 }
 
 @media (max-width: 768px) {
-  .dashboard-content {
-    margin-left: 80px;
-    padding: 1.5rem;
+  .dashboard .dashboard-main {
+      margin-left: 80px;
+      padding: 1rem;
   }
-  
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
+
+  .dashboard .dashboard-grid {
+      grid-template-columns: 1fr;
   }
-  
-  .student-info {
-    grid-template-columns: 1fr;
-  }
-  
-  /* Show mobile notification card */
-  .notifications-card-mobile {
-    display: block;
-    order: -1;
-  }
-  
-  .dashboard-grid {
-    display: flex;
-    flex-direction: column;
+
+  .dashboard .dashboard-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
   }
 }
 
 @media (max-width: 576px) {
-  .dashboard-content {
-    padding: 1rem;
-  }
-  
-  .welcome-header {
-    font-size: 1.8rem;
+  .dashboard .dashboard-main {
+      margin-left: 0;
+      padding: 1rem;
   }
 }

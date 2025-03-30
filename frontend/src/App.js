@@ -11,6 +11,7 @@ import Payments from './pages/Student/Payments';
 import ResetPasswordForm from './pages/Auth/ResetPassword/ResetPasswordForm';
 import OTPVerificationForm from './pages/Auth/ResetPassword/OTPVerificationForm';
 import Package from './pages/Student/Package';
+import ProfilePage from './pages/Student/ProfilePage';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/student/progress" element={<Progress />} />
           <Route path="/student/payments" element={<Payments />} />
           <Route path="/student/booking" element={<Booking />} />
+          <Route path="/student/profile" element={<ProfilePage />} />
 
           {/* Redirect any unknown route to Home */}
           <Route path="*" element={<Navigate to="/" replace />} />
