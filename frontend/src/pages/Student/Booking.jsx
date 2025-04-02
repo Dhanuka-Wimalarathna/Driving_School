@@ -34,11 +34,17 @@ const Booking = () => {
         <div className="booking-content">
           <div className="booking-wrapper">
             <div className="booking-header">
-              <h1 className="page-title">
-                <i className="bi bi-calendar-plus"></i>
-                Book Your Driving Lesson
-              </h1>
-              <p className="page-subtitle">Select your preferred date, instructor, and time slot</p>
+              <div className="header-content">
+                <div className="header-icon">
+                  <i className="bi bi-calendar-plus"></i>
+                </div>
+                <div className="header-text">
+                  <h1 className="page-title">
+                    Book Your Driving Lesson
+                  </h1>
+                  <p className="page-subtitle">Select your preferred date, instructor, and time slot</p>
+                </div>
+              </div>
             </div>
 
             <div className="booking-grid">

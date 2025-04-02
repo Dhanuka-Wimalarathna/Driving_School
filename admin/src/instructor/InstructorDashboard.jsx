@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './InstructorDashboard.css';
-import Sidebar from '../components/Sidebar/Sidebar';
+import InstructorSidebar from '../components/Sidebar/InstructorSidebar';
 
 function InstructorDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -43,7 +43,7 @@ function InstructorDashboard() {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar 
+      <InstructorSidebar 
         sidebarCollapsed={sidebarCollapsed} 
         toggleSidebar={toggleSidebar} 
       />

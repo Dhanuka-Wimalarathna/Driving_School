@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -47,90 +48,122 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="dashboard-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading your dashboard...</p>
+      <div className="loading-container">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="dashboard">
-      <Sidebar />
-      
-      <main className="dashboard-main">
-        <header className="dashboard-header">
-          <div>
-            <h1 className="dashboard-title">
-              Welcome back, <span className="highlight">{student ? student.FIRST_NAME : "Student"}</span>
-            </h1>
-            <p className="dashboard-subtitle">Your driving progress overview</p>
-          </div>
-          <button className="view-profile-button" onClick={handleViewProfile}>
-            <span className="icon">👤</span> View Profile
-          </button>
-        </header>
+    <div className="dashboard-container">
+      <div className="dashboard-layout">
+        {/* Sidebar */}
+        <div className="sidebar-wrapper">
+          <Sidebar />
+        </div>
 
-        <div className="dashboard-grid">
-          <section className="dashboard-card profile-card">
-            <div className="card-header">
-              <h2 className="card-title">
-                <span className="card-icon">👤</span>
-                Student Profile
-              </h2>
+        {/* Main Content */}
+        <div className="dashboard-content">
+          <div className="dashboard-wrapper">
+            <div className="dashboard-header">
+              <div className="header-content">
+                <div className="header-icon">
+                  <i className="bi bi-house-door"></i>
+                </div>
+                <div className="header-text">
+                  <h1 className="page-title">
+                    Welcome back, {student?.FIRST_NAME || "Student"}
+                  </h1>
+                  <p className="page-subtitle">Your driving progress overview</p>
+                </div>
+              </div>
+              {/* <div className="header-actions">
+                <button className="header-button" onClick={handleBookLesson}>
+                  <i className="bi bi-plus-circle"></i>
+                  Quick Book
+                </button>
+              </div> */}
             </div>
-            <div className="card-content">
-              {student ? (
-                <div className="profile-details">
-                  <div className="detail-row">
-                    <span className="detail-label">Full Name</span>
-                    <span className="detail-value">{student.FIRST_NAME} {student.LAST_NAME}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Email</span>
-                    <span className="detail-value">{student.EMAIL}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">NIC</span>
-                    <span className="detail-value">{student.NIC}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Date of Birth</span>
-                    <span className="detail-value">{student.BIRTHDAY ? student.BIRTHDAY.split("T")[0] : "N/A"}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Address</span>
-                    <span className="detail-value">{student.ADDRESS}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Phone</span>
-                    <span className="detail-value">{student.PHONE}</span>
+
+            <div className="dashboard-grid">
+              {/* Profile Card */}
+              <div className="dashboard-card profile-card">
+                <div className="card-header">
+                  <h2 className="card-title">
+                    <i className="bi bi-person-circle"></i>
+                    Student Profile
+                  </h2>
+                  <button className="action-button" onClick={handleViewProfile}>
+                    <i className="bi bi-pencil-square"></i>
+                    Edit Profile
+                  </button>
+                </div>
+                <div className="card-body">
+                  {student ? (
+                    <div className="profile-grid">
+                      <div className="profile-item">
+                        <div className="item-label">Full Name</div>
+                        <div className="item-value">{student.FIRST_NAME} {student.LAST_NAME}</div>
+                      </div>
+                      <div className="profile-item">
+                        <div className="item-label">Email</div>
+                        <div className="item-value">{student.EMAIL}</div>
+                      </div>
+                      <div className="profile-item">
+                        <div className="item-label">NIC</div>
+                        <div className="item-value">{student.NIC}</div>
+                      </div>
+                      <div className="profile-item">
+                        <div className="item-label">Date of Birth</div>
+                        <div className="item-value">
+                          {student.BIRTHDAY ? new Date(student.BIRTHDAY).toLocaleDateString("en-CA") : "N/A"}
+                        </div>
+                      </div>
+                      <div className="profile-item full-width">
+                        <div className="item-label">Address</div>
+                        <div className="item-value">{student.ADDRESS}</div>
+                      </div>
+                      <div className="profile-item">
+                        <div className="item-label">Phone</div>
+                        <div className="item-value">{student.PHONE}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="empty-state">
+                      <p>Unable to load student data</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Upcoming Lessons Card */}
+              <div className="dashboard-card lessons-card">
+                <div className="card-header">
+                  <h2 className="card-title">
+                    <i className="bi bi-calendar-check"></i>
+                    Upcoming Lessons
+                  </h2>
+                </div>
+                <div className="card-body">
+                  <div className="empty-lessons">
+                    <div className="empty-icon">
+                      <i className="bi bi-calendar-x"></i>
+                    </div>
+                    <h3 className="empty-title">No upcoming lessons</h3>
+                    <p className="empty-subtitle">Book your first driving lesson now</p>
+                    <button className="confirm-button active" onClick={handleBookLesson}>
+                      <i className="bi bi-plus-circle"></i>
+                      Book New Lesson
+                    </button>
                   </div>
                 </div>
-              ) : (
-                <p className="no-data">Unable to load student data</p>
-              )}
-            </div>
-          </section>
-
-          <section className="dashboard-card lessons-card">
-            <div className="card-header">
-              <h2 className="card-title">
-                <span className="card-icon">📅</span>
-                Upcoming Lessons
-              </h2>
-            </div>
-            <div className="card-content">
-              <div className="empty-state">
-                <p>No upcoming lessons scheduled</p>
-                <button className="text-button" onClick={handleBookLesson}>
-                  Book new lesson →
-                </button>
               </div>
             </div>
-          </section>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

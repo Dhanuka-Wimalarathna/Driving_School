@@ -12,6 +12,7 @@ import Vehicles from './pages/Vehicles';
 import Instructor from './pages/Instructor';
 import Students from './pages/Students';
 import StudentDetails from './pages/StudentDetails';
+import InstructorDashboard from './instructor/InstructorDashboard';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/admin/sign-up" element={<AdminSignUp />} />
         <Route path="/instructor/sign-in" element={<InstructorSignIn />} />
         <Route path="/instructor/sign-up" element={<InstructorSignUp/>} />
+        <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
 
         {/* Admin Pages */}
         <Route path="/admin/dashboard" element={<Dashboard />} />
