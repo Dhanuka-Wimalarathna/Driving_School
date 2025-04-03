@@ -1,5 +1,4 @@
 import sqldb from '../config/sqldb.js';
-import sqldbdb from '../config/sqldb.js';
 import bcrypt from 'bcryptjs';
 
 const Admin = {

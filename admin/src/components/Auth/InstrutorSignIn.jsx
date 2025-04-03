@@ -45,8 +45,10 @@
       return newErrors;
     };
     
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
+
+      console.log('Submitting login form:', formData);
       
       const formErrors = validateForm();
       if (Object.keys(formErrors).length > 0) {
@@ -56,11 +58,34 @@
       
       setLoading(true);
       
-      setTimeout(() => {
-        console.log('Instructor logged in:', formData);
-        setLoading(false);
+      try {
+        const response = await fetch('http://localhost:8081/api/instructors/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password
+          })
+        });
+    
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Login failed');
+        }
+    
+        console.log('Login successful:', data);
+        localStorage.setItem('token', data.token); // Store the token
         navigate('/instructor/dashboard');
-      }, 1000);
+        
+      } catch (error) {
+        setErrors({ server: error.message });
+        console.error('Login error:', error);
+      } finally {
+        setLoading(false);
+      }
     };
     
     return (

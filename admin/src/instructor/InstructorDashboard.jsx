@@ -1,62 +1,108 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './InstructorDashboard.css';
 import InstructorSidebar from '../components/Sidebar/InstructorSidebar';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function InstructorDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [selectedInstructor, setSelectedInstructor] = useState(null);
+  const [instructor, setInstructor] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
+  // Single declaration of toggleSidebar
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
-  // Sample instructor data
-  const instructorsData = [
-    {
-      id: 1,
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@example.com',
-      courses: ['Defensive Driving', 'Night Driving'],
-      totalStudents: 65,
-      rating: 4.8,
-      status: 'Active'
-    },
-    {
-      id: 2,
-      name: 'Mike Thompson',
-      email: 'mike.thompson@example.com',
-      courses: ['Highway Driving', 'Commercial Driving'],
-      totalStudents: 48,
-      rating: 4.5,
-      status: 'Active'
-    },
-    {
-      id: 3,
-      name: 'Emily Rodriguez',
-      email: 'emily.rodriguez@example.com',
-      courses: ['Beginner Driving', 'Teen Driving'],
-      totalStudents: 52,
-      rating: 4.7,
-      status: 'Inactive'
-    }
-  ];
+  useEffect(() => {
+    const fetchInstructorData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/instructor/sign-in');
+          return;
+        }
+
+        const response = await axios.get('http://localhost:8081/api/instructors/me', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.data?.instructor) {
+          throw new Error('No instructor data received');
+        }
+
+        setInstructor(response.data.instructor);
+      } catch (err) {
+        setError(err.response?.data?.message || err.message);
+        console.error('Error fetching instructor:', err);
+        
+        // Redirect if unauthorized
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/instructor/sign-in');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInstructorData();
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="spinner"></div>
+        <p>Loading your dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-screen">
+        <p className="error-message">{error}</p>
+        <button 
+          className="retry-btn"
+          onClick={() => window.location.reload()}
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  if (!instructor) {
+    return (
+      <div className="error-screen">
+        <p className="error-message">Instructor data not available</p>
+        <button 
+          className="retry-btn"
+          onClick={() => navigate('/instructor/sign-in')}
+        >
+          Return to Login
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-layout">
       <InstructorSidebar 
         sidebarCollapsed={sidebarCollapsed} 
         toggleSidebar={toggleSidebar} 
+        instructorName={instructor.firstName + ' ' + instructor.lastName}
       />
 
       <main className={`main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <header className="header">
-          <div className="search-container">
-            <input 
-              type="text" 
-              className="search-input" 
-              placeholder="Search instructors..." 
-            />
-            <span className="search-icon">🔍</span>
+          <div className="welcome-message">
+            <h2>Welcome back, {instructor.firstName}!</h2>
+            <p>Here's your teaching overview</p>
           </div>
           <div className="header-right">
             <div className="notification">
@@ -65,138 +111,114 @@ function InstructorDashboard() {
             </div>
             <div className="user-menu">
               <img 
-                src="https://via.placeholder.com/40" 
+                src={`https://ui-avatars.com/api/?name=${instructor.firstName}+${instructor.lastName}&background=random`} 
                 alt="User" 
                 className="user-avatar" 
               />
-              <span className="user-name">Admin User</span>
+              <span className="user-name">{instructor.firstName} {instructor.lastName}</span>
             </div>
           </div>
         </header>
 
-        <div className="dashboard-content instructors-page">
-          <div className="page-title">
-            <h1>Instructors Management</h1>
-            <button className="add-instructor-btn">+ Add Instructor</button>
-          </div>
-
-          <div className="instructors-stats-grid">
-            <div className="stat-card primary">
+        <div className="dashboard-content instructor-dashboard">
+          <div className="performance-stats">
+            <div className="stat-card">
+              <div className="stat-icon">👨‍🎓</div>
               <div className="stat-info">
-                <h3 className="stat-title">Total Instructors</h3>
-                <p className="stat-value">{instructorsData.length}</p>
-                <p className="stat-change positive">↑ 10% from last month</p>
+                <h3>Total Students</h3>
+                <p className="stat-value">42</p>
+                <p className="stat-change positive">↑ 5 this month</p>
               </div>
-              <div className="stat-icon">👨‍🏫</div>
             </div>
             
-            <div className="stat-card success">
+            <div className="stat-card">
+              <div className="stat-icon">📅</div>
               <div className="stat-info">
-                <h3 className="stat-title">Active Instructors</h3>
-                <p className="stat-value">
-                  {instructorsData.filter(i => i.status === 'Active').length}
-                </p>
-                <p className="stat-change positive">↑ 5% from last month</p>
+                <h3>Scheduled Lessons</h3>
+                <p className="stat-value">8</p>
+                <p className="stat-change">Next: Tomorrow 10AM</p>
               </div>
-              <div className="stat-icon">✅</div>
             </div>
             
-            <div className="stat-card warning">
-              <div className="stat-info">
-                <h3 className="stat-title">Average Rating</h3>
-                <p className="stat-value">
-                  {(instructorsData.reduce((sum, i) => sum + i.rating, 0) / instructorsData.length).toFixed(1)}
-                </p>
-                <p className="stat-change positive">↑ 0.2 from last month</p>
-              </div>
+            <div className="stat-card">
               <div className="stat-icon">⭐</div>
+              <div className="stat-info">
+                <h3>Your Rating</h3>
+                <p className="stat-value">4.8</p>
+                <p className="stat-change positive">↑ 0.1 this month</p>
+              </div>
             </div>
           </div>
 
-          <div className="instructors-grid">
-            {instructorsData.map(instructor => (
-              <div 
-                key={instructor.id} 
-                className={`instructor-card ${selectedInstructor?.id === instructor.id ? 'selected' : ''}`}
-                onClick={() => setSelectedInstructor(instructor)}
-              >
-                <div className="instructor-header">
-                  <div className={`status-indicator ${instructor.status.toLowerCase()}`}>
-                    {instructor.status}
+          <div className="dashboard-sections">
+            <section className="upcoming-lessons">
+              <h3>Upcoming Lessons</h3>
+              <div className="lesson-list">
+                <div className="lesson-item">
+                  <div className="lesson-time">Mon, 10:00 AM</div>
+                  <div className="lesson-details">
+                    <h4>Beginner Driving</h4>
+                    <p>Student: John Smith</p>
                   </div>
                 </div>
-                <div className="instructor-content">
-                  <h3 className="instructor-name">{instructor.name}</h3>
-                  <p className="instructor-email">{instructor.email}</p>
-                  <div className="instructor-stats">
-                    <div className="stat">
-                      <span className="stat-label">Courses</span>
-                      <span className="stat-value">{instructor.courses.length}</span>
-                    </div>
-                    <div className="stat">
-                      <span className="stat-label">Students</span>
-                      <span className="stat-value">{instructor.totalStudents}</span>
-                    </div>
-                    <div className="stat">
-                      <span className="stat-label">Rating</span>
-                      <span className="stat-value">{instructor.rating}</span>
-                    </div>
+                <div className="lesson-item">
+                  <div className="lesson-time">Tue, 2:00 PM</div>
+                  <div className="lesson-details">
+                    <h4>Defensive Driving</h4>
+                    <p>Student: Sarah Johnson</p>
                   </div>
                 </div>
               </div>
-            ))}
+              <button className="view-all-btn">View All Lessons</button>
+            </section>
+
+            <section className="recent-students">
+              <h3>Recent Students</h3>
+              <div className="student-list">
+                <div className="student-item">
+                  <img 
+                    src="https://ui-avatars.com/api/?name=John+Smith" 
+                    alt="Student" 
+                    className="student-avatar" 
+                  />
+                  <div className="student-info">
+                    <h4>John Smith</h4>
+                    <p>3 lessons completed</p>
+                  </div>
+                </div>
+                <div className="student-item">
+                  <img 
+                    src="https://ui-avatars.com/api/?name=Sarah+Johnson" 
+                    alt="Student" 
+                    className="student-avatar" 
+                  />
+                  <div className="student-info">
+                    <h4>Sarah Johnson</h4>
+                    <p>5 lessons completed</p>
+                  </div>
+                </div>
+              </div>
+              <button className="view-all-btn">View All Students</button>
+            </section>
           </div>
 
-          {selectedInstructor && (
-            <div className="instructor-details-sidebar">
-              <div className="details-header">
-                <h2>Instructor Details</h2>
-                <button 
-                  className="close-details-btn"
-                  onClick={() => setSelectedInstructor(null)}
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="details-content">
-                <div className={`status-badge ${selectedInstructor.status.toLowerCase()}`}>
-                  {selectedInstructor.status}
-                </div>
-                <h3 className="instructor-name">{selectedInstructor.name}</h3>
-                <p className="instructor-email">{selectedInstructor.email}</p>
-                
-                <div className="details-section">
-                  <h4>Courses</h4>
-                  <ul>
-                    {selectedInstructor.courses.map((course, index) => (
-                      <li key={index}>{course}</li>
-                    ))}
-                  </ul>
-                </div>
-                
-                <div className="details-section">
-                  <h4>Performance Metrics</h4>
-                  <div className="performance-grid">
-                    <div className="performance-item">
-                      <span className="label">Total Students</span>
-                      <span className="value">{selectedInstructor.totalStudents}</span>
-                    </div>
-                    <div className="performance-item">
-                      <span className="label">Rating</span>
-                      <span className="value">{selectedInstructor.rating}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="details-actions">
-                  <button className="action-btn edit">Edit Profile</button>
-                  <button className="action-btn toggle-status">
-                    {selectedInstructor.status === 'Active' ? 'Deactivate' : 'Activate'}
-                  </button>
-                </div>
-              </div>
+          <section className="quick-actions">
+            <h3>Quick Actions</h3>
+            <div className="action-buttons">
+              <button className="action-btn">
+                <span className="action-icon">➕</span>
+                Schedule New Lesson
+              </button>
+              <button className="action-btn">
+                <span className="action-icon">📝</span>
+                Update Availability
+              </button>
+              <button className="action-btn">
+                <span className="action-icon">📊</span>
+                View Performance
+              </button>
             </div>
-          )}
+          </section>
         </div>
       </main>
     </div>

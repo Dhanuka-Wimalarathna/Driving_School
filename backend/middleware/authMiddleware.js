@@ -3,24 +3,33 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const authMiddleware = (req, res, next) => {
-    // Get the token from the Authorization header
-    const authHeader = req.header('Authorization');
-    const token = authHeader && authHeader.split(' ')[1];  // Extract token from "Bearer <token>"
+// authMiddleware.js
+const authMiddleware = (requiredRole) => {
+  return (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ message: 'Authentication token is missing' });
+      return res.status(401).json({ message: 'Authorization token missing' });
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.userId = decoded.id;
-        next();
-    } catch (error) {
-        return res.status(401).json({ message: 'Invalid or expired token' });
-    }
-    console.log("Decoded user ID:", req.userId); // Log userId from token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('Full decoded token:', decoded); // Add this for debugging
+      
+      // Verify the token has the required role
+      if (requiredRole && decoded.role !== requiredRole) {
+        console.log(`Role mismatch: Required ${requiredRole}, got ${decoded.role}`);
+        return res.status(403).json({ message: 'Insufficient permissions' });
+      }
 
+      req.user = decoded;
+      next();
+    } catch (err) {
+      console.error('JWT verification error:', err);
+      return res.status(401).json({ message: 'Invalid or expired token' });
+    }
+  };
 };
 
 export default authMiddleware;
