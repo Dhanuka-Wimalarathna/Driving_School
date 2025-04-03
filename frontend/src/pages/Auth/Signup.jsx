@@ -116,7 +116,7 @@ const Signup = () => {
 
                   <div className="compact-mb-2">
                     <label className="form-label fw-medium">Phone Number</label>
-                    <input type="tel" className="form-control form-control-sm" placeholder="123-456-7890" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+                    <input type="tel" className="form-control form-control-sm" placeholder="0123456789" value={phone} onChange={(e) => setPhone(e.target.value)} required />
                   </div>
 
                   <div className="compact-mb-3">
@@ -154,7 +154,6 @@ const Signup = () => {
                     </a>
                   </p>
                 </div>
-
               </div>
             </div>
           </div>
