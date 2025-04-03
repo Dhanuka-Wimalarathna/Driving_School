@@ -33,35 +33,47 @@ export const registerAdmin = (req, res) => {
 };
 
 // Admin Login Controller
-export const loginAdmin = (req, res) => {
+export const loginAdmin = async (req, res) => {
     const { email, password } = req.body;
 
-    // Check if email and password are provided
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
-    }
+    try {
+        // Check if email and password are provided
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required' });
+        }
 
-    // Find the admin by email
-    Admin.findByEmail(email)
-        .then((admin) => {
-            if (!admin) {
-                return res.status(400).json({ message: 'Invalid credentials' });
+        // Find the admin by email
+        const admin = await Admin.findByEmail(email);
+        if (!admin) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Compare the password
+        const isMatch = await Admin.comparePassword(password, admin.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { id: admin.id, role: 'admin' },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        // Return success response
+        res.json({
+            message: 'Login successful',
+            token,
+            admin: {
+                id: admin.id,
+                firstName: admin.first_name,
+                lastName: admin.last_name,
+                email: admin.email
             }
-
-            // Compare the password
-            if (!Admin.comparePassword(password, admin.password)) {
-                return res.status(400).json({ message: 'Invalid credentials' });
-            }
-
-            // Generate JWT token
-            const token = jwt.sign({ id: admin.id }, process.env.JWT_SECRET, {
-                expiresIn: '1h',
-            });
-
-            res.json({ message: 'Login successful', token });
-        })
-        .catch((error) => {
-            console.error('Admin login error:', error);
-            res.status(500).json({ message: 'Server error' });
         });
+    } catch (error) {
+        console.error('Admin login error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
 };

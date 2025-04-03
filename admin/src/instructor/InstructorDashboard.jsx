@@ -24,23 +24,23 @@ function InstructorDashboard() {
           navigate('/instructor/sign-in');
           return;
         }
-
+    
         const response = await axios.get('http://localhost:8081/api/instructors/me', {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
-
-        if (!response.data?.instructor) {
+    
+        // Remove the .instructor check since data is at root level
+        if (!response.data) {
           throw new Error('No instructor data received');
         }
-
-        setInstructor(response.data.instructor);
+    
+        setInstructor(response.data); // Set the entire response data
       } catch (err) {
         setError(err.response?.data?.message || err.message);
         console.error('Error fetching instructor:', err);
         
-        // Redirect if unauthorized
         if (err.response?.status === 401) {
           localStorage.removeItem('token');
           navigate('/instructor/sign-in');

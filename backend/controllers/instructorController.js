@@ -1,102 +1,197 @@
-import Instructor from '../models/instructorModel.js';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import Instructor from '../models/instructorModel.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Instructor Registration Controller
-export const registerInstructor = (req, res) => {
-    const { firstName, lastName, email, nic, licenseNo, birthday, address, phone, password } = req.body;
-
-    // Check if all required fields are provided
-    if (!firstName || !lastName || !email || !nic || !licenseNo || !birthday || !address || !phone || !password) {
-        return res.status(400).json({ message: 'All fields are required' });
-    }
-
-    // Check if the email already exists
-    Instructor.findByEmail(email)
-        .then((existingInstructor) => {
-            if (existingInstructor) {
-                return res.status(400).json({ message: 'Instructor already exists' });
-            }
-
-            // Create the new instructor
-            return Instructor.create({ firstName, lastName, email, nic, licenseNo, birthday, address, phone, password });
-        })
-        .then((result) => {
-            res.status(201).json({ message: 'Instructor registered successfully', instructorId: result.insertId });
-        })
-        .catch((error) => {
-            console.error('Instructor registration error:', error);
-            res.status(500).json({ message: 'Server error' });
-        });
-};
-
-// Instructor Login Controller
-export const loginInstructor = (req, res) => {
-    console.log('Login attempt:', req.body.email);
-    const { email, password } = req.body;
-
-    // Check if email and password are provided
-    if (!email || !password) {
-        console.log('Missing credentials');
-        return res.status(400).json({ message: 'Email and password are required' });
-    }
-
-    // Find the instructor by email
-    Instructor.findByEmail(email)
-        .then((instructor) => {
-            if (!instructor) {
-                return res.status(400).json({ message: 'Invalid credentials' });
-            }
-
-            // Compare the password
-            return Instructor.comparePassword(password, instructor.password).then((isMatch) => {
-                if (!isMatch) {
-                    return res.status(400).json({ message: 'Invalid credentials' });
-                }
-
-                // Generate JWT token
-                const token = jwt.sign({ id: instructor.id }, process.env.JWT_SECRET, {
-                    expiresIn: '1h',
-                });
-
-                res.json({ message: 'Login successful', token, instructor });
-            });
-        })
-        .catch((error) => {
-            console.error('Instructor login error:', error);
-            res.status(500).json({ message: 'Server error' });
-        });
-};
-
-export const getInstructorProfile = async (req, res) => {
-    try {
-      // The authMiddleware should have added the decoded user to req.user
-      const instructorId = req.user.id;
+// Instructor Registration
+export const register = async (req, res) => {
+    console.log("Received registration request:", req.body);
   
-      // Make sure your model has this method
-      const instructor = await Instructor.findById(instructorId);
-      
-      if (!instructor) {
+    const { firstName, lastName, email, nic, licenseNo, birthday, address, phone, password, confirmPassword } = req.body;
+  
+    if (!firstName || !lastName || !email || !nic || !licenseNo || !birthday || !address || !phone || !password || !confirmPassword) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+  
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+  
+    try {
+      Instructor.checkExistingFields(email, nic, licenseNo, phone, (err, results) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ message: "Server error" });
+        }
+  
+        if (results.length > 0) {
+          console.log("Existing instructor found:", results);
+          return res.status(400).json({ message: "Instructor with this email, NIC, license number, or phone already exists" });
+        }
+  
+        const instructorData = { firstName, lastName, email, nic, licenseNo, birthday, address, phone, password };
+        Instructor.create(instructorData, (err, result) => {
+          if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({ message: "Server error" });
+          }
+  
+          res.status(201).json({ message: "Instructor registered successfully", instructorId: result.insertId });
+        });
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  };
+  
+
+// Enhanced login controller
+export const login = (req, res) => {
+    const { email, password } = req.body;
+  
+    Instructor.findByEmail(email, (err, results) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ message: 'Server error' });
+      }
+  
+      if (results.length === 0) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+  
+      const instructor = results[0];
+  
+      bcrypt.compare(password, instructor.password, (err, isMatch) => {
+        if (err) {
+          console.error('Password comparison error:', err);
+          return res.status(500).json({ message: 'Server error' });
+        }
+  
+        if (!isMatch) {
+          return res.status(401).json({ message: 'Invalid credentials' });
+        }
+  
+        const token = jwt.sign(
+          { id: instructor.ins_id, role: 'instructor' },
+          process.env.JWT_SECRET,
+          { expiresIn: '1h' }
+        );
+  
+        const { password: _, ...instructorData } = instructor;
+  
+        // Disable caching for this response
+        res.setHeader('Cache-Control', 'no-store');
+        res.status(200).json({
+          message: 'Login successful',
+          token,
+          instructor: instructorData
+        });
+      });
+    });
+  };
+  
+  // Enhanced getProfile controller
+  export const getProfile = (req, res) => {
+    const instructorId = req.userId;
+  
+    Instructor.findById(instructorId, (err, results) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ message: 'Server error' });
+      }
+  
+      if (results.length === 0) {
         return res.status(404).json({ message: 'Instructor not found' });
       }
   
-      // Return sanitized instructor data (without password)
-      const instructorData = {
-        id: instructor.id,
-        firstName: instructor.firstName,
-        lastName: instructor.lastName,
-        email: instructor.email,
-        nic: instructor.nic,
-        licenseNo: instructor.licenseNo,
-        phone: instructor.phone,
-        createdAt: instructor.createdAt
-      };
-  
-      res.json({ instructor: instructorData });
-    } catch (error) {
-      console.error('Error fetching instructor:', error);
-      res.status(500).json({ message: 'Server error' });
-    }
+      // Disable caching for profile data
+      res.setHeader('Cache-Control', 'no-store');
+      res.status(200).json(results[0]);
+    });
   };
+
+// Update Instructor Profile
+export const updateProfile = (req, res) => {
+  const instructorId = req.userId;
+  const updateData = req.body;
+
+  // First get current data to compare unique fields
+  Instructor.findById(instructorId, (err, results) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ message: 'Server error' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Instructor not found' });
+    }
+
+    const currentInstructor = results[0];
+    
+    // Check if unique fields are being changed to existing values
+    const checkFields = {};
+    if (updateData.email && updateData.email !== currentInstructor.email) {
+      checkFields.email = updateData.email;
+    }
+    if (updateData.nic && updateData.nic !== currentInstructor.nic) {
+      checkFields.nic = updateData.nic;
+    }
+    if (updateData.licenseNo && updateData.licenseNo !== currentInstructor.licenseNo) {
+      checkFields.licenseNo = updateData.licenseNo;
+    }
+    if (updateData.phone && updateData.phone !== currentInstructor.phone) {
+      checkFields.phone = updateData.phone;
+    }
+
+    if (Object.keys(checkFields).length > 0) {
+      Instructor.checkExistingFields(
+        checkFields.email || '',
+        checkFields.nic || '',
+        checkFields.licenseNo || '',
+        checkFields.phone || '',
+        (err, results) => {
+          if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ message: 'Server error' });
+          }
+
+          if (results.length > 0) {
+            const existingFields = [];
+            if (results.some(r => r.email === checkFields.email)) existingFields.push('email');
+            if (results.some(r => r.nic === checkFields.nic)) existingFields.push('NIC');
+            if (results.some(r => r.licenseNo === checkFields.licenseNo)) existingFields.push('license number');
+            if (results.some(r => r.phone === checkFields.phone)) existingFields.push('phone');
+            
+            return res.status(400).json({ 
+              message: `${existingFields.join(', ')} already registered`
+            });
+          }
+
+          // Proceed with update if no conflicts
+          performUpdate();
+        }
+      );
+    } else {
+      // No unique fields being changed, proceed with update
+      performUpdate();
+    }
+
+    function performUpdate() {
+      Instructor.updateProfile(instructorId, updateData, (err, result) => {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ message: 'Server error' });
+        }
+
+        if (result.affectedRows === 0) {
+          return res.status(404).json({ message: 'Instructor not found' });
+        }
+
+        res.status(200).json({ message: 'Profile updated successfully' });
+      });
+    }
+  });
+};

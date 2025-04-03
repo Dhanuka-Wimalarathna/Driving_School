@@ -1,44 +1,80 @@
-import sqldb from '../config/sqldb.js';
 import bcrypt from 'bcryptjs';
+import sqldb from '../config/sqldb.js';
 
 const Instructor = {
-  create: async (data) => {
-    try {
-      const hashedPassword = await bcrypt.hash(data.password, 10);
-      const sql = `
-        INSERT INTO instructors (firstName, lastName, email, nic, licenseNo, birthday, address, phone, password) 
+  // Find instructor by email
+  findByEmail: (email, callback) => {
+    sqldb.query('SELECT * FROM instructors WHERE email = ?', [email], callback);
+  },
+
+  // Create new instructor
+  create: (instructorData, callback) => {
+    bcrypt.hash(instructorData.password, 10, (err, hashedPassword) => {
+      if (err) return callback(err);
+      
+      const query = `
+        INSERT INTO instructors 
+        (firstName, lastName, email, nic, licenseNo, birthday, address, phone, password) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
-      const [result] = await sqldb.promise().execute(sql, [
-        data.firstName,
-        data.lastName,
-        data.email,
-        data.nic,
-        data.licenseNo,
-        data.birthday,
-        data.address,
-        data.phone,
-        hashedPassword,
-      ]);
-      return result;
-    } catch (error) {
-      throw error;
-    }
+      
+      const values = [
+        instructorData.firstName,
+        instructorData.lastName,
+        instructorData.email,
+        instructorData.nic,
+        instructorData.licenseNo,
+        instructorData.birthday,
+        instructorData.address,
+        instructorData.phone,
+        hashedPassword
+      ];
+      
+      sqldb.query(query, values, callback);
+    });
   },
 
-  findByEmail: async (email) => {
-    try {
-      const sql = 'SELECT * FROM instructors WHERE email = ?';
-      const [rows] = await sqldb.promise().execute(sql, [email]);
-      return rows.length ? rows[0] : null;
-    } catch (error) {
-      throw error;
-    }
+  // Find instructor by ID (without password)
+  findById: (id, callback) => {
+    sqldb.query(
+      'SELECT ins_id, firstName, lastName, email, nic, licenseNo, birthday, address, phone FROM instructors WHERE ins_id = ?', 
+      [id], 
+      callback
+    );
   },
 
-  comparePassword: async (enteredPassword, storedPassword) => {
-    return bcrypt.compare(enteredPassword, storedPassword);
+  // Update instructor profile
+  updateProfile: (id, updateData, callback) => {
+    const query = `
+      UPDATE instructors SET 
+      firstName = ?, lastName = ?, email = ?, nic = ?, licenseNo = ?,
+      birthday = ?, address = ?, phone = ?
+      WHERE ins_id = ?
+    `;
+    
+    const values = [
+      updateData.firstName,
+      updateData.lastName,
+      updateData.email,
+      updateData.nic,
+      updateData.licenseNo,
+      updateData.birthday,
+      updateData.address,
+      updateData.phone,
+      id
+    ];
+    
+    sqldb.query(query, values, callback);
   },
+
+  // Check if email, nic, licenseNo, or phone already exists
+  checkExistingFields: (email, nic, licenseNo, phone, callback) => {
+    sqldb.query(
+      'SELECT * FROM instructors WHERE email = ? OR nic = ? OR licenseNo = ? OR phone = ?',
+      [email, nic, licenseNo, phone],
+      callback
+    );
+  }
 };
 
 export default Instructor;

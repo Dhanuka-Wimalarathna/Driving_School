@@ -68,20 +68,24 @@ const InstructorSignUp = () => {
       return;
     }
 
+    console.log('Sending data:', formData); 
+
     setLoading(true);
     
     try {
-      const response = await axios.post('http://localhost:8081/api/instructors/register', {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        nic: formData.nic,
-        licenseNo: formData.licenseNo,
-        birthday: formData.birthday,
-        address: formData.address,
-        phone: formData.phone,
-        password: formData.password
-      });
+      // const response = await axios.post('http://localhost:8081/api/instructors/register', {
+      //   firstName: formData.firstName,
+      //   lastName: formData.lastName,
+      //   email: formData.email,
+      //   nic: formData.nic,
+      //   licenseNo: formData.licenseNo,
+      //   birthday: formData.birthday,
+      //   address: formData.address,
+      //   phone: formData.phone,
+      //   password: formData.password
+      // });
+
+      const response = await axios.post('http://localhost:8081/api/instructors/register', formData);
 
       console.log('Registration successful:', response.data);
       navigate('/instructor/sign-in');
