@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import Instructor from '../models/instructorModel.js';
 import dotenv from 'dotenv';
+import sqldb from '../config/sqldb.js';
 
 dotenv.config();
 
@@ -193,5 +194,33 @@ export const updateProfile = (req, res) => {
         res.status(200).json({ message: 'Profile updated successfully' });
       });
     }
+  });
+};
+
+
+// Fetch all instructors
+export const getAllInstructors = (req, res) => {
+  const query = "SELECT * FROM instructors";
+  
+  sqldb.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching instructors:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+    res.status(200).json(results);
+  });
+};
+
+// Delete instructor by ID
+export const deleteInstructor = (req, res) => {
+  const { id } = req.params;
+  const query = "DELETE FROM instructors WHERE ins_id = ?";
+  
+  sqldb.query(query, [id], (err, result) => {
+    if (err) {
+      console.error("Error deleting instructor:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+    res.status(200).json({ message: "Instructor deleted successfully" });
   });
 };

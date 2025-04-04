@@ -11,6 +11,7 @@ import vehicleRoutes from './routes/vehicleRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import instructorRoutes from './routes/instructorRoutes.js'; // Assuming instructor routes are in authRoutes
+import dashboardRoutes from './routes/dashboardRoutes.js'; // Assuming dashboard routes are in dashboardRoutes
 
 dotenv.config(); // Load environment variables
 
@@ -44,6 +45,7 @@ app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/admins', adminRoutes);
 app.use('/api/instructors', instructorRoutes); // Assuming instructor routes are in authRoutes
+app.use('/api/dashboard', dashboardRoutes); // Assuming dashboard routes are in dashboardRoutes
 
 // Handle 404 errors for unknown routes
 app.use((req, res) => {
