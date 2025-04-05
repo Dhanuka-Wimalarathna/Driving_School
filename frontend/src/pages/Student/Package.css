@@ -418,6 +418,17 @@
   box-shadow: 0 8px 20px rgba(76, 201, 240, 0.4);
 }
 
+.confirm-button.disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.confirm-button.selected {
+  background-color: #28a745;
+  color: white;
+  cursor: default;
+}
+
 /* Empty Packages State */
 .empty-packages {
   display: flex;

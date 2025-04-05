@@ -9,12 +9,13 @@ const Package = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+  const [selectedPackageId, setSelectedPackageId] = useState(null);
+  
   // Add states for popup
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const [popupType, setPopupType] = useState("success"); // success or error
   
-
   // Fetch packages when the component is loaded
   useEffect(() => {
     const fetchPackages = async () => {
@@ -28,6 +29,27 @@ const Package = () => {
       }
     };
     fetchPackages();
+
+    const fetchSelectedPackage = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) return; 
+        const response = await axios.get("http://localhost:8081/api/selected-package", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+    
+        if (response.data.packageId) {
+          setSelectedPackageId(response.data.packageId);
+        }
+      } catch (err) {
+        console.error("Error fetching selected package:", err);
+      }
+    };
+    
+    fetchSelectedPackage();
+    
   }, []);
 
   // Toggle expanded package
@@ -67,10 +89,12 @@ const Package = () => {
       setPopupMessage("Package selected successfully!");
       setPopupType("success");
       setShowPopup(true);
+      setSelectedPackageId(packageId);
       console.log(response.data);
     } catch (error) {
       console.error("Error selecting package:", error.response?.data || error.message);
-      setPopupMessage("Failed to select package. Please try again.");
+      const errorMessage = error.response?.data?.message || "Failed to select package. Please try again.";
+      setPopupMessage(errorMessage);
       setPopupType("error");
       setShowPopup(true);
     }
@@ -195,13 +219,26 @@ const Package = () => {
                         </div>
                       )}
                       
-                      <button 
-                        className="confirm-button active"
-                        onClick={(e) => handleSelectPackage(e, pkg.id)}
-                      >
-                        <i className="bi bi-check-circle"></i>
-                        Select Package
-                      </button>
+                      {selectedPackageId === null ? (
+  <button 
+    className="confirm-button active"
+    onClick={(e) => handleSelectPackage(e, pkg.id)}
+  >
+    <i className="bi bi-check-circle"></i>
+    Select Package
+  </button>
+) : selectedPackageId === pkg.id ? (
+  <button className="confirm-button selected" disabled>
+    <i className="bi bi-check2-circle"></i>
+    Package Selected
+  </button>
+) : (
+  <button className="confirm-button disabled" disabled>
+    <i className="bi bi-x-circle"></i>
+    Already Selected Another
+  </button>
+)}
+
                     </div>
                   </div>
                 </div>
