@@ -1,114 +1,300 @@
-/* Scoped styles for Progress Page */
-.progress-page-container {
-    display: flex;
-    min-height: 100vh;
+/* Progress Layout */
+.progress-container {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  display: flex;
+  width: 100%;
+}
+
+.progress-layout {
+  display: flex;
+  width: 100%;
+}
+
+.sidebar-wrapper {
+  position: relative;
+  z-index: 10;
+}
+
+.progress-content {
+  flex: 1;
+  margin-left: 280px;
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+
+.progress-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Progress Header - UPDATED to match Dashboard */
+.progress-header {
+  margin-bottom: 2rem;
+  background: linear-gradient(180deg, #2c3e50 0%, #1a2533 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(76, 201, 240, 0.2);
+  padding: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E") center/cover no-repeat;
+  z-index: 0;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.header-icon {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 1.6rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.header-text {
+  color: white;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.page-subtitle {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Progress Grid */
+.progress-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+/* Progress Card */
+.progress-card {
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  border: none;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.progress-card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: transparent;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-title i {
+  color: #4cc9f0;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Progress Info */
+.progress-info {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  color: #495057;
+}
+
+.progress-info p {
+  margin-bottom: 0.5rem;
+}
+
+/* Progress Bar Styles */
+/* .progress-bar-wrapper {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.progress-bar-container {
+  height: 24px;
+  background-color: #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0.75rem;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4cc9f0 0%, #3a86ff 100%);
+  border-radius: 12px;
+  transition: width 0.6s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+}
+
+.progress-bar-label {
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.progress-bar-stats {
+  display: flex;
+  justify-content: space-between;
+  color: #495057;
+  font-size: 0.85rem;
+}
+
+.progress-stat {
+  font-weight: 500;
+} */
+
+.custom-progress-bar {
+  margin-bottom: 1rem;
+}
+
+.bar-background {
+  background-color: #e0e0e0;
+  border-radius: 20px;
+  overflow: hidden;
+  height: 25px;
+  width: 100%;
+}
+
+.bar-fill {
+  background: linear-gradient(90deg, #4cc9f0 0%, #3a86ff 100%);
+  height: 100%;
+  color: #fff;
+  text-align: center;
+  line-height: 25px;
+  font-weight: bold;
+  transition: width 0.5s ease-in-out;
+}
+
+
+/* Skills Progress */
+.skills-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.skill-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skill-label {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.skill-bar-container {
+  height: 12px;
+  background-color: #e9ecef;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.skill-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4cc9f0 0%, #3a86ff 100%);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+  transition: width 0.5s ease;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .progress-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .progress-content {
+    margin-left: 80px;
+    padding: 1.5rem;
   }
   
-  .progress-page-layout {
-    display: flex;
-    width: 100%;
+  .progress-header {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 576px) {
+  .progress-content {
+    padding: 1rem;
+    margin-left: 0;
   }
   
-  .progress-page-wrapper {
-    width: 100%;
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
   }
   
-  .progress-page-wrapper .sidebar-wrapper {
-    width: 250px; /* Sidebar width */
-    background-color: #f8f9fa;
-    box-shadow: 2px 0px 10px rgba(0, 0, 0, 0.1);
-    height: 100vh;
+  .page-title {
+    font-size: 1.75rem;
   }
   
-  .progress-page-wrapper .progress-page-content {
-    flex-grow: 1;
-    padding: 20px;
-    background-color: #f1f1f1;
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
-  
-  .progress-page-wrapper .content-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  .progress-page-wrapper .page-title {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #333;
-  }
-  
-  .progress-page-wrapper .progress-card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    margin-bottom: 20px;
-  }
-  
-  .progress-page-wrapper .card-header {
-    background-color: #007bff;
-    color: white;
-    padding: 15px;
-  }
-  
-  .progress-page-wrapper .card-title {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
-  
-  .progress-page-wrapper .card-body {
-    padding: 20px;
-  }
-  
-  .progress-page-wrapper .progress-info {
-    margin-top: 15px;
-    font-size: 1rem;
-    color: #555;
-  }
-  
-  .progress-page-wrapper .progress-info p {
-    margin: 5px 0;
-  }
-  
-  /* Progress Bar Styling */
-  .progress-page-wrapper .progress-bar-wrapper {
-    margin-top: 20px;
-  }
-  
-  .progress-page-wrapper .progress-bar {
-    height: 20px;
-    border-radius: 10px;
-    background-color: #e9ecef;
-  }
-  
-  .progress-page-wrapper .progress-bar-inner {
-    height: 100%;
-    border-radius: 10px;
-    background-color: #007bff;
-    text-align: center;
-    color: white;
-    line-height: 20px;
-    font-size: 0.875rem;
-  }
-  
-  @media (max-width: 768px) {
-    .progress-page-wrapper .progress-page-layout {
-      flex-direction: column;
-    }
-  
-    .progress-page-wrapper .sidebar-wrapper {
-      width: 100%;
-      height: auto;
-    }
-  
-    .progress-page-wrapper .progress-page-content {
-      padding: 10px;
-    }
-  
-    .progress-page-wrapper .page-title {
-      font-size: 1.5rem;
-    }
-  }
-  
+}
