@@ -43,6 +43,7 @@ const Students = () => {
         dateOfBirth: student.DATE_OF_BIRTH,
         address: student.ADDRESS,
         createdAt: student.CREATED_AT,
+        selectedPackage: student.SELECTED_PACKAGE || "None",
       }));
       setStudents(mappedStudents);
       setFilteredStudents(mappedStudents);
@@ -87,6 +88,7 @@ const Students = () => {
                   <th>Name</th>
                   <th>Email</th>
                   <th>Phone</th>
+                  <th>Package</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -98,6 +100,7 @@ const Students = () => {
                       <td>{student.firstName} {student.lastName}</td>
                       <td className="student-email">{student.email}</td>
                       <td>{student.phone || "N/A"}</td>
+                      <td>{student.selectedPackage}</td>
                       <td>
                         <div className="table-actions">
                           <button
@@ -112,7 +115,7 @@ const Students = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="no-results">
+                    <td colSpan="6" className="no-results">
                       No students found matching your search
                     </td>
                   </tr>

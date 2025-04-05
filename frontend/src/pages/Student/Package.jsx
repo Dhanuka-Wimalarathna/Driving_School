@@ -9,6 +9,11 @@ const Package = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+  // Add states for popup
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
+  const [popupType, setPopupType] = useState("success"); // success or error
+  
 
   // Fetch packages when the component is loaded
   useEffect(() => {
@@ -30,13 +35,47 @@ const Package = () => {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  // Handle select package
-  const handleSelectPackage = (e, packageId) => {
-    e.stopPropagation();
-    // Add your select package logic here
-    console.log(`Selected package: ${packageId}`);
+  // Handle close popup
+  const handleClosePopup = () => {
+    setShowPopup(false);
   };
 
+  // Handle select package
+  const handleSelectPackage = async (e, packageId) => {
+    e.stopPropagation();
+  
+    const token = localStorage.getItem("authToken");
+  
+    if (!token) {
+      setPopupMessage("Student not logged in.");
+      setPopupType("error");
+      setShowPopup(true);
+      return;
+    }
+  
+    try {
+      const response = await axios.post(
+        "http://localhost:8081/api/select-package",
+        { packageId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      setPopupMessage("Package selected successfully!");
+      setPopupType("success");
+      setShowPopup(true);
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error selecting package:", error.response?.data || error.message);
+      setPopupMessage("Failed to select package. Please try again.");
+      setPopupType("error");
+      setShowPopup(true);
+    }
+  };
+  
   if (loading) {
     return (
       <div className="loading-container">
@@ -83,6 +122,25 @@ const Package = () => {
                 </div>
                 <h3 className="empty-title">No packages available</h3>
                 <p className="empty-subtitle">Please check back later for available driving packages</p>
+              </div>
+            )}
+
+            {/* Popup Message */}
+            {showPopup && (
+              <div className="popup-overlay">
+                <div className={`popup-container ${popupType}`}>
+                  <div className="popup-icon">
+                    {popupType === "success" ? (
+                      <i className="bi bi-check-circle-fill"></i>
+                    ) : (
+                      <i className="bi bi-exclamation-circle-fill"></i>
+                    )}
+                  </div>
+                  <div className="popup-message">{popupMessage}</div>
+                  <button className="popup-close" onClick={handleClosePopup}>
+                    <i className="bi bi-x"></i>
+                  </button>
+                </div>
               </div>
             )}
 

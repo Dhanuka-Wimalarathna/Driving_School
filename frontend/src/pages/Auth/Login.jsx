@@ -24,6 +24,7 @@ const Login = () => {
       const { token, user } = response.data; // Assuming the response includes user details
       localStorage.setItem('authToken', token);
       localStorage.setItem('user', JSON.stringify(user)); // Store user details
+      localStorage.setItem('studentId', user.STU_ID);
       
       console.log('Login successful:', user);
       navigate('/student'); // Redirect to student dashboard

@@ -53,10 +53,10 @@ export const addPackage = (req, res) => {
 export const getPackages = (req, res) => {
     const query = `
         SELECT 
-            p.id AS package_id, p.title, p.description, p.price, p.details, 
+            p.package_id AS package_id, p.title, p.description, p.price, p.details, 
             v.id AS vehicle_id, v.name AS vehicle_name, v.model, pv.lesson_count
         FROM packages p
-        LEFT JOIN package_vehicles pv ON p.id = pv.package_id
+        LEFT JOIN package_vehicles pv ON p.package_id = pv.package_id
         LEFT JOIN vehicles v ON pv.vehicle_id = v.id
     `;
 
@@ -106,7 +106,7 @@ export const updatePackage = (req, res) => {
     const updatePackageQuery = `
         UPDATE packages 
         SET title = ?, description = ?, price = ?, details = ? 
-        WHERE id = ?`;
+        WHERE package_id = ?`;
 
     sqldb.query(updatePackageQuery, [title, description, price, details, id], (err, result) => {
         if (err) {
@@ -163,7 +163,7 @@ export const deletePackage = (req, res) => {
         }
 
         // Then delete the package itself
-        const deletePackageQuery = 'DELETE FROM packages WHERE id = ?';
+        const deletePackageQuery = 'DELETE FROM packages WHERE package_id = ?';
         sqldb.query(deletePackageQuery, [id], (err, result) => {
             if (err) {
                 console.error("Error deleting package:", err);
