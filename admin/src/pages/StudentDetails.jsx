@@ -36,6 +36,16 @@ const StudentDetails = () => {
             <p><strong>Address:</strong> {student.address}</p>
             <p><strong>Joined:</strong> {new Date(student.createdAt).toLocaleDateString()}</p>
           </div>
+
+          <div className="detail-section">
+            <h4>Selected Package</h4>
+            {student.selectedPackage && student.selectedPackage !== "None" ? (
+              <p><strong>Title:</strong> {student.selectedPackage}</p>
+            ) : (
+              <p>No package selected</p>
+            )}
+          </div>
+
           <div className="detail-actions">
             <button className="history-btn">Academic History</button>
             <button className="contact-btn">Contact Student</button>
