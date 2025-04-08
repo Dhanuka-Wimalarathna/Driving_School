@@ -1,165 +1,242 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar/Sidebar";
+import { 
+  Search, 
+  Eye,
+  Plus,
+  Trash2,
+  AlertCircle,
+  Car
+} from "lucide-react";
 import "./Vehicles.css";
 
 const Vehicles = () => {
   const [vehicles, setVehicles] = useState([]);
-  const [expandedVehicle, setExpandedVehicle] = useState(null);
+  const [filteredVehicles, setFilteredVehicles] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [newVehicle, setNewVehicle] = useState({
     name: "",
     model: "",
     plate_number: "",
     type: "",
-    status: "Available",
-    image: ""
+    status: "Available"
   });
-  const [imageFile, setImageFile] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const navigate = useNavigate();
 
-  // Fetch vehicles from backend on component mount
   useEffect(() => {
     fetchVehicles();
   }, []);
 
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredVehicles(vehicles);
+    } else {
+      const query = searchQuery.toLowerCase();
+      const filtered = vehicles.filter(
+        (vehicle) =>
+          vehicle.name.toLowerCase().includes(query) ||
+          (vehicle.model && vehicle.model.toLowerCase().includes(query)) ||
+          vehicle.plate_number.toLowerCase().includes(query) ||
+          vehicle.type.toLowerCase().includes(query) ||
+          vehicle.status.toLowerCase().includes(query)
+      );
+      setFilteredVehicles(filtered);
+    }
+  }, [searchQuery, vehicles]);
+
   const fetchVehicles = async () => {
+    setIsLoading(true);
+    setErrorMessage("");
     try {
       const response = await axios.get("http://localhost:8081/api/vehicles");
       setVehicles(response.data);
+      setFilteredVehicles(response.data);
     } catch (error) {
       console.error("Error fetching vehicles:", error);
+      setErrorMessage("Failed to load vehicle data. Please try again later.");
       setVehicles([]);
+      setFilteredVehicles([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Function to toggle expanded state
-  const toggleExpand = (id) => {
-    setExpandedVehicle(expandedVehicle === id ? null : id);
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
   };
 
-  // Function to delete a vehicle
-  const deleteVehicle = async (e, id) => {
-    e.stopPropagation();
+  const handleViewClick = (vehicle) => {
+    navigate(`/admin/vehicles/${vehicle.id}`, { state: { vehicle } });
+  };
+
+  const deleteVehicle = async (id) => {
     try {
       await axios.delete(`http://localhost:8081/api/vehicles/${id}`);
-      fetchVehicles(); // Refresh the list after deletion
+      setVehicles(vehicles.filter((vehicle) => vehicle.id !== id));
+      setFilteredVehicles(filteredVehicles.filter((vehicle) => vehicle.id !== id));
     } catch (error) {
       console.error("Error deleting vehicle:", error);
     }
   };
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewVehicle({ ...newVehicle, [name]: value });
   };
 
-  // Handle image upload to Cloudinary
-  const handleImageUpload = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'vehicle_images'); // Replace with your upload preset
-    
-    try {
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload`, // Replace YOUR_CLOUD_NAME
-        formData
-      );
-      return response.data.secure_url;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      throw error;
-    }
-  };
-
-  // Function to add a vehicle
   const handleAddVehicle = async () => {
     if (!newVehicle.name || !newVehicle.plate_number || !newVehicle.type) {
       alert("Please fill in all required fields");
       return;
     }
 
-    setIsUploading(true);
-    
     try {
-      let imageUrl = '';
-      if (imageFile) {
-        imageUrl = await handleImageUpload(imageFile);
-      }
-
-      const vehicleWithImage = {
-        ...newVehicle,
-        image: imageUrl
-      };
-
-      await axios.post("http://localhost:8081/api/vehicles/addVehicle", vehicleWithImage);
-      
+      await axios.post("http://localhost:8081/api/vehicles/addVehicle", newVehicle);
       setShowModal(false);
       setNewVehicle({ 
         name: "", 
         model: "", 
         plate_number: "", 
         type: "", 
-        status: "Available",
-        image: ""
+        status: "Available"
       });
-      setImageFile(null);
       fetchVehicles();
     } catch (error) {
       console.error("Error adding vehicle:", error);
       alert("Failed to add vehicle. Please try again.");
-    } finally {
-      setIsUploading(false);
     }
   };
 
   return (
     <div className="dashboard-layout">
       <Sidebar />
-
-      <main className="main-content">
-        <div className="vehicles-page">
-          <div className="vehicles-header">
-            <h1>Vehicles</h1>
-            <button className="add-vehicle-btn" onClick={() => setShowModal(true)}>
-              <span className="btn-icon">+</span> Add New Vehicle
-            </button>
-          </div>
-
-          <div className="vehicle-list">
-            {vehicles.map((vehicle) => (
-              <div
-                key={vehicle.id}
-                className={`vehicle-card ${expandedVehicle === vehicle.id ? "expanded" : ""} status-${vehicle.status.toLowerCase().replace(/\s+/g, '-')}`}
-                onClick={() => toggleExpand(vehicle.id)}
-              >
-                {vehicle.image && (
-                  <div className="vehicle-image">
-                    <img src={vehicle.image} alt={`${vehicle.name} ${vehicle.model}`} />
-                  </div>
-                )}
-                <div className="vehicle-status-tag">{vehicle.status}</div>
-                <div className="vehicle-info">
-                  <h3>{vehicle.name} {vehicle.model}</h3>
-                  <p className="vehicle-plate">Plate: {vehicle.plate_number}</p>
-                  <p className="vehicle-type">Type: {vehicle.type}</p>
-                </div>
-
-                {expandedVehicle === vehicle.id && (
-                  <div className="vehicle-details">
-                    <div className="vehicle-actions">
-                      <button className="assign-btn">Assign</button>
-                      <button className="service-btn">Service History</button>
-                      <button className="delete-btn" onClick={(e) => deleteVehicle(e, vehicle.id)}>
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                )}
+      <main className="vehicles-main-content">
+        <div className="vehicles-container">
+          <header className="vehicles-header">
+            <div className="header-title">
+              <h1>
+                <span className="title-icon">
+                  <Car size={24} />
+                </span>
+                Vehicles Management
+              </h1>
+              <p className="subtitle">
+                {filteredVehicles.length} {filteredVehicles.length === 1 ? "vehicle" : "vehicles"} in database
+              </p>
+            </div>
+            
+            <div className="search-wrapper">
+              <div className="search-container">
+                <Search className="search-icon" size={18} />
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search by name, plate, type..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                />
               </div>
-            ))}
-          </div>
+              <button 
+                className="add-vehicle-btn"
+                onClick={() => setShowModal(true)}
+              >
+                <Plus size={16} />
+                <span>Add Vehicle</span>
+              </button>
+            </div>
+          </header>
+
+          {isLoading ? (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>Loading vehicles data...</p>
+            </div>
+          ) : errorMessage ? (
+            <div className="error-container">
+              <AlertCircle size={24} />
+              <p>{errorMessage}</p>
+              <button className="retry-btn" onClick={fetchVehicles}>Retry</button>
+            </div>
+          ) : (
+            <div className="vehicles-table-container">
+              <table className="vehicles-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Vehicle</th>
+                    <th>Plate Number</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredVehicles.length > 0 ? (
+                    filteredVehicles.map((vehicle) => (
+                      <tr key={vehicle.id}>
+                        <td className="vehicle-id">{vehicle.id}</td>
+                        <td className="vehicle-name">
+                          <div className="name-cell">
+                            <div className="avatar">{vehicle.name.charAt(0)}{vehicle.model?.charAt(0) || 'V'}</div>
+                            <div className="name-text">
+                              <div>{vehicle.name}</div>
+                              {vehicle.model && <div className="model-text">{vehicle.model}</div>}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="vehicle-plate">{vehicle.plate_number}</td>
+                        <td className="vehicle-type">{vehicle.type}</td>
+                        <td>
+                          <span className={`status-badge ${vehicle.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                            {vehicle.status}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="table-actions">
+                            <button
+                              className="view-btn"
+                              onClick={() => handleViewClick(vehicle)}
+                              title="View vehicle details"
+                            >
+                              <Eye size={16} />
+                              <span>View</span>
+                            </button>
+                            <button
+                              className="delete-btn"
+                              onClick={() => deleteVehicle(vehicle.id)}
+                              title="Delete vehicle"
+                            >
+                              <Trash2 size={16} />
+                              <span>Delete</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="no-results">
+                        <div className="no-data">
+                          <Search size={32} />
+                          <p>No vehicles found matching your search</p>
+                          {searchQuery && (
+                            <button className="clear-search" onClick={() => setSearchQuery("")}>
+                              Clear search
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </main>
 
@@ -234,37 +311,18 @@ const Vehicles = () => {
               </select>
             </div>
 
-            <div className="form-group">
-              <label>Vehicle Image</label>
-              <input 
-                type="file" 
-                accept="image/*"
-                onChange={(e) => setImageFile(e.target.files[0])}
-              />
-              {imageFile && (
-                <div className="image-preview">
-                  <img 
-                    src={URL.createObjectURL(imageFile)} 
-                    alt="Preview" 
-                  />
-                </div>
-              )}
-            </div>
-
             <div className="modal-actions">
               <button 
                 className="cancel-btn" 
                 onClick={() => setShowModal(false)}
-                disabled={isUploading}
               >
                 Cancel
               </button>
               <button 
                 className="add-btn" 
                 onClick={handleAddVehicle}
-                disabled={isUploading}
               >
-                {isUploading ? 'Uploading...' : 'Add Vehicle'}
+                Add Vehicle
               </button>
             </div>
           </div>
