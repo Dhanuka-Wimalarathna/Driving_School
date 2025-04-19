@@ -131,6 +131,11 @@
   gap: 1.5rem;
 }
 
+/* Make notifications card span full width */
+.notifications-card {
+  grid-column: 1 / -1;
+}
+
 .dashboard-card {
   background-color: #fff;
   border-radius: 16px;
@@ -291,10 +296,115 @@
   font-style: italic;
 }
 
+/* Notifications Styles */
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 1rem;
+  border-radius: 10px;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.notification-item:hover {
+  background-color: #f0f3f5;
+}
+
+.notification-item.unread {
+  background-color: rgba(76, 201, 240, 0.1);
+  border-left: 3px solid #4cc9f0;
+}
+
+.notification-icon {
+  min-width: 40px;
+  height: 40px;
+  background-color: rgba(76, 201, 240, 0.2);
+  color: #3a86ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  margin-right: 1rem;
+  font-size: 1.2rem;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 0.3rem 0;
+  font-size: 1rem;
+}
+
+.notification-message {
+  color: #6c757d;
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.notification-meta {
+  font-size: 0.8rem;
+  color: #adb5bd;
+}
+
+.notification-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.notification-action {
+  background: none;
+  border: none;
+  color: #3a86ff;
+  padding: 0.5rem;
+  cursor: pointer;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.notification-item:hover .notification-action {
+  opacity: 1;
+}
+
+.notification-action:hover {
+  color: #4cc9f0;
+}
+
+/* Empty Notifications */
+.empty-notifications {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+  height: 100%;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 992px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .notifications-card {
+    grid-column: auto;
   }
 }
 

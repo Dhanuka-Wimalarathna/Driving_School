@@ -7,11 +7,12 @@ import "./Dashboard.css";
 
 const Dashboard = () => {
   const [student, setStudent] = useState(null);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchStudentDetails = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("authToken");
         if (!token) {
@@ -20,13 +21,21 @@ const Dashboard = () => {
           return;
         }
 
-        const response = await axios.get("http://localhost:8081/api/auth/user", {
+        // Fetch student details
+        const studentResponse = await axios.get("http://localhost:8081/api/auth/user", {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        setStudent(response.data);
+        
+        setStudent(studentResponse.data);
+        
+        // Fetch notifications
+        const notificationsResponse = await axios.get("http://localhost:8081/api/notifications/show", {
+          headers: { Authorization: `Bearer ${token}` },
+        });        
+        
+        setNotifications(notificationsResponse.data || []);
       } catch (error) {
-        console.error("Error fetching student details:", error.response?.data || error);
+        console.error("Error fetching data:", error.response?.data || error);
         if (error.response?.status === 401) {
           navigate("/login");
         }
@@ -35,7 +44,7 @@ const Dashboard = () => {
       }
     };
 
-    fetchStudentDetails();
+    fetchData();
   }, [navigate]);
 
   const handleBookLesson = () => {
@@ -44,6 +53,42 @@ const Dashboard = () => {
 
   const handleViewProfile = () => {
     navigate("/student/profile");
+  };
+  
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      await axios.put(`http://localhost:8081/api/notifications/${notificationId}/read`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      // Update notifications in state
+      setNotifications(prevNotifications => 
+        prevNotifications.map(notification => 
+          notification.id === notificationId 
+            ? { ...notification, is_read: true } 
+            : notification
+        )
+      );
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+  
+  const handleClearAllNotifications = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      await axios.put("http://localhost:8081/api/notifications/read-all", {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      // Update all notifications as read
+      setNotifications(prevNotifications => 
+        prevNotifications.map(notification => ({ ...notification, is_read: true }))
+      );
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+    }
   };
 
   if (loading) {
@@ -88,6 +133,63 @@ const Dashboard = () => {
             </div>
 
             <div className="dashboard-grid">
+              {/* Notifications Card */}
+              <div className="dashboard-card notifications-card">
+                <div className="card-header">
+                  <h2 className="card-title">
+                    <i className="bi bi-bell"></i>
+                    Notifications
+                  </h2>
+                  {notifications.length > 0 && (
+                    <button className="action-button" onClick={handleClearAllNotifications}>
+                      <i className="bi bi-check-all"></i>
+                      Mark All Read
+                    </button>
+                  )}
+                </div>
+                <div className="card-body">
+                  {notifications.length > 0 ? (
+                    <div className="notifications-list">
+                      {notifications.map((notification) => (
+                        <div 
+                          key={notification.id} 
+                          className={`notification-item ${!notification.is_read ? 'unread' : ''}`}
+                        >
+                          <div className="notification-icon">
+                            <i className={`bi ${getNotificationIcon(notification.type)}`}></i>
+                          </div>
+                          <div className="notification-content">
+                            <h4 className="notification-title">{notification.title}</h4>
+                            <p className="notification-message">{notification.message}</p>
+                            <div className="notification-meta">
+                              <span className="notification-time">
+                                {new Date(notification.created_at).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                          {!notification.is_read && (
+                            <button 
+                              className="notification-action" 
+                              onClick={() => handleMarkAsRead(notification.id)}
+                            >
+                              <i className="bi bi-check-circle"></i>
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty-notifications">
+                      <div className="empty-icon">
+                        <i className="bi bi-bell-slash"></i>
+                      </div>
+                      <h3 className="empty-title">No new notifications</h3>
+                      <p className="empty-subtitle">We'll notify you when there's something important</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Profile Card */}
               <div className="dashboard-card profile-card">
                 <div className="card-header">
@@ -97,7 +199,7 @@ const Dashboard = () => {
                   </h2>
                   <button className="action-button" onClick={handleViewProfile}>
                     <i className="bi bi-pencil-square"></i>
-                    Edit Profile
+                    My Profile
                   </button>
                 </div>
                 <div className="card-body">
@@ -166,6 +268,24 @@ const Dashboard = () => {
       </div>
     </div>
   );
+};
+
+// Helper function to determine notification icon based on type
+const getNotificationIcon = (type) => {
+  switch (type) {
+    case 'lesson_booked':
+      return 'bi-calendar-check';
+    case 'lesson_canceled':
+      return 'bi-calendar-x';
+    case 'lesson_reminder':
+      return 'bi-alarm';
+    case 'payment_success':
+      return 'bi-credit-card';
+    case 'profile_update':
+      return 'bi-person-check';
+    default:
+      return 'bi-bell';
+  }
 };
 
 export default Dashboard;

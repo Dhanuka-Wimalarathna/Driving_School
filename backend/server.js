@@ -13,6 +13,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import instructorRoutes from './routes/instructorRoutes.js'; // Assuming instructor routes are in authRoutes
 import dashboardRoutes from './routes/dashboardRoutes.js'; // Assuming dashboard routes are in dashboardRoutes
 import selectPackageRoutes from './routes/selectPackageRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js'; // Assuming notification routes are in notificationRoutes
 
 dotenv.config(); // Load environment variables
 
@@ -48,6 +49,7 @@ app.use('/api/admins', adminRoutes);
 app.use('/api/instructors', instructorRoutes); // Assuming instructor routes are in authRoutes
 app.use('/api/dashboard', dashboardRoutes); // Assuming dashboard routes are in dashboardRoutes
 app.use('/api', selectPackageRoutes);
+app.use('/api/notifications', notificationRoutes); // Assuming notification routes are in notificationRoutes
 
 // Handle 404 errors for unknown routes
 app.use((req, res) => {

@@ -22,6 +22,7 @@ const Students = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+  const token = localStorage.getItem("authToken");
 
   useEffect(() => {
     fetchStudents();
@@ -96,39 +97,52 @@ const Students = () => {
     setSelectAll(!selectAll);
   };
 
-  const handleSendNotification = async () => {
-    if (selectedStudentIds.length === 0 || !notificationMessage.trim()) {
-      alert("Please select students and enter a message.");
-      return;
-    }
+  // In Students.jsx
+const handleSendNotification = async () => {
+  if (selectedStudentIds.length === 0 || !notificationMessage.trim()) {
+    alert("Please select students and enter a message.");
+    return;
+  }
 
-    try {
-      await axios.post("http://localhost:8081/api/notifications/send", {
-        studentIds: selectedStudentIds,
-        message: notificationMessage,
-      });
+  const token = localStorage.getItem("authToken");
 
-      // Show success toast
-      const toast = document.createElement("div");
-      toast.className = "toast-notification success";
-      toast.innerHTML = `<CheckSquare size={20} /> Notification sent to ${selectedStudentIds.length} students!`;
-      document.body.appendChild(toast);
-      setTimeout(() => document.body.removeChild(toast), 3000);
+  if (!token) {
+    alert("Authentication token not found. Please log in again.");
+    return;
+  }
 
-      setNotificationMessage("");
-      setSelectedStudentIds([]);
-      setSelectAll(false);
-    } catch (error) {
-      console.error("Error sending notifications:", error);
-      
-      // Show error toast
-      const toast = document.createElement("div");
-      toast.className = "toast-notification error";
-      toast.innerHTML = `<AlertCircle size={20} /> Failed to send notifications.`;
-      document.body.appendChild(toast);
-      setTimeout(() => document.body.removeChild(toast), 3000);
-    }
-  };
+  try {
+    // Send only studentIds and message
+    await axios.post("http://localhost:8081/api/notifications/send", {
+      studentIds: selectedStudentIds,
+      message: notificationMessage, // Only message is sent here
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`, // ✅ Include token here!
+      },
+    });
+
+    // Show success toast
+    const toast = document.createElement("div");
+    toast.className = "toast-notification success";
+    toast.innerHTML = `<CheckSquare size={20} /> Notification sent to ${selectedStudentIds.length} students!`;
+    document.body.appendChild(toast);
+    setTimeout(() => document.body.removeChild(toast), 3000);
+
+    setNotificationMessage("");
+    setSelectedStudentIds([]);
+    setSelectAll(false);
+  } catch (error) {
+    console.error("Error sending notifications:", error);
+    
+    // Show error toast
+    const toast = document.createElement("div");
+    toast.className = "toast-notification error";
+    toast.innerHTML = `<AlertCircle size={20} /> Failed to send notifications.`;
+    document.body.appendChild(toast);
+    setTimeout(() => document.body.removeChild(toast), 3000);
+  }
+};
 
   return (
     <div className="dashboard-layout">
