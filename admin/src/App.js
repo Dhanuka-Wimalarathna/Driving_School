@@ -13,6 +13,7 @@ import Instructor from './pages/Instructor';
 import Students from './pages/Students';
 import StudentDetails from './pages/StudentDetails';
 import InstructorDashboard from './instructor/InstructorDashboard';
+import InstructorVehicles from './instructor/InstructorVehicles';
 
 function App() {
   return (
@@ -35,6 +36,10 @@ function App() {
         <Route path="/admin/instructors" element={<Instructor />} />
         <Route path="/admin/students" element={<Students />} />
         <Route path='/admin/students/:id' element={<StudentDetails />} />
+
+
+        <Route path="/instructor/vehicles" element={<InstructorVehicles />} />
+
       </Routes>
     </Router>
   );

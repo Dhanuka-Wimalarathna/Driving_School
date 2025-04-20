@@ -53,7 +53,7 @@ const InstructorSidebar = () => {
           </NavLink>
 
           <NavLink
-            to="/admin/vehicles"
+            to="/instructor/vehicles"
             end
             className={({ isActive }) =>
               `nav-item ${isActive ? 'active' : ''}`
