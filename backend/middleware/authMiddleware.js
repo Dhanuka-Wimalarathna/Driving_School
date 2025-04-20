@@ -5,22 +5,38 @@ dotenv.config();
 
 const authMiddleware = (req, res, next) => {
   const authHeader = req.header('Authorization');
-  const token = authHeader && authHeader.split(' ')[1];
 
+  // Check if Authorization header is present
+  if (!authHeader) {
+    console.error('Authorization header missing');
+    return res.status(401).json({ message: 'Authorization header is missing' });
+  }
+
+  // Check if it follows "Bearer <token>" format
+  const token = authHeader.split(' ')[1];
   if (!token) {
+    console.error('Authentication token missing');
     return res.status(401).json({ message: 'Authentication token is missing' });
   }
 
   try {
+    // Verify the token with the secret key
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Store both user ID and role in the request
-    req.userId = decoded.id;
-    req.userRole = decoded.role;
-    
-    next();
+
+    // Store user details in the request object
+    req.userId = decoded.id;  // Assuming `id` is the user ID
+    req.userRole = decoded.role;  // Assuming `role` is the user role
+
+    console.log(`Token verified for user ID: ${req.userId}`);  // Add logging for successful token verification
+
+    next(); // Token is valid, proceed to the next middleware/controller
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid or expired token' });
+    console.error('JWT verification failed:', error.message);  // Log the error message
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token has expired' });
+    } else {
+      return res.status(401).json({ message: 'Invalid or malformed token' });
+    }
   }
 };
 

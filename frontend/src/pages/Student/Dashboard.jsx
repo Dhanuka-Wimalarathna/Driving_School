@@ -29,10 +29,13 @@ const Dashboard = () => {
         setStudent(studentResponse.data);
         
         // Fetch notifications
-        const notificationsResponse = await axios.get("http://localhost:8081/api/notifications/show", {
-          headers: { Authorization: `Bearer ${token}` },
-        });        
-        
+        const notificationsResponse = await axios.get('http://localhost:8081/api/notifications/show', {
+          headers: {
+            'Authorization': `Bearer ${token}`, // Ensure token is passed correctly
+            'studentId': studentResponse.data.id // Pass the user ID if needed in the header or request body
+          }
+        });
+    
         setNotifications(notificationsResponse.data || []);
       } catch (error) {
         console.error("Error fetching data:", error.response?.data || error);
