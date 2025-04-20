@@ -53,12 +53,14 @@ const InstructorSidebar = () => {
           </NavLink>
 
           <NavLink
-            to="/instructor/profile"
+            to="/admin/vehicles"
             end
-            className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+            className={({ isActive }) =>
+              `nav-item ${isActive ? 'active' : ''}`
+            }
           >
-            <i className="bi bi-person"></i>
-            <span>Profile</span>
+            <i className="bi bi-car-front"></i>
+            <span>Vehicles</span>
           </NavLink>
         </div>
 
@@ -70,7 +72,6 @@ const InstructorSidebar = () => {
             </div>
             <div className="user-info">
               <h6>Instructor</h6>
-              <p>View Profile</p>
             </div>
           </div>
         </div>

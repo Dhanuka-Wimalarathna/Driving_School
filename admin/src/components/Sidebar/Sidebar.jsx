@@ -91,7 +91,6 @@ const Sidebar = () => {
             </div>
             <div className="user-info">
               <h6>Admin</h6>
-              <p>View Profile</p>
             </div>
           </div>
         </div>
