@@ -28,8 +28,7 @@ function App() {
         <Route path="/admin/sign-up" element={<AdminSignUp />} />
         <Route path="/instructor/sign-in" element={<InstructorSignIn />} />
         <Route path="/instructor/sign-up" element={<InstructorSignUp/>} />
-        <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
-
+        
         {/* Admin Pages */}
         <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route path="/admin/package" element={<Packages />} />
@@ -38,7 +37,8 @@ function App() {
         <Route path="/admin/students" element={<Students />} />
         <Route path='/admin/students/:id' element={<StudentDetails />} />
 
-
+        {/* Instructor Pages */}
+        <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
         <Route path="/instructor/vehicles" element={<InstructorVehicles />} />
         <Route path="/instructor/students" element={<InstructorStudents />} />
 
