@@ -75,7 +75,7 @@ const InstructorVehicles = () => {
                 <span className="title-icon">
                   <Car size={24} />
                 </span>
-                My Vehicles
+                Vehicles
               </h1>
               <p className="subtitle">
                 {filteredVehicles.length} {filteredVehicles.length === 1 ? "vehicle" : "vehicles"} assigned to you

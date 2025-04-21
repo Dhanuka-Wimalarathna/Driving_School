@@ -123,7 +123,7 @@ const Vehicles = () => {
                 <span className="title-icon">
                   <Car size={24} />
                 </span>
-                Vehicles Management
+                Vehicles
               </h1>
               <p className="subtitle">
                 {filteredVehicles.length} {filteredVehicles.length === 1 ? "vehicle" : "vehicles"} in database

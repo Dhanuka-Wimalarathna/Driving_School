@@ -14,6 +14,7 @@ import Students from './pages/Students';
 import StudentDetails from './pages/StudentDetails';
 import InstructorDashboard from './instructor/InstructorDashboard';
 import InstructorVehicles from './instructor/InstructorVehicles';
+import InstructorStudents from './instructor/InstructorStudents';
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
 
 
         <Route path="/instructor/vehicles" element={<InstructorVehicles />} />
+        <Route path="/instructor/students" element={<InstructorStudents />} />
 
       </Routes>
     </Router>

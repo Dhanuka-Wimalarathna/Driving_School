@@ -49,7 +49,7 @@ const InstructorSidebar = () => {
             className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
           >
             <i className="bi bi-people"></i>
-            <span>My Students</span>
+            <span>Students</span>
           </NavLink>
 
           <NavLink
