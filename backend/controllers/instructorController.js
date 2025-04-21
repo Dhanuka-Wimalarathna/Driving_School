@@ -10,7 +10,7 @@ dotenv.config();
 export const register = async (req, res) => {
     console.log("Received registration request:", req.body);
   
-    const { firstName, lastName, email, nic, licenseNo, birthday, address, phone, password, confirmPassword } = req.body;
+    const { firstName, lastName, email, nic, licenseNo, birthday, address, phone, password, confirmPassword, grade } = req.body;
   
     if (!firstName || !lastName || !email || !nic || !licenseNo || !birthday || !address || !phone || !password || !confirmPassword) {
       return res.status(400).json({ message: "All fields are required" });
@@ -32,7 +32,7 @@ export const register = async (req, res) => {
           return res.status(400).json({ message: "Instructor with this email, NIC, license number, or phone already exists" });
         }
   
-        const instructorData = { firstName, lastName, email, nic, licenseNo, birthday, address, phone, password };
+        const instructorData = { firstName, lastName, email, nic, licenseNo, birthday, address, phone, password, grade };
         Instructor.create(instructorData, (err, result) => {
           if (err) {
             console.error("Database error:", err);

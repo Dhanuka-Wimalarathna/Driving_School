@@ -17,7 +17,8 @@ const InstructorSignUp = () => {
     address: '',
     phone: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    grade: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -55,6 +56,7 @@ const InstructorSignUp = () => {
     if (!formData.password) newErrors.password = 'Password is required';
     else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    if (!formData.grade) newErrors.grade = 'Grade is required';
 
     return newErrors;
   };
@@ -190,6 +192,24 @@ const InstructorSignUp = () => {
                     />
                     {errors.licenseNo && <div className="invalid-feedback">{errors.licenseNo}</div>}
                   </div>
+                  
+                  {/* Grade */}
+                  <div className="compact-mb-2">
+                    <label className="form-label fw-medium d-block mb-2">Grade</label>
+                    <div className="d-flex gap-2">
+                      {['A', 'B', 'C'].map((gradeOption) => (
+                        <button
+                          type="button"
+                          key={gradeOption}
+                          className={`btn btn-sm custom-grade-btn ${formData.grade === gradeOption ? 'selected' : ''}`}
+                          onClick={() => handleChange({ target: { name: 'grade', value: gradeOption } })}
+                        >
+                          {gradeOption}
+                        </button>
+                      ))}
+                    </div>
+                    {errors.grade && <div className="invalid-feedback d-block mt-1">{errors.grade}</div>}
+                  </div>
 
                   {/* Birthday */}
                   <div className="compact-mb-2">
@@ -276,7 +296,7 @@ const InstructorSignUp = () => {
                       </button>
                       {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
                     </div>
-                  </div>
+                  </div>       
 
                   {/* Submit Button */}
                   <div className="d-grid gap-2 compact-mb-2">
