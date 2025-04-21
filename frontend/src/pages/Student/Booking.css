@@ -114,11 +114,16 @@
   transform: translateY(-2px);
 }
 
-/* Booking Grid */
+/* Booking Grid - Modified for vertical layout */
 .booking-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
+}
+
+/* Add this new class for vertical layout */
+.booking-grid.vertical {
+  grid-template-columns: 1fr;
 }
 
 .booking-card {
@@ -129,6 +134,7 @@
   overflow: hidden;
   transition: all 0.3s ease;
   height: 100%;
+  margin-bottom: 1.5rem;
 }
 
 .booking-card:hover {
@@ -213,26 +219,19 @@
   color: #bbb !important;
 }
 
-/* Instructor Selection */
-.form-group {
+/* Vehicle Selection */
+.vehicle-section {
   margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 1rem;
 }
 
-.form-label {
-  display: block;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 0.75rem;
-  font-size: 1rem;
+.vehicle-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
 }
 
-.instructor-options {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.instructor-option {
+.vehicle-name {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -241,36 +240,23 @@
   cursor: pointer;
   border: 1px solid #e9ecef;
   transition: all 0.2s ease;
-  flex: 1;
-  min-width: 150px;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
 }
 
-.instructor-option:hover {
+.vehicle-name:hover {
   border-color: #4cc9f0;
   background-color: rgba(76, 201, 240, 0.05);
 }
 
-.instructor-option.selected {
+.vehicle-name.selected {
   border-color: #4cc9f0;
   background-color: rgba(76, 201, 240, 0.1);
+  color: #4cc9f0;
 }
 
-.instructor-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: #4cc9f0;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.instructor-name {
-  font-weight: 500;
-  color: #2c3e50;
+.vehicle-name i {
+  color: #4cc9f0;
 }
 
 /* Time Slots */
@@ -278,6 +264,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 0.75rem;
+  margin-left: 2rem;
 }
 
 .time-slot {
@@ -347,6 +334,10 @@
   .booking-grid {
     grid-template-columns: 1fr;
   }
+  
+  .time-slots {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
 }
 
 @media (max-width: 768px) {
@@ -355,12 +346,8 @@
     padding: 1.5rem;
   }
   
-  .instructor-options {
-    flex-direction: column;
-  }
-  
   .time-slots {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   }
   
   .booking-header {
@@ -400,5 +387,9 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+  
+  .time-slots {
+    grid-template-columns: 1fr;
   }
 }

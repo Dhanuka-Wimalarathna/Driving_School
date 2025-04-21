@@ -7,30 +7,45 @@ import './Booking.css';
 
 const Booking = () => {
   const [date, setDate] = useState(new Date());
-  const [instructor, setInstructor] = useState('');
-  const [timeSlot, setTimeSlot] = useState('');
+  const [selectedVehicles, setSelectedVehicles] = useState([]);
+  const [selectedSlots, setSelectedSlots] = useState({});
+  const vehicles = ['Bike', 'Tricycle', 'Van'];
 
-  const mockInstructors = [
-    { id: 1, name: "Mr. Smith", avatar: "SM" },
-    { id: 2, name: "Ms. Davis", avatar: "MD" },
-  ];
+  const timeRanges = {
+    Bike: generateTimeSlots('08:00', '10:00'),
+    Tricycle: generateTimeSlots('10:00', '11:00'),
+    Van: generateTimeSlots('11:00', '14:00')
+  };
 
-  const timeSlots = [
-    { id: 1, time: "09:00 AM - 10:30 AM" },
-    { id: 2, time: "11:00 AM - 12:30 PM" },
-    { id: 3, time: "01:00 PM - 02:30 PM" },
-    { id: 4, time: "03:00 PM - 04:30 PM" },
-  ];
+  const handleVehicleSelect = (vehicle) => {
+    if (selectedVehicles.includes(vehicle)) {
+      // Deselect vehicle
+      setSelectedVehicles(prev => prev.filter(v => v !== vehicle));
+      const newSlots = { ...selectedSlots };
+      delete newSlots[vehicle];
+      setSelectedSlots(newSlots);
+    } else {
+      if (selectedVehicles.length < 3) {
+        setSelectedVehicles(prev => [...prev, vehicle]);
+      }
+    }
+  };
+
+  const handleTimeSlotSelect = (vehicle, slot) => {
+    setSelectedSlots(prev => ({
+      ...prev,
+      [vehicle]: slot
+    }));
+  };
+
+  const isSunday = date.getDay() === 0;
 
   return (
     <div className="booking-container">
       <div className="booking-layout">
-        {/* Sidebar */}
         <div className="sidebar-wrapper">
           <Sidebar />
         </div>
-
-        {/* Main Content */}
         <div className="booking-content">
           <div className="booking-wrapper">
             <div className="booking-header">
@@ -39,15 +54,13 @@ const Booking = () => {
                   <i className="bi bi-calendar-plus"></i>
                 </div>
                 <div className="header-text">
-                  <h1 className="page-title">
-                    Book Your Driving Lesson
-                  </h1>
-                  <p className="page-subtitle">Select your preferred date, instructor, and time slot</p>
+                  <h1 className="page-title">Book Your Driving Lesson</h1>
+                  <p className="page-subtitle">Choose your preferred sessions (01 vehicle-15 mins each)</p>
                 </div>
               </div>
             </div>
 
-            <div className="booking-grid">
+            <div className="booking-grid vertical">
               {/* Calendar Section */}
               <div className="booking-card calendar-card">
                 <div className="card-header">
@@ -56,74 +69,67 @@ const Booking = () => {
                     Select Date
                   </h2>
                   <span className="selected-date">
-                    {date.toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
+                    {date.toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
                     })}
                   </span>
                 </div>
                 <div className="card-body">
                   <div className="calendar-container">
-                    <Calendar 
-                      onChange={setDate} 
-                      value={date} 
+                    <Calendar
+                      onChange={setDate}
+                      value={date}
                       minDate={new Date()}
                       className="modern-calendar"
                     />
+                    {isSunday && (
+                      <p className="text-danger mt-2">No sessions available on Sunday.</p>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Details Selection Section */}
+              {/* Booking Details */}
               <div className="booking-card details-card">
                 <div className="card-header">
                   <h2 className="card-title">
-                    <i className="bi bi-person-badge"></i>
-                    Booking Details
+                    <i className="bi bi-car-front"></i>
+                    Choose Vehicle & Time
                   </h2>
                 </div>
                 <div className="card-body">
-                  {/* Instructor Selection */}
-                  <div className="form-group">
-                    <label className="form-label">Select Instructor</label>
-                    <div className="instructor-options">
-                      {mockInstructors.map((inst) => (
-                        <div 
-                          key={inst.id}
-                          className={`instructor-option ${instructor === inst.id.toString() ? 'selected' : ''}`}
-                          onClick={() => setInstructor(inst.id.toString())}
-                        >
-                          <div className="instructor-avatar">{inst.avatar}</div>
-                          <span className="instructor-name">{inst.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  {vehicles.map((vehicle) => (
+                    <div key={vehicle} className="vehicle-section">
+                      <div
+                        className={`vehicle-name ${selectedVehicles.includes(vehicle) ? 'selected' : ''}`}
+                        onClick={() => handleVehicleSelect(vehicle)}
+                      >
+                        <i className={`bi ${selectedVehicles.includes(vehicle) ? 'bi-check-circle-fill' : 'bi-circle'}`}></i> {vehicle}
+                      </div>
 
-                  {/* Time Slot Selection */}
-                  <div className="form-group">
-                    <label className="form-label">Select Time Slot</label>
-                    <div className="time-slots">
-                      {timeSlots.map((slot) => (
-                        <div 
-                          key={slot.id}
-                          className={`time-slot ${timeSlot === slot.id.toString() ? 'selected' : ''}`}
-                          onClick={() => setTimeSlot(slot.id.toString())}
-                        >
-                          <i className="bi bi-clock"></i>
-                          <span>{slot.time}</span>
+                      {selectedVehicles.includes(vehicle) && (
+                        <div className="time-slots mt-2">
+                          {timeRanges[vehicle].map((slot, idx) => (
+                            <div
+                              key={idx}
+                              className={`time-slot ${selectedSlots[vehicle] === slot ? 'selected' : ''}`}
+                              onClick={() => handleTimeSlotSelect(vehicle, slot)}
+                            >
+                              <i className="bi bi-clock"></i> {slot}
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  </div>
+                  ))}
 
-                  {/* Confirm Button */}
-                  <div className="booking-action">
-                    <button 
-                      className={`confirm-button ${instructor && timeSlot ? 'active' : 'disabled'}`}
-                      disabled={!instructor || !timeSlot}
+                  <div className="booking-action mt-4">
+                    <button
+                      className={`confirm-button ${(selectedVehicles.length >= 1 && Object.keys(selectedSlots).length === selectedVehicles.length) && !isSunday ? 'active' : 'disabled'}`}
+                      disabled={!(selectedVehicles.length >= 1 && Object.keys(selectedSlots).length === selectedVehicles.length) || isSunday}
                     >
                       <i className="bi bi-check-circle"></i>
                       Confirm Booking
@@ -134,9 +140,40 @@ const Booking = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> 
     </div>
   );
 };
+
+function generateTimeSlots(start, end) {
+  const slots = [];
+  let [sh, sm] = start.split(':').map(Number);
+  let [eh, em] = end.split(':').map(Number);
+
+  while (sh < eh || (sh === eh && sm < em)) {
+    const nextMinutes = sm + 15;
+    let nh = sh;
+    let nm = nextMinutes;
+    if (nextMinutes >= 60) {
+      nh += 1;
+      nm -= 60;
+    }
+
+    const from = formatTime(sh, sm);
+    const to = formatTime(nh, nm);
+    slots.push(`${from} - ${to}`);
+
+    sh = nh;
+    sm = nm;
+  }
+
+  return slots;
+}
+
+function formatTime(h, m) {
+  const suffix = h >= 12 ? 'PM' : 'AM';
+  const hour = ((h + 11) % 12 + 1);
+  return `${String(hour).padStart(2, '0')}:${String(m).padStart(2, '0')} ${suffix}`;
+}
 
 export default Booking;

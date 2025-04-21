@@ -201,7 +201,7 @@ const InstructorSignUp = () => {
                         <button
                           type="button"
                           key={gradeOption}
-                          className={`btn btn-sm custom-grade-btn ${formData.grade === gradeOption ? 'selected' : ''}`}
+                          className={`btn btn-sm ${formData.grade === gradeOption ? 'btn-primary' : 'btn-outline-primary'}`}
                           onClick={() => handleChange({ target: { name: 'grade', value: gradeOption } })}
                         >
                           {gradeOption}
@@ -209,7 +209,7 @@ const InstructorSignUp = () => {
                       ))}
                     </div>
                     {errors.grade && <div className="invalid-feedback d-block mt-1">{errors.grade}</div>}
-                  </div>
+                  </div>  
 
                   {/* Birthday */}
                   <div className="compact-mb-2">
