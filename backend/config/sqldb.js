@@ -11,6 +11,6 @@ const sqldb = await mysql.createConnection({
     database: process.env.DB_NAME
 });
 
-console.log("✅ Database connected!");
+// console.log("✅ Database connected!");
 
 export default sqldb;

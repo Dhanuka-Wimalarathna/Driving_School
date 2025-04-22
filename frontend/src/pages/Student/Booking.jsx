@@ -1,14 +1,18 @@
+// Booking.jsx
 import React, { useState } from 'react';
 import Calendar from 'react-calendar';
 import Sidebar from '../../components/Sidebar';
 import 'react-calendar/dist/Calendar.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Booking.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Booking = () => {
   const [date, setDate] = useState(new Date());
   const [selectedVehicles, setSelectedVehicles] = useState([]);
   const [selectedSlots, setSelectedSlots] = useState({});
+  const [confirmationMessage, setConfirmationMessage] = useState('');
   const vehicles = ['Bike', 'Tricycle', 'Van'];
 
   const timeRanges = {
@@ -19,7 +23,6 @@ const Booking = () => {
 
   const handleVehicleSelect = (vehicle) => {
     if (selectedVehicles.includes(vehicle)) {
-      // Deselect vehicle
       setSelectedVehicles(prev => prev.filter(v => v !== vehicle));
       const newSlots = { ...selectedSlots };
       delete newSlots[vehicle];
@@ -40,6 +43,56 @@ const Booking = () => {
 
   const isSunday = date.getDay() === 0;
 
+  const handleConfirmBooking = async () => {
+    if (
+      selectedVehicles.length === 0 ||
+      Object.keys(selectedSlots).length !== selectedVehicles.length
+    ) {
+      toast.error('Please select a vehicle and its time slot.');
+      return;
+    }
+  
+    const token = localStorage.getItem('authToken'); // Auth token
+    const user = JSON.parse(localStorage.getItem("user"));
+  
+    // Format the booking payload expected by backend
+    const bookingPayload = {
+      date: date.toISOString().split('T')[0], // Shared booking date (YYYY-MM-DD)
+      vehicle_slots: selectedVehicles.map(vehicle => ({
+        vehicle,
+        time_slot: selectedSlots[vehicle]
+      }))
+    };
+  
+    console.log("Booking payload:", bookingPayload);
+    console.log("Auth token:", token);
+  
+    try {
+      const response = await fetch('http://localhost:8081/api/booking/book', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(bookingPayload)
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        setConfirmationMessage('✅ Booking confirmed successfully!');
+        toast.success('✅ Session successfully booked!');
+      } else {
+        console.error('Booking failed:', result);
+        setConfirmationMessage(result.message || '❌ Error while booking.');
+        toast.error(result.message || '❌ Booking failed.');
+      }
+    } catch (error) {
+      console.error('Error booking:', error);
+      toast.error('🔥 An error occurred while booking.');
+    }
+  };  
+  
   return (
     <div className="booking-container">
       <div className="booking-layout">
@@ -61,7 +114,6 @@ const Booking = () => {
             </div>
 
             <div className="booking-grid vertical">
-              {/* Calendar Section */}
               <div className="booking-card calendar-card">
                 <div className="card-header">
                   <h2 className="card-title">
@@ -92,7 +144,6 @@ const Booking = () => {
                 </div>
               </div>
 
-              {/* Booking Details */}
               <div className="booking-card details-card">
                 <div className="card-header">
                   <h2 className="card-title">
@@ -130,6 +181,7 @@ const Booking = () => {
                     <button
                       className={`confirm-button ${(selectedVehicles.length >= 1 && Object.keys(selectedSlots).length === selectedVehicles.length) && !isSunday ? 'active' : 'disabled'}`}
                       disabled={!(selectedVehicles.length >= 1 && Object.keys(selectedSlots).length === selectedVehicles.length) || isSunday}
+                      onClick={handleConfirmBooking}
                     >
                       <i className="bi bi-check-circle"></i>
                       Confirm Booking
@@ -137,10 +189,17 @@ const Booking = () => {
                   </div>
                 </div>
               </div>
+
+              {confirmationMessage && (
+                <div className="confirmation-message mt-4">
+                  <p>{confirmationMessage}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div> 
+      </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };
