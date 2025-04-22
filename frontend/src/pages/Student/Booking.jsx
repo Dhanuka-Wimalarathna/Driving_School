@@ -1,18 +1,14 @@
-// Booking.jsx
 import React, { useState } from 'react';
 import Calendar from 'react-calendar';
 import Sidebar from '../../components/Sidebar';
 import 'react-calendar/dist/Calendar.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Booking.css';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const Booking = () => {
   const [date, setDate] = useState(new Date());
   const [selectedVehicles, setSelectedVehicles] = useState([]);
   const [selectedSlots, setSelectedSlots] = useState({});
-  const [confirmationMessage, setConfirmationMessage] = useState('');
   const vehicles = ['Bike', 'Tricycle', 'Van'];
 
   const timeRanges = {
@@ -43,17 +39,31 @@ const Booking = () => {
 
   const isSunday = date.getDay() === 0;
 
+  const showToast = (message, type) => {
+    const toast = document.createElement("div");
+    toast.className = `toast-notification ${type}`;
+        
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    
+    // Remove toast after 3 seconds
+    setTimeout(() => {
+      if (document.body.contains(toast)) {
+        document.body.removeChild(toast);
+      }
+    }, 3000);
+  };
+
   const handleConfirmBooking = async () => {
     if (
       selectedVehicles.length === 0 ||
       Object.keys(selectedSlots).length !== selectedVehicles.length
     ) {
-      toast.error('Please select a vehicle and its time slot.');
+      showToast('Please select a vehicle and its time slot.', 'error');
       return;
     }
   
     const token = localStorage.getItem('authToken'); // Auth token
-    const user = JSON.parse(localStorage.getItem("user"));
   
     // Format the booking payload expected by backend
     const bookingPayload = {
@@ -80,18 +90,19 @@ const Booking = () => {
       const result = await response.json();
   
       if (response.ok) {
-        setConfirmationMessage('✅ Booking confirmed successfully!');
-        toast.success('✅ Session successfully booked!');
+        showToast('Session successfully booked!', 'success');
+        // Clear the selections after successful booking
+        setSelectedVehicles([]);
+        setSelectedSlots({});
       } else {
         console.error('Booking failed:', result);
-        setConfirmationMessage(result.message || '❌ Error while booking.');
-        toast.error(result.message || '❌ Booking failed.');
+        showToast(result.message || 'Error while booking.', 'error');
       }
     } catch (error) {
       console.error('Error booking:', error);
-      toast.error('🔥 An error occurred while booking.');
+      showToast('An error occurred while booking.', 'error');
     }
-  };  
+  };
   
   return (
     <div className="booking-container">
@@ -189,17 +200,11 @@ const Booking = () => {
                   </div>
                 </div>
               </div>
-
-              {confirmationMessage && (
-                <div className="confirmation-message mt-4">
-                  <p>{confirmationMessage}</p>
-                </div>
-              )}
             </div>
           </div>
         </div>
       </div>
-      <ToastContainer position="top-right" autoClose={3000} />
+      {/* Toast notifications will be created dynamically */}
     </div>
   );
 };
