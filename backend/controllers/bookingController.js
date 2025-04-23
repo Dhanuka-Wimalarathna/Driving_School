@@ -16,9 +16,9 @@ export const createBooking = (req, res) => {
       return res.status(500).json({ message: 'Error starting transaction', error: err });
     }
 
-    const queries = vehicle_slots.map(({ vehicle, time_slot }) => {
+    const queries = vehicle_slots.map(({ vehicle, time_slot, instructor_id }) => {
       return new Promise((resolve, reject) => {
-        insertBooking(studentId, vehicle, formattedDate, time_slot, (err, result) => {
+        insertBooking(studentId, vehicle, formattedDate, time_slot, instructor_id, (err, result) => {
           if (err) return reject(err);
           resolve(result);
         });

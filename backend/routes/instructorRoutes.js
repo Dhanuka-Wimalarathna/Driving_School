@@ -1,12 +1,5 @@
 import express from 'express';
-import { 
-  register, 
-  login, 
-  getProfile, 
-  updateProfile,
-  getAllInstructors,
-  deleteInstructor 
-} from '../controllers/instructorController.js';
+import { register, login, getProfile, updateProfile, getAllInstructors, deleteInstructor } from '../controllers/instructorController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();

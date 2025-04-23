@@ -115,16 +115,17 @@
   transform: translateY(-2px);
 }
 
-/* Booking Grid - Modified for vertical layout */
+/* Booking Grid - Modified for mixed layout */
 .booking-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
 
-/* Add this new class for vertical layout */
-.booking-grid.vertical {
-  grid-template-columns: 1fr;
+/* Top row with calendar and instructor details side by side */
+.calendar-instructor-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
 }
 
 .booking-card {
@@ -218,6 +219,46 @@
 
 .react-calendar__month-view__days__day--neighboringMonth {
   color: #bbb !important;
+}
+
+/* Updated Instructor Selection Styling */
+.instructor-section {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 1rem;
+}
+
+.instructor-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.instructor-name {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.instructor-name:hover {
+  border-color: #4cc9f0;
+  background-color: rgba(76, 201, 240, 0.05);
+}
+
+.instructor-name.selected {
+  border-color: #4cc9f0;
+  background-color: rgba(76, 201, 240, 0.1);
+  color: #4cc9f0;
+}
+
+.instructor-name i {
+  color: #4cc9f0;
 }
 
 /* Vehicle Selection */
@@ -387,7 +428,7 @@
 
 /* Responsive Adjustments */
 @media (max-width: 992px) {
-  .booking-grid {
+  .calendar-instructor-row {
     grid-template-columns: 1fr;
   }
   

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import Sidebar from '../../components/Sidebar';
 import 'react-calendar/dist/Calendar.css';
@@ -9,7 +9,47 @@ const Booking = () => {
   const [date, setDate] = useState(new Date());
   const [selectedVehicles, setSelectedVehicles] = useState([]);
   const [selectedSlots, setSelectedSlots] = useState({});
+  const [instructors, setInstructors] = useState({});
+  const [instructorForVehicle, setInstructorForVehicle] = useState({});
+  const [loading, setLoading] = useState(true);
+
   const vehicles = ['Bike', 'Tricycle', 'Van'];
+
+  const vehicleToGrade = {
+    Bike: 'A',
+    Tricycle: 'B',
+    Van: 'C'
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('http://localhost:8081/api/instructors')
+      .then(res => res.json())
+      .then(data => {
+        // Group instructors by grade
+        const instructorsMap = {};
+        data.forEach(instructor => {
+          if (!instructorsMap[instructor.grade]) {
+            instructorsMap[instructor.grade] = [];
+          }
+          instructorsMap[instructor.grade].push(instructor);
+        });
+        setInstructors(instructorsMap);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching instructors:', err);
+        setLoading(false);
+      });
+  }, []);
+
+  const getInstructorByVehicle = (vehicle) => {
+    const grade = vehicleToGrade[vehicle];
+    if (instructors[grade] && instructors[grade].length > 0) {
+      return instructors[grade][0]; // Return the first instructor with matching grade
+    }
+    return null;
+  };
 
   const timeRanges = {
     Bike: generateTimeSlots('08:00', '10:00'),
@@ -23,6 +63,10 @@ const Booking = () => {
       const newSlots = { ...selectedSlots };
       delete newSlots[vehicle];
       setSelectedSlots(newSlots);
+      setInstructorForVehicle(prev => {
+        const { [vehicle]: _, ...remaining } = prev;
+        return remaining;
+      });
     } else {
       if (selectedVehicles.length < 3) {
         setSelectedVehicles(prev => [...prev, vehicle]);
@@ -37,16 +81,29 @@ const Booking = () => {
     }));
   };
 
+  const handleInstructorSelect = (vehicle, instructorId) => {
+    // If already selected, deselect it
+    if (instructorForVehicle[vehicle] === instructorId) {
+      setInstructorForVehicle(prev => {
+        const { [vehicle]: _, ...remaining } = prev;
+        return remaining;
+      });
+    } else {
+      // Otherwise select it
+      setInstructorForVehicle(prev => ({
+        ...prev,
+        [vehicle]: instructorId
+      }));
+    }
+  };
+
   const isSunday = date.getDay() === 0;
 
   const showToast = (message, type) => {
     const toast = document.createElement("div");
     toast.className = `toast-notification ${type}`;
-        
     toast.innerText = message;
     document.body.appendChild(toast);
-    
-    // Remove toast after 3 seconds
     setTimeout(() => {
       if (document.body.contains(toast)) {
         document.body.removeChild(toast);
@@ -57,26 +114,27 @@ const Booking = () => {
   const handleConfirmBooking = async () => {
     if (
       selectedVehicles.length === 0 ||
-      Object.keys(selectedSlots).length !== selectedVehicles.length
+      Object.keys(selectedSlots).length !== selectedVehicles.length ||
+      Object.keys(instructorForVehicle).length !== selectedVehicles.length
     ) {
-      showToast('Please select a vehicle and its time slot.', 'error');
+      showToast('Please select a vehicle, time slot, and instructor.', 'error');
       return;
     }
-  
-    const token = localStorage.getItem('authToken'); // Auth token
-  
-    // Format the booking payload expected by backend
+
+    const token = localStorage.getItem('authToken');
+
     const bookingPayload = {
-      date: date.toISOString().split('T')[0], // Shared booking date (YYYY-MM-DD)
-      vehicle_slots: selectedVehicles.map(vehicle => ({
-        vehicle,
-        time_slot: selectedSlots[vehicle]
-      }))
+      date: date.toISOString().split('T')[0],
+      vehicle_slots: selectedVehicles.map(vehicle => {
+        const instructorId = instructorForVehicle[vehicle];
+        return {
+          vehicle,
+          time_slot: selectedSlots[vehicle],
+          instructor_id: instructorId || null
+        };
+      })
     };
-  
-    console.log("Booking payload:", bookingPayload);
-    console.log("Auth token:", token);
-  
+
     try {
       const response = await fetch('http://localhost:8081/api/booking/book', {
         method: 'POST',
@@ -86,14 +144,14 @@ const Booking = () => {
         },
         body: JSON.stringify(bookingPayload)
       });
-  
+
       const result = await response.json();
-  
+
       if (response.ok) {
         showToast('Session successfully booked!', 'success');
-        // Clear the selections after successful booking
         setSelectedVehicles([]);
         setSelectedSlots({});
+        setInstructorForVehicle({});
       } else {
         console.error('Booking failed:', result);
         showToast(result.message || 'Error while booking.', 'error');
@@ -103,7 +161,7 @@ const Booking = () => {
       showToast('An error occurred while booking.', 'error');
     }
   };
-  
+
   return (
     <div className="booking-container">
       <div className="booking-layout">
@@ -119,37 +177,72 @@ const Booking = () => {
                 </div>
                 <div className="header-text">
                   <h1 className="page-title">Book Your Driving Lesson</h1>
-                  <p className="page-subtitle">Choose your preferred sessions (01 vehicle-15 mins each)</p>
+                  <p className="page-subtitle">Choose your preferred sessions (01 vehicle - 15 mins each)</p>
                 </div>
               </div>
             </div>
 
-            <div className="booking-grid vertical">
-              <div className="booking-card calendar-card">
-                <div className="card-header">
-                  <h2 className="card-title">
-                    <i className="bi bi-calendar-date"></i>
-                    Select Date
-                  </h2>
-                  <span className="selected-date">
-                    {date.toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </span>
+            <div className="booking-grid">
+              <div className="calendar-instructor-row">
+                <div className="booking-card calendar-card">
+                  <div className="card-header">
+                    <h2 className="card-title">
+                      <i className="bi bi-calendar-date"></i>
+                      Select Date
+                    </h2>
+                    <span className="selected-date">
+                      {date.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </span>
+                  </div>
+                  <div className="card-body">
+                    <div className="calendar-container">
+                      <Calendar
+                        onChange={setDate}
+                        value={date}
+                        minDate={new Date()}
+                        className="modern-calendar"
+                      />
+                      {isSunday && (
+                        <p className="text-danger mt-2">No sessions available on Sunday.</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="card-body">
-                  <div className="calendar-container">
-                    <Calendar
-                      onChange={setDate}
-                      value={date}
-                      minDate={new Date()}
-                      className="modern-calendar"
-                    />
-                    {isSunday && (
-                      <p className="text-danger mt-2">No sessions available on Sunday.</p>
+
+                <div className="booking-card instructor-card">
+                  <div className="card-header">
+                    <h2 className="card-title">
+                      <i className="bi bi-person-circle"></i>
+                      Instructor Selection
+                    </h2>
+                  </div>
+                  <div className="card-body">
+                    {loading ? (
+                      <div className="loading-message">Loading instructors...</div>
+                    ) : (
+                      vehicles.map((vehicle) => {
+                        const instructor = getInstructorByVehicle(vehicle);
+                        if (!instructor) return null; // Skip if no instructor
+                        
+                        const isSelected = instructorForVehicle[vehicle] === instructor.ins_id;
+                        
+                        return (
+                          <div key={vehicle} className="instructor-section">
+                            <div 
+                              className={`instructor-name ${isSelected ? 'selected' : ''}`}
+                              onClick={() => handleInstructorSelect(vehicle, instructor.ins_id)}
+                            >
+                              <i className={`bi ${isSelected ? 'bi-check-circle-fill' : 'bi-circle'}`}></i> 
+                              {`${instructor.firstName} ${instructor.lastName}`}
+                            </div>
+                          </div>
+                        );
+                      })
                     )}
                   </div>
                 </div>
@@ -187,24 +280,23 @@ const Booking = () => {
                       )}
                     </div>
                   ))}
-
-                  <div className="booking-action mt-4">
-                    <button
-                      className={`confirm-button ${(selectedVehicles.length >= 1 && Object.keys(selectedSlots).length === selectedVehicles.length) && !isSunday ? 'active' : 'disabled'}`}
-                      disabled={!(selectedVehicles.length >= 1 && Object.keys(selectedSlots).length === selectedVehicles.length) || isSunday}
-                      onClick={handleConfirmBooking}
-                    >
-                      <i className="bi bi-check-circle"></i>
-                      Confirm Booking
-                    </button>
-                  </div>
                 </div>
+              </div>
+
+              <div className="booking-action">
+                <button
+                  className={`confirm-button ${(selectedVehicles.length >= 1 && Object.keys(selectedSlots).length === selectedVehicles.length && Object.keys(instructorForVehicle).length === selectedVehicles.length) && !isSunday ? 'active' : 'disabled'}`}
+                  disabled={!(selectedVehicles.length >= 1 && Object.keys(selectedSlots).length === selectedVehicles.length && Object.keys(instructorForVehicle).length === selectedVehicles.length) || isSunday}
+                  onClick={handleConfirmBooking}
+                >
+                  <i className="bi bi-check-circle"></i>
+                  Confirm Booking
+                </button>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      {/* Toast notifications will be created dynamically */}
+      </div> 
     </div>
   );
 };

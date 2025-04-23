@@ -15,6 +15,7 @@ import StudentDetails from './pages/StudentDetails';
 import InstructorDashboard from './instructor/InstructorDashboard';
 import InstructorVehicles from './instructor/InstructorVehicles';
 import InstructorStudents from './instructor/InstructorStudents';
+import InstructorSchedule from './instructor/InstructorSchedule';
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
         <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
         <Route path="/instructor/vehicles" element={<InstructorVehicles />} />
         <Route path="/instructor/students" element={<InstructorStudents />} />
+        <Route path="/instructor/schedule" element={<InstructorSchedule />} />
 
       </Routes>
     </Router>
