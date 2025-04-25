@@ -8,6 +8,7 @@ import "./Dashboard.css";
 const Dashboard = () => {
   const [student, setStudent] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -25,18 +26,24 @@ const Dashboard = () => {
         const studentResponse = await axios.get("http://localhost:8081/api/auth/user", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        
         setStudent(studentResponse.data);
-        
+
         // Fetch notifications
         const notificationsResponse = await axios.get('http://localhost:8081/api/notifications/show', {
           headers: {
-            'Authorization': `Bearer ${token}`, // Ensure token is passed correctly
-            'studentId': studentResponse.data.id // Pass the user ID if needed in the header or request body
+            'Authorization': `Bearer ${token}`,
+            'studentId': studentResponse.data.id
           }
         });
-    
         setNotifications(notificationsResponse.data || []);
+
+        // Fetch upcoming bookings
+        const bookingsResponse = await axios.get('http://localhost:8081/api/booking/student', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setBookings(bookingsResponse.data || []);
       } catch (error) {
         console.error("Error fetching data:", error.response?.data || error);
         if (error.response?.status === 401) {
@@ -57,19 +64,18 @@ const Dashboard = () => {
   const handleViewProfile = () => {
     navigate("/student/profile");
   };
-  
+
   const handleMarkAsRead = async (notificationId) => {
     try {
       const token = localStorage.getItem("authToken");
       await axios.put(`http://localhost:8081/api/notifications/${notificationId}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
-      // Update notifications in state
-      setNotifications(prevNotifications => 
-        prevNotifications.map(notification => 
-          notification.id === notificationId 
-            ? { ...notification, is_read: true } 
+
+      setNotifications(prevNotifications =>
+        prevNotifications.map(notification =>
+          notification.id === notificationId
+            ? { ...notification, is_read: true }
             : notification
         )
       );
@@ -77,16 +83,15 @@ const Dashboard = () => {
       console.error("Error marking notification as read:", error);
     }
   };
-  
+
   const handleClearAllNotifications = async () => {
     try {
       const token = localStorage.getItem("authToken");
       await axios.put("http://localhost:8081/api/notifications/read-all", {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
-      // Update all notifications as read
-      setNotifications(prevNotifications => 
+
+      setNotifications(prevNotifications =>
         prevNotifications.map(notification => ({ ...notification, is_read: true }))
       );
     } catch (error) {
@@ -107,12 +112,10 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-layout">
-        {/* Sidebar */}
         <div className="sidebar-wrapper">
           <Sidebar />
         </div>
 
-        {/* Main Content */}
         <div className="dashboard-content">
           <div className="dashboard-wrapper">
             <div className="dashboard-header">
@@ -127,16 +130,10 @@ const Dashboard = () => {
                   <p className="page-subtitle">Your driving progress overview</p>
                 </div>
               </div>
-              {/* <div className="header-actions">
-                <button className="header-button" onClick={handleBookLesson}>
-                  <i className="bi bi-plus-circle"></i>
-                  Quick Book
-                </button>
-              </div> */}
             </div>
 
             <div className="dashboard-grid">
-              {/* Notifications Card */}
+              {/* Notifications */}
               <div className="dashboard-card notifications-card">
                 <div className="card-header">
                   <h2 className="card-title">
@@ -154,9 +151,9 @@ const Dashboard = () => {
                   {notifications.length > 0 ? (
                     <div className="notifications-list">
                       {notifications.map((notification) => (
-                        <div 
-                          key={notification.id} 
-                          className={`notification-item ${!notification.is_read ? 'unread' : ''}`}
+                        <div
+                          key={notification.id}
+                          className={`notification-item ${!notification.is_read ? "unread" : ""}`}
                         >
                           <div className="notification-icon">
                             <i className={`bi ${getNotificationIcon(notification.type)}`}></i>
@@ -171,8 +168,8 @@ const Dashboard = () => {
                             </div>
                           </div>
                           {!notification.is_read && (
-                            <button 
-                              className="notification-action" 
+                            <button
+                              className="notification-action"
                               onClick={() => handleMarkAsRead(notification.id)}
                             >
                               <i className="bi bi-check-circle"></i>
@@ -193,7 +190,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Profile Card */}
+              {/* Profile */}
               <div className="dashboard-card profile-card">
                 <div className="card-header">
                   <h2 className="card-title">
@@ -243,7 +240,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Upcoming Lessons Card */}
+              {/* Upcoming Lessons */}
               <div className="dashboard-card lessons-card">
                 <div className="card-header">
                   <h2 className="card-title">
@@ -252,28 +249,46 @@ const Dashboard = () => {
                   </h2>
                 </div>
                 <div className="card-body">
-                  <div className="empty-lessons">
-                    <div className="empty-icon">
-                      <i className="bi bi-calendar-x"></i>
+                  {bookings.length > 0 ? (
+                    <div className="lessons-list">
+                      {bookings.map((booking) => (
+                        <div key={booking.id} className="lesson-item">
+                          <div className="lesson-info">
+                            <h5 className="lesson-title">{booking.vehicle_type} session</h5>
+                            <p className="lesson-date">
+                              {new Date(booking.date).toLocaleDateString()} — {booking.time}
+                            </p>
+                            {booking.instructor_name && (
+                              <p className="lesson-instructor">Instructor: {booking.instructor_name}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <h3 className="empty-title">No upcoming lessons</h3>
-                    <p className="empty-subtitle">Book your first driving lesson now</p>
-                    <button className="confirm-button active" onClick={handleBookLesson}>
-                      <i className="bi bi-plus-circle"></i>
-                      Book New Lesson
-                    </button>
-                  </div>
+                  ) : (
+                    <div className="empty-lessons">
+                      <div className="empty-icon">
+                        <i className="bi bi-calendar-x"></i>
+                      </div>
+                      <h3 className="empty-title">No upcoming lessons</h3>
+                      <p className="empty-subtitle">Book your first driving lesson now</p>
+                      <button className="confirm-button active" onClick={handleBookLesson}>
+                        <i className="bi bi-plus-circle"></i>
+                        Book New Lesson
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </div>  
     </div>
   );
 };
 
-// Helper function to determine notification icon based on type
+// Helper function to get icons based on notification type
 const getNotificationIcon = (type) => {
   switch (type) {
     case 'lesson_booked':

@@ -104,3 +104,29 @@ export const getInstructorSchedule = (req, res) => {
     }
   );
 };
+
+export const getStudentBookings = (req, res) => {
+  const studentId = req.userId;
+
+  const sql = `
+    SELECT 
+      b.booking_id AS id,
+      b.date,
+      b.time_slot AS time,
+      b.vehicle AS vehicle_type,
+      CONCAT(i.firstName, ' ', i.lastName) AS instructor_name
+    FROM bookings b
+    JOIN instructors i ON b.instructor_id = i.ins_id
+    WHERE b.student_id = ?
+    ORDER BY b.date, b.time_slot
+  `;
+
+  sqldb.query(sql, [studentId], (err, results) => {
+    if (err) {
+      console.error('Error fetching student bookings:', err);
+      return res.status(500).json({ error: 'Failed to fetch bookings' });
+    }
+
+    res.status(200).json(results);
+  });
+};

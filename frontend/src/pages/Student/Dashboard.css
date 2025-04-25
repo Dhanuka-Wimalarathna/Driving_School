@@ -397,6 +397,145 @@
   height: 100%;
 }
 
+/* Lesson List Styling - NEW SECTION */
+.lessons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  max-height: 350px;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+}
+
+.lesson-item {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 1.2rem;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.lesson-item:hover {
+  background-color: #f0f3f5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.lesson-info {
+  flex: 1;
+}
+
+.lesson-title {
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lesson-title::before {
+  content: '\F4BE'; /* Bootstrap icon code for vehicle */
+  font-family: "bootstrap-icons";
+  color: #4cc9f0;
+  font-size: 1.2rem;
+}
+
+.lesson-date {
+  color: #495057;
+  margin: 0 0 0.4rem 0;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.lesson-date::before {
+  content: '\F4CD'; /* Bootstrap icon code for calendar */
+  font-family: "bootstrap-icons";
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.lesson-instructor {
+  color: #6c757d;
+  margin: 0;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.lesson-instructor::before {
+  content: '\F4E3'; /* Bootstrap icon code for person */
+  font-family: "bootstrap-icons";
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.lesson-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.lesson-action-button {
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6c757d;
+  opacity: 0;
+}
+
+.lesson-item:hover .lesson-action-button {
+  opacity: 1;
+}
+
+.lesson-action-button:hover {
+  background-color: rgba(76, 201, 240, 0.1);
+  color: #4cc9f0;
+}
+
+.lesson-action-button.cancel {
+  color: #dc3545;
+}
+
+.lesson-action-button.cancel:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.lesson-status {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.lesson-status.confirmed {
+  background-color: rgba(25, 135, 84, 0.1);
+  color: #198754;
+}
+
+.lesson-status.pending {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 992px) {
   .dashboard-grid {
@@ -432,6 +571,11 @@
     width: 100%;
     justify-content: center;
   }
+  
+  .lesson-status {
+    position: static;
+    margin-top: 0.5rem;
+  }
 }
 
 @media (max-width: 576px) {
@@ -459,5 +603,20 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+  
+  .lesson-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .lesson-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .lesson-action-button {
+    opacity: 1;
   }
 }
