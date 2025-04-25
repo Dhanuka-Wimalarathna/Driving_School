@@ -43,14 +43,21 @@ const InstructorSchedule = () => {
 
         const data = await response.json();
 
-        const formattedData = data.map((item) => ({
+        const formattedData = data
+        .map((item) => ({
           id: item.booking_id,
           date: item.date,
           timeSlot: item.timeSlot || "-",
           vehicle: item.vehicle || "-",
           studentName: item.studentName || "-",
           status: item.status || "Unknown",
-        }));
+        }))
+        .sort((a, b) => {
+          const dateA = new Date(`${a.date} ${a.timeSlot}`);
+          const dateB = new Date(`${b.date} ${b.timeSlot}`);
+          return dateA - dateB;
+        });
+      
 
         setSchedule(formattedData);
         setFilteredSchedule(formattedData);
