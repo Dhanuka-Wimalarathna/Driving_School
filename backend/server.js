@@ -53,6 +53,12 @@ app.use('/api', selectPackageRoutes);
 app.use('/api/notifications', notificationRoutes); // Assuming notification routes are in notificationRoutes
 app.use('/api/booking', bookingRoutes); // Assuming booking routes are in bookingRoutes
 
+// In your server.js, right before the 404 handler:
+app.use((req, res, next) => {
+    console.log(`Incoming request: ${req.method} ${req.originalUrl}`);
+    next();
+  });
+
 // Handle 404 errors for unknown routes
 app.use((req, res) => {
     res.status(404).json({ message: '❌ Route not found' });
