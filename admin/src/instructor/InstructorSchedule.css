@@ -57,6 +57,26 @@
   font-size: 0.938rem;
 }
 
+/* Search Container */
+.search-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.search-container {
+  position: relative;
+  width: 320px;
+}
+
+.search-icon {
+  color: #6b7280;
+  margin-right: 0.5rem;
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+}
+
 /* Cards Container */
 .schedule-cards-container {
   display: grid;
@@ -135,29 +155,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 40px; /* Increased from 32px */
+  height: 40px; /* Increased from 32px */
   border: none;
   border-radius: 0.375rem;
   background-color: #f9fafb;
   cursor: pointer;
   transition: all 0.2s ease;
-}
-
-.view-btn {
-  color: #0284c7;
-}
-
-.view-btn:hover {
-  background-color: #e0f2fe;
-}
-
-.edit-btn {
-  color: #d97706;
-}
-
-.edit-btn:hover {
-  background-color: #fef3c7;
+  color: inherit;
 }
 
 /* Card Body Styles */
@@ -169,6 +174,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .info-item {
@@ -193,6 +199,48 @@
 .info-value {
   color: #111827;
   font-weight: 400;
+}
+
+/* Session Action Buttons - New */
+.session-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 1rem;
+}
+
+.btn-complete {
+  padding: 0.625rem;
+  border: none;
+  border-radius: 0.375rem;
+  background-color: #22c55e;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.btn-complete:hover {
+  background-color: #16a34a;
+}
+
+.btn-incomplete {
+  padding: 0.625rem;
+  border: none;
+  border-radius: 0.375rem;
+  background-color: #f59e0b;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.btn-incomplete:hover {
+  background-color: #d97706;
 }
 
 /* Empty, Loading, and Error States */
@@ -263,6 +311,22 @@
   background-color: #fecaca;
 }
 
+.clear-search {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #e5e7eb;
+  color: #4b5563;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-search:hover {
+  background-color: #d1d5db;
+}
+
 /* Responsive styles */
 @media (max-width: 1024px) {
   .schedule-cards-container {
@@ -279,6 +343,23 @@
   
   .schedule-container {
     padding: 1rem;
+  }
+  
+  .schedule-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .search-wrapper {
+    width: 100%;
+  }
+  
+  .search-container {
+    width: 100%;
+  }
+  
+  .search-input {
+    width: 100%;
   }
 }
 

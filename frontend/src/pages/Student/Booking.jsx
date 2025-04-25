@@ -26,7 +26,6 @@ const Booking = () => {
     fetch('http://localhost:8081/api/instructors')
       .then(res => res.json())
       .then(data => {
-        // Group instructors by grade
         const instructorsMap = {};
         data.forEach(instructor => {
           if (!instructorsMap[instructor.grade]) {
@@ -43,12 +42,9 @@ const Booking = () => {
       });
   }, []);
 
-  const getInstructorByVehicle = (vehicle) => {
+  const getInstructorsByVehicle = (vehicle) => {
     const grade = vehicleToGrade[vehicle];
-    if (instructors[grade] && instructors[grade].length > 0) {
-      return instructors[grade][0]; // Return the first instructor with matching grade
-    }
-    return null;
+    return instructors[grade] || [];
   };
 
   const timeRanges = {
@@ -60,17 +56,18 @@ const Booking = () => {
   const handleVehicleSelect = (vehicle) => {
     if (selectedVehicles.includes(vehicle)) {
       setSelectedVehicles(prev => prev.filter(v => v !== vehicle));
-      const newSlots = { ...selectedSlots };
-      delete newSlots[vehicle];
-      setSelectedSlots(newSlots);
+      setSelectedSlots(prev => {
+        const newSlots = { ...prev };
+        delete newSlots[vehicle];
+        return newSlots;
+      });
       setInstructorForVehicle(prev => {
-        const { [vehicle]: _, ...remaining } = prev;
-        return remaining;
+        const newInstructors = { ...prev };
+        delete newInstructors[vehicle];
+        return newInstructors;
       });
     } else {
-      if (selectedVehicles.length < 3) {
-        setSelectedVehicles(prev => [...prev, vehicle]);
-      }
+      setSelectedVehicles(prev => [...prev, vehicle]);
     }
   };
 
@@ -82,19 +79,10 @@ const Booking = () => {
   };
 
   const handleInstructorSelect = (vehicle, instructorId) => {
-    // If already selected, deselect it
-    if (instructorForVehicle[vehicle] === instructorId) {
-      setInstructorForVehicle(prev => {
-        const { [vehicle]: _, ...remaining } = prev;
-        return remaining;
-      });
-    } else {
-      // Otherwise select it
-      setInstructorForVehicle(prev => ({
-        ...prev,
-        [vehicle]: instructorId
-      }));
-    }
+    setInstructorForVehicle(prev => ({
+      ...prev,
+      [vehicle]: instructorId
+    }));
   };
 
   const isSunday = date.getDay() === 0;
@@ -112,12 +100,20 @@ const Booking = () => {
   };
 
   const handleConfirmBooking = async () => {
-    if (
-      selectedVehicles.length === 0 ||
-      Object.keys(selectedSlots).length !== selectedVehicles.length ||
-      Object.keys(instructorForVehicle).length !== selectedVehicles.length
-    ) {
-      showToast('Please select a vehicle, time slot, and instructor.', 'error');
+    // Validate selections
+    const validationErrors = [];
+    
+    selectedVehicles.forEach(vehicle => {
+      if (!selectedSlots[vehicle]) {
+        validationErrors.push(`Please select a time slot for ${vehicle}`);
+      }
+      if (!instructorForVehicle[vehicle]) {
+        validationErrors.push(`Please select an instructor for ${vehicle}`);
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      showToast(validationErrors.join('\n'), 'error');
       return;
     }
 
@@ -125,14 +121,11 @@ const Booking = () => {
 
     const bookingPayload = {
       date: date.toISOString().split('T')[0],
-      vehicle_slots: selectedVehicles.map(vehicle => {
-        const instructorId = instructorForVehicle[vehicle];
-        return {
-          vehicle,
-          time_slot: selectedSlots[vehicle],
-          instructor_id: instructorId || null
-        };
-      })
+      vehicle_slots: selectedVehicles.map(vehicle => ({
+        vehicle,
+        time_slot: selectedSlots[vehicle],
+        instructor_id: instructorForVehicle[vehicle]
+      }))
     };
 
     try {
@@ -225,24 +218,34 @@ const Booking = () => {
                     {loading ? (
                       <div className="loading-message">Loading instructors...</div>
                     ) : (
-                      vehicles.map((vehicle) => {
-                        const instructor = getInstructorByVehicle(vehicle);
-                        if (!instructor) return null; // Skip if no instructor
-                        
-                        const isSelected = instructorForVehicle[vehicle] === instructor.ins_id;
-                        
-                        return (
-                          <div key={vehicle} className="instructor-section">
-                            <div 
-                              className={`instructor-name ${isSelected ? 'selected' : ''}`}
-                              onClick={() => handleInstructorSelect(vehicle, instructor.ins_id)}
-                            >
-                              <i className={`bi ${isSelected ? 'bi-check-circle-fill' : 'bi-circle'}`}></i> 
-                              {`${instructor.firstName} ${instructor.lastName}`}
-                            </div>
+                      <div className="all-instructors">
+                        {vehicles.map((vehicle) => (
+                          <div key={vehicle} className="vehicle-instructors">
+                            <h4 className="vehicle-title">
+                              {vehicle} Instructors
+                              {selectedVehicles.includes(vehicle) && <span className="selected-label">(Selected)</span>}
+                            </h4>
+                            {getInstructorsByVehicle(vehicle).map((instructor) => (
+                              <div 
+                                key={instructor.ins_id} 
+                                className={`instructor-name ${selectedVehicles.includes(vehicle) && instructorForVehicle[vehicle] === instructor.ins_id ? 'selected' : selectedVehicles.includes(vehicle) ? 'vehicle-active' : ''}`}
+                                onClick={() => {
+                                  if (selectedVehicles.includes(vehicle)) {
+                                    handleInstructorSelect(vehicle, instructor.ins_id);
+                                  } else {
+                                    // First select the vehicle, then the instructor
+                                    handleVehicleSelect(vehicle);
+                                    handleInstructorSelect(vehicle, instructor.ins_id);
+                                  }
+                                }}
+                              >
+                                <i className={`bi ${selectedVehicles.includes(vehicle) && instructorForVehicle[vehicle] === instructor.ins_id ? 'bi-check-circle-fill' : 'bi-circle'}`}></i> 
+                                {`${instructor.firstName} ${instructor.lastName}`}
+                              </div>
+                            ))}
                           </div>
-                        );
-                      })
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -285,8 +288,8 @@ const Booking = () => {
 
               <div className="booking-action">
                 <button
-                  className={`confirm-button ${(selectedVehicles.length >= 1 && Object.keys(selectedSlots).length === selectedVehicles.length && Object.keys(instructorForVehicle).length === selectedVehicles.length) && !isSunday ? 'active' : 'disabled'}`}
-                  disabled={!(selectedVehicles.length >= 1 && Object.keys(selectedSlots).length === selectedVehicles.length && Object.keys(instructorForVehicle).length === selectedVehicles.length) || isSunday}
+                  className={`confirm-button ${selectedVehicles.length > 0 && !isSunday ? 'active' : 'disabled'}`}
+                  disabled={selectedVehicles.length === 0 || isSunday}
                   onClick={handleConfirmBooking}
                 >
                   <i className="bi bi-check-circle"></i>

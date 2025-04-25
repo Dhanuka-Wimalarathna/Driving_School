@@ -222,15 +222,40 @@
 }
 
 /* Updated Instructor Selection Styling */
-.instructor-section {
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  padding-bottom: 1rem;
+.all-instructors {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.instructor-section:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
+.vehicle-instructors {
+  background-color: #fafbfc;
+  border-radius: 12px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.vehicle-instructors:hover {
+  background-color: #f5f7fa;
+}
+
+.vehicle-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selected-label {
+  background-color: rgba(76, 201, 240, 0.1);
+  color: #4cc9f0;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  margin-left: 0.5rem;
 }
 
 .instructor-name {
@@ -244,6 +269,7 @@
   transition: all 0.2s ease;
   font-weight: 500;
   margin-bottom: 0.5rem;
+  background-color: white;
 }
 
 .instructor-name:hover {
@@ -255,6 +281,10 @@
   border-color: #4cc9f0;
   background-color: rgba(76, 201, 240, 0.1);
   color: #4cc9f0;
+}
+
+.instructor-name.vehicle-active {
+  border-color: rgba(76, 201, 240, 0.5);
 }
 
 .instructor-name i {

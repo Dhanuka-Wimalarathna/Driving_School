@@ -27,6 +27,7 @@ const InstructorSignUp = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
+    console.log(`Changing ${e.target.name} to ${e.target.value}`);
     const { name, value } = e.target;
     setFormData({
       ...formData,

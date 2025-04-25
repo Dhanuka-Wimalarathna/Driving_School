@@ -10,6 +10,24 @@ export const insertBooking = (studentId, vehicle, date, timeSlot, instructorId, 
   });
 };
 
+export const checkSlotAvailability = (date, timeSlot, vehicle, instructorId, callback) => {
+  const sql = `
+    SELECT 1 FROM bookings 
+    WHERE date = ? 
+    AND time_slot = ? 
+    AND (vehicle = ? OR instructor_id = ?)
+    LIMIT 1
+  `;
+  
+  sqldb.query(sql, [date, timeSlot, vehicle, instructorId], (err, results) => {
+    if (err) {
+      console.error('Error checking slot availability:', err);
+      return callback(err);
+    }
+    callback(null, results.length === 0);
+  });
+};
+
 export const getScheduleByInstructorId = (instructorId, callback) => {
   const sql = `
     SELECT 
@@ -25,21 +43,11 @@ export const getScheduleByInstructorId = (instructorId, callback) => {
     ORDER BY b.date, b.time_slot
   `;
 
-  console.log('Executing query:', sql.replace(/\s+/g, ' ').trim());
-  console.log('With instructorId:', instructorId);
-
   sqldb.query(sql, [instructorId], (err, results) => {
     if (err) {
-      console.error('Database error:', {
-        code: err.code,
-        errno: err.errno,
-        sqlMessage: err.sqlMessage,
-        sqlState: err.sqlState,
-        sql: err.sql
-      });
+      console.error('Database error:', err);
       return callback(err);
     }
-    console.log(`Found ${results.length} schedule items`);
     callback(null, results);
   });
 };
