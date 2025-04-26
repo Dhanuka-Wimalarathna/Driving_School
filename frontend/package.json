@@ -12,6 +12,7 @@
     "bootstrap": "^5.3.5",
     "bootstrap-icons": "^1.11.3",
     "lucide-react": "^0.503.0",
+    "node-cron": "^3.0.3",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.9",
     "react-calendar": "^5.1.0",

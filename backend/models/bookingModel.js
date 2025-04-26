@@ -36,14 +36,16 @@ export const insertBooking = (student_id, vehicle, date, time_slot, instructor_i
 export const getScheduleByInstructorId = (instructor_id, callback) => {
   const sql = `
     SELECT 
-      booking_id, 
-      student_id, 
-      vehicle, 
-      date, 
-      time_slot 
-    FROM bookings 
-    WHERE instructor_id = ?
-    ORDER BY date, time_slot
+      b.booking_id, 
+      b.date,
+      b.time_slot,
+      b.vehicle,
+      s.STU_ID AS student_id,
+      CONCAT(s.FIRST_NAME, ' ', s.LAST_NAME) AS studentName
+    FROM bookings b
+    JOIN student s ON b.student_id = s.STU_ID
+    WHERE b.instructor_id = ?
+    ORDER BY b.date, b.time_slot
   `;
 
   sqldb.query(sql, [instructor_id], (err, results) => {
@@ -51,3 +53,4 @@ export const getScheduleByInstructorId = (instructor_id, callback) => {
     callback(null, results);
   });
 };
+

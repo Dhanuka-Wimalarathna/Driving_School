@@ -43,21 +43,14 @@ const InstructorSchedule = () => {
 
         const data = await response.json();
 
-        const formattedData = data
-        .map((item) => ({
+        const formattedData = data.map((item) => ({
           id: item.booking_id,
           date: item.date,
-          timeSlot: item.timeSlot || "-",
+          timeSlot: item.time_slot || "-",
           vehicle: item.vehicle || "-",
           studentName: item.studentName || "-",
           status: item.status || "Unknown",
-        }))
-        .sort((a, b) => {
-          const dateA = new Date(`${a.date} ${a.timeSlot}`);
-          const dateB = new Date(`${b.date} ${b.timeSlot}`);
-          return dateA - dateB;
-        });
-      
+        }));
 
         setSchedule(formattedData);
         setFilteredSchedule(formattedData);
@@ -203,15 +196,14 @@ const InstructorSchedule = () => {
                       <div className="info-item">
                         <Calendar size={16} className="info-icon" />
                         <span className="info-label">Date:</span>
-                        <span className="info-value">
-                          {formatDate(lesson.date)}
-                        </span>
+                        <span className="info-value">{formatDate(lesson.date)}</span>
                       </div>
 
                       <div className="info-item">
                         <Clock size={16} className="info-icon" />
                         <span className="info-label">Time:</span>
                         <span className="info-value">{lesson.timeSlot}</span>
+                        {/* <span className="info-value">{lesson.timeSlot || "N/A"}</span> */}
                       </div>
 
                       <div className="info-item">

@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
+// import './cronJobs/cleanupBookings.js'
 
 import sqldb from './config/sqldb.js'; // Import the MySQL connection
 import authRoutes from './routes/authRoutes.js';
