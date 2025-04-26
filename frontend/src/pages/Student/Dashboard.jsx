@@ -249,36 +249,41 @@ const Dashboard = () => {
                   </h2>
                 </div>
                 <div className="card-body">
-                  {bookings.length > 0 ? (
-                    <div className="lessons-list">
-                      {bookings.map((booking) => (
-                        <div key={booking.id} className="lesson-item">
-                          <div className="lesson-info">
-                            <h5 className="lesson-title">{booking.vehicle_type} session</h5>
-                            <p className="lesson-date">
-                              {new Date(booking.date).toLocaleDateString()} — {booking.time}
-                            </p>
-                            {booking.instructor_name && (
-                              <p className="lesson-instructor">Instructor: {booking.instructor_name}</p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="empty-lessons">
-                      <div className="empty-icon">
-                        <i className="bi bi-calendar-x"></i>
-                      </div>
-                      <h3 className="empty-title">No upcoming lessons</h3>
-                      <p className="empty-subtitle">Book your first driving lesson now</p>
-                      <button className="confirm-button active" onClick={handleBookLesson}>
-                        <i className="bi bi-plus-circle"></i>
-                        Book New Lesson
-                      </button>
-                    </div>
-                  )}
-                </div>
+  {bookings.length > 0 ? (
+    <div className="lessons-list">
+      {bookings.map((booking) => (
+        <div key={booking.id} className="lesson-item">
+          <div className="lesson-info">
+            <h5 className="lesson-title">{booking.vehicle_type} session</h5>
+            <p className="lesson-date">
+              {new Date(booking.date).toLocaleDateString()} — {booking.time}
+            </p>
+            {booking.instructor_name && (
+              <p className="lesson-instructor">Instructor: {booking.instructor_name}</p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="empty-lessons">
+      <div className="empty-icon">
+        <i className="bi bi-calendar-x"></i>
+      </div>
+      <h3 className="empty-title">No upcoming lessons</h3>
+      <p className="empty-subtitle">Book your first driving lesson now</p>
+    </div>
+  )}
+
+  {/* Always show this button */}
+  <div className="book-lesson-button">
+    <button className="confirm-button active" onClick={handleBookLesson}>
+      <i className="bi bi-plus-circle"></i>
+      Book New Lesson
+    </button>
+  </div>
+</div>
+
               </div>
             </div>
           </div>

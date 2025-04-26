@@ -6,16 +6,36 @@ dotenv.config();
 // Add a new package along with its vehicles
 export const addPackage = (req, res) => {
     console.log(req.body);
-    const { title, description, price, details, vehicles } = req.body;
+    const { title, description, price, details, bikeSessionAmount, tricycleSessionAmount, vanSessionAmount } = req.body;
 
-    if (!title || !price || !vehicles || vehicles.length === 0) {
-        return res.status(400).json({ message: "Please provide all required fields including vehicles" });
+    // Ensure all required fields are provided
+    if (!title || !price || !details || !bikeSessionAmount || !tricycleSessionAmount || !vanSessionAmount) {
+        return res.status(400).json({ message: "Please provide all required fields including vehicle session amounts." });
+    }
+
+    // Convert price to a decimal
+    const decimalPrice = parseFloat(price);
+    if (isNaN(decimalPrice)) {
+        return res.status(400).json({ message: "Invalid price format" });
+    }
+
+    // Construct the vehicles array
+    const vehicles = [];
+
+    if (bikeSessionAmount) {
+        vehicles.push({ vehicle_id: 1, lesson_count: bikeSessionAmount }); // Assuming '1' is the vehicle_id for bike
+    }
+    if (tricycleSessionAmount) {
+        vehicles.push({ vehicle_id: 2, lesson_count: tricycleSessionAmount }); // Assuming '2' is the vehicle_id for tricycle
+    }
+    if (vanSessionAmount) {
+        vehicles.push({ vehicle_id: 3, lesson_count: vanSessionAmount }); // Assuming '3' is the vehicle_id for van
     }
 
     // Insert the new package into the database
     const packageQuery = 'INSERT INTO packages (title, description, price, details) VALUES (?, ?, ?, ?)';
     
-    sqldb.query(packageQuery, [title, description, price, details], (err, packageResult) => {
+    sqldb.query(packageQuery, [title, description, decimalPrice, details], (err, packageResult) => {
         if (err) {
             console.error("Error adding package:", err);
             return res.status(500).json({ message: "Internal server error" });

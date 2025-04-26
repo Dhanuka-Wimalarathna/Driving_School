@@ -367,6 +367,10 @@
 /* Confirm Button */
 .booking-action {
   margin-top: 2rem;
+  min-height: 80px; /* ✅ Ensures the container doesn't collapse */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .confirm-button {
@@ -382,24 +386,31 @@
   gap: 0.75rem;
   transition: all 0.3s ease;
   cursor: pointer;
+  min-height: 50px; /* ✅ Ensures button height stays */
+  background: linear-gradient(135deg, #4cc9f0 0%, #3a86ff 100%);
+  color: white;
+  box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
+  opacity: 1;
 }
 
-.confirm-button.active {
+.confirm-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(76, 201, 240, 0.4);
+}
+
+/* .confirm-button.active {
   background: linear-gradient(135deg, #4cc9f0 0%, #3a86ff 100%);
   color: white;
   box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
 }
 
-.confirm-button.active:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(76, 201, 240, 0.4);
-}
-
 .confirm-button.disabled {
-  background-color: #e9ecef;
-  color: #6c757d;
+  background-color: #f8f9fa; 
+  color: #adb5bd; 
+  border: 1px solid #ced4da;
   cursor: not-allowed;
-}
+  opacity: 1;
+} */
 
 /* Toast Notification Styles */
 .toast-notification {

@@ -288,7 +288,7 @@ const Booking = () => {
 
               <div className="booking-action">
                 <button
-                  className={`confirm-button ${selectedVehicles.length > 0 && !isSunday ? 'active' : 'disabled'}`}
+                  className={`confirm-button`}
                   disabled={selectedVehicles.length === 0 || isSunday}
                   onClick={handleConfirmBooking}
                 >
