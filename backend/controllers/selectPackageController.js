@@ -34,3 +34,30 @@ export const selectPackage = (req, res) => {
     });
   });
 };
+
+// controllers/selectPackageController.js
+
+export const getSelectedPackage = (req, res) => {
+  const studentId = req.userId;
+
+  const query = `
+  SELECT p.title AS packageName, p.price
+  FROM selected_packages sp
+  JOIN packages p ON sp.package_id = p.package_id
+  WHERE sp.student_id = ?
+`;
+
+  sqldb.query(query, [studentId], (err, results) => {
+    if (err) {
+      console.error('Error fetching selected package:', err);
+      return res.status(500).json({ message: 'Error fetching selected package' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'No package selected' });
+    }
+
+    return res.status(200).json(results[0]);
+  });
+};
+

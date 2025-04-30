@@ -1,11 +1,14 @@
 import express from 'express';
-import { selectPackage } from '../controllers/selectPackageController.js';
+import { selectPackage, getSelectedPackage } from '../controllers/selectPackageController.js';
 import authenticateToken from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// router.post('/select-package', selectPackage);
-
 router.post('/select-package', authenticateToken, selectPackage);
+router.get('/select-package/get-selected-package', authenticateToken, getSelectedPackage);
 
 export default router;
+
+
+
+// router.post('/select-package', selectPackage);

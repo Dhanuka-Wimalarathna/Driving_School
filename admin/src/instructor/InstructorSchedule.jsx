@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  Calendar,
-  Clock,
-  Car,
-  User,
-  AlertCircle,
-  Search,
-} from "lucide-react";
+import { Calendar, Clock, Car, User, AlertCircle, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import "./InstructorSchedule.css";
 import InstructorSidebar from "../components/Sidebar/InstructorSidebar";
 
@@ -16,6 +10,7 @@ const InstructorSchedule = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
   const instructorId = localStorage.getItem("instructorId");
 
   useEffect(() => {
@@ -91,25 +86,9 @@ const InstructorSchedule = () => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const handleCompleteSession = async (lesson) => {
-    try {
-      const res = await fetch(
-        `http://localhost:8081/api/bookings/session/${lesson.id}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!res.ok) throw new Error("Failed to delete session");
-
-      setSchedule((prev) => prev.filter((l) => l.id !== lesson.id));
-      setFilteredSchedule((prev) =>
-        prev.filter((l) => l.id !== lesson.id)
-      );
-    } catch (err) {
-      console.error("Error deleting session:", err);
-    }
-  };
+  const handleCompleteSession = (lesson) => {
+    navigate(`/instructor/mark-progress/${lesson.id}`, { state: { lesson } });
+  };  
 
   return (
     <div className="dashboard-layout">
@@ -203,7 +182,6 @@ const InstructorSchedule = () => {
                         <Clock size={16} className="info-icon" />
                         <span className="info-label">Time:</span>
                         <span className="info-value">{lesson.timeSlot}</span>
-                        {/* <span className="info-value">{lesson.timeSlot || "N/A"}</span> */}
                       </div>
 
                       <div className="info-item">
@@ -218,7 +196,7 @@ const InstructorSchedule = () => {
                         <span className="info-value">{lesson.vehicle}</span>
                       </div>
                     </div>
-                    
+
                     <div className="session-actions">
                       <button
                         onClick={() => handleCompleteSession(lesson)}
