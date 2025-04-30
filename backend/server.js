@@ -16,6 +16,8 @@ import dashboardRoutes from './routes/dashboardRoutes.js'; // Assuming dashboard
 import selectPackageRoutes from './routes/selectPackageRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js'; // Assuming notification routes are in notificationRoutes
 import bookingRoutes from './routes/bookingRoutes.js'; // Assuming booking routes are in bookingRoutes
+import progressRoutes from './routes/progressRoutes.js'; // Assuming progress routes are in progressRoutes
+import sessionRoutes from './routes/sessionRoutes.js'; // Assuming session routes are in sessionRoutes
 
 dotenv.config(); // Load environment variables
 
@@ -53,6 +55,8 @@ app.use('/api/dashboard', dashboardRoutes); // Assuming dashboard routes are in 
 app.use('/api', selectPackageRoutes);
 app.use('/api/notifications', notificationRoutes); // Assuming notification routes are in notificationRoutes
 app.use('/api/booking', bookingRoutes); // Assuming booking routes are in bookingRoutes
+app.use('/api/progress', progressRoutes); // Assuming progress routes are in progressRoutes
+app.use('/api', sessionRoutes);
 
 // In your server.js, right before the 404 handler:
 app.use((req, res, next) => {

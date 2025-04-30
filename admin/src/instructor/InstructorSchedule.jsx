@@ -44,7 +44,7 @@ const InstructorSchedule = () => {
           timeSlot: item.time_slot || "-",
           vehicle: item.vehicle || "-",
           studentName: item.studentName || "-",
-          status: item.status || "Unknown",
+          status: item.status || "Scheduled ",
         }));
 
         setSchedule(formattedData);
@@ -86,8 +86,49 @@ const InstructorSchedule = () => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const handleCompleteSession = (lesson) => {
-    navigate(`/instructor/mark-progress/${lesson.id}`, { state: { lesson } });
+  const handleCompleteSession = async (lesson) => {
+    try {
+      const response = await fetch("http://localhost:8081/api/progress/mark-completed", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          bookingId: lesson.id,
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to mark session as completed.");
+      }
+  
+      const result = await response.json();
+  
+      // ✅ SUCCESS TOAST
+      const toast = document.createElement("div");
+      toast.className = "toast-notification success";
+      toast.innerHTML = `<span class="toast-icon">✅</span> ${result.message}`;
+      document.body.appendChild(toast);
+      setTimeout(() => document.body.removeChild(toast), 3000);
+  
+      // Update status in state
+      setSchedule(prev =>
+        prev.map(item => item.id === lesson.id ? { ...item, status: "completed" } : item)
+      );
+      setFilteredSchedule(prev =>
+        prev.map(item => item.id === lesson.id ? { ...item, status: "completed" } : item)
+      );
+    } catch (error) {
+      console.error("Error marking session as completed:", error);
+  
+      // ❌ ERROR TOAST
+      const toast = document.createElement("div");
+      toast.className = "toast-notification error";
+      toast.innerHTML = `<span class="toast-icon">❌</span> ${error.message}`;
+      document.body.appendChild(toast);
+      setTimeout(() => document.body.removeChild(toast), 3000);
+    }
   };  
 
   return (
@@ -158,13 +199,11 @@ const InstructorSchedule = () => {
               {filteredSchedule.map((lesson) => (
                 <div
                   key={lesson.id}
-                  className={`schedule-card status-${lesson.status.toLowerCase()}`}
-                >
+                  className={`schedule-card status-${lesson.status.toLowerCase()}`}>
                   <div className="card-header">
                     <div className="lesson-status">
                       <span
-                        className={`status-badge ${lesson.status.toLowerCase()}`}
-                      >
+                        className={`status-badge ${lesson.status.toLowerCase()}`}>
                         {lesson.status}
                       </span>
                     </div>
@@ -204,9 +243,9 @@ const InstructorSchedule = () => {
                       >
                         Session Completed
                       </button>
-                      <button className="btn-incomplete">
+                      {/* <button className="btn-incomplete">
                         Session Not Completed
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 </div>

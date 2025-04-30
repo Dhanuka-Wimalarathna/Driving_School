@@ -2,12 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import InstructorSidebar from "../components/Sidebar/InstructorSidebar";
 import { useNavigate } from "react-router-dom";
-import { 
-  Search,
-  Eye,
-  AlertCircle,
-  User 
-} from "lucide-react";
+import { Search, Eye, AlertCircle, User } from "lucide-react";
 import "./InstructorStudents.css";
 
 const InstructorStudents = () => {
