@@ -26,15 +26,6 @@ const InstructorSidebar = () => {
           </NavLink>
 
           <NavLink
-            to="/instructor/lessons"
-            end
-            className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
-          >
-            <i className="bi bi-calendar-check"></i>
-            <span>Lessons</span>
-          </NavLink>
-
-          <NavLink
             to="/instructor/schedule"
             end
             className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}

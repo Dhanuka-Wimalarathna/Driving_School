@@ -298,3 +298,153 @@
     gap: 1rem;
   }
 }
+
+/* Vehicle Progress Cards */
+.vehicle-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.vehicle-card:hover {
+  transform: translateY(-2px);
+}
+
+.card-header {
+  padding: 1.25rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.card-title i {
+  font-size: 1.5rem;
+  color: #3498db;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Progress Bar Styles */
+.progress-bar-container {
+  margin: 1.5rem 0;
+}
+
+.progress-bar-background {
+  height: 25px;
+  background: #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  padding-left: 1rem;
+}
+
+.progress-percentage {
+  color: white;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Session Metrics */
+.session-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.metric-box {
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.metric-box.completed {
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+}
+
+.metric-box.remaining {
+  background: #ffebee;
+  border: 1px solid #ffcdd2;
+}
+
+.metric-box.total {
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+}
+
+.metric-label {
+  display: block;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.metric-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* Progress Status */
+.progress-status {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.status-complete {
+  color: #388e3c;
+  background: #e8f5e9;
+  padding: 0.5rem;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-in-progress {
+  color: #1976d2;
+  background: #e3f2fd;
+  padding: 0.5rem;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .session-metrics {
+    grid-template-columns: 1fr;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .metric-value {
+    font-size: 1.1rem;
+  }
+}

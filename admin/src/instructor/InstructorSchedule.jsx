@@ -25,6 +25,7 @@ const InstructorSchedule = () => {
       setError(null);
 
       try {
+        console.log("Fetching schedule for instructor:", instructorId);
         const response = await fetch(
           `http://localhost:8081/api/booking/schedule/${instructorId}`
         );
@@ -37,16 +38,23 @@ const InstructorSchedule = () => {
         }
 
         const data = await response.json();
+        console.log("Raw data from API:", data);
+        
+        const formattedData = data.map((item) => {
+          // Log date for debugging
+          console.log(`Processing date: ${item.date}`);
+          
+          return {
+            id: item.booking_id,
+            date: item.date, // Keep as string
+            timeSlot: item.time_slot || "-",
+            vehicle: item.vehicle || "-",
+            studentName: item.studentName || "-",
+            status: (item.status || "Scheduled").toLowerCase(),
+          };
+        });
 
-        const formattedData = data.map((item) => ({
-          id: item.booking_id,
-          date: item.date,
-          timeSlot: item.time_slot || "-",
-          vehicle: item.vehicle || "-",
-          studentName: item.studentName || "-",
-          status: item.status || "Scheduled ",
-        }));
-
+        console.log("Formatted data:", formattedData);
         setSchedule(formattedData);
         setFilteredSchedule(formattedData);
       } catch (error) {
@@ -81,9 +89,38 @@ const InstructorSchedule = () => {
     setSearchQuery(e.target.value);
   };
 
+  // Improved formatDate function with explicit parsing
   const formatDate = (dateString) => {
-    const options = { year: "numeric", month: "long", day: "numeric" };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    if (!dateString) return "Invalid Date";
+    
+    try {
+      // First try direct parsing with explicit year-month-day components
+      const parts = dateString.split('-');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // JS months are 0-indexed
+        const day = parseInt(parts[2], 10);
+        
+        if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+          const date = new Date(year, month, day);
+          const options = { year: "numeric", month: "long", day: "numeric" };
+          return date.toLocaleDateString(undefined, options);
+        }
+      }
+      
+      // Fallback to standard parsing
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        console.warn("Invalid date:", dateString);
+        return dateString; // Return original string if parsing fails
+      }
+      
+      const options = { year: "numeric", month: "long", day: "numeric" };
+      return date.toLocaleDateString(undefined, options);
+    } catch (e) {
+      console.error("Error formatting date:", e);
+      return dateString; // Return original on error
+    }
   };
 
   const handleCompleteSession = async (lesson) => {
@@ -112,7 +149,7 @@ const InstructorSchedule = () => {
       document.body.appendChild(toast);
       setTimeout(() => document.body.removeChild(toast), 3000);
   
-      // Update status in state
+      // Update status in state - ensure it's lowercase for consistency
       setSchedule(prev =>
         prev.map(item => item.id === lesson.id ? { ...item, status: "completed" } : item)
       );
@@ -130,6 +167,11 @@ const InstructorSchedule = () => {
       setTimeout(() => document.body.removeChild(toast), 3000);
     }
   };  
+
+  // Helper to properly capitalize status for display
+  const formatStatus = (status) => {
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
 
   return (
     <div className="dashboard-layout">
@@ -204,7 +246,7 @@ const InstructorSchedule = () => {
                     <div className="lesson-status">
                       <span
                         className={`status-badge ${lesson.status.toLowerCase()}`}>
-                        {lesson.status}
+                        {formatStatus(lesson.status)}
                       </span>
                     </div>
                   </div>
@@ -237,15 +279,19 @@ const InstructorSchedule = () => {
                     </div>
 
                     <div className="session-actions">
-                      <button
-                        onClick={() => handleCompleteSession(lesson)}
-                        className="btn-complete"
-                      >
-                        Session Completed
-                      </button>
-                      {/* <button className="btn-incomplete">
-                        Session Not Completed
-                      </button> */}
+                      {lesson.status !== "completed" && (
+                        <button
+                          onClick={() => handleCompleteSession(lesson)}
+                          className="btn-complete"
+                        >
+                          Session Completed
+                        </button>
+                      )}
+                      {lesson.status === "completed" && (
+                        <div className="completed-message">
+                          <span>✅ Session marked as completed</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

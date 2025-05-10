@@ -18,6 +18,7 @@ import notificationRoutes from './routes/notificationRoutes.js'; // Assuming not
 import bookingRoutes from './routes/bookingRoutes.js'; // Assuming booking routes are in bookingRoutes
 import progressRoutes from './routes/progressRoutes.js'; // Assuming progress routes are in progressRoutes
 import sessionRoutes from './routes/sessionRoutes.js'; // Assuming session routes are in sessionRoutes
+import paymentRoutes from './routes/paymentRoutes.js'; // Assuming payment routes are in paymentRoutes
 
 dotenv.config(); // Load environment variables
 
@@ -56,7 +57,8 @@ app.use('/api', selectPackageRoutes);
 app.use('/api/notifications', notificationRoutes); // Assuming notification routes are in notificationRoutes
 app.use('/api/booking', bookingRoutes); // Assuming booking routes are in bookingRoutes
 app.use('/api/progress', progressRoutes); // Assuming progress routes are in progressRoutes
-app.use('/api', sessionRoutes);
+app.use('/api/session', sessionRoutes);
+app.use('/api/student', paymentRoutes);
 
 // In your server.js, right before the 404 handler:
 app.use((req, res, next) => {

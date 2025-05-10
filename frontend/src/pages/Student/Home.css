@@ -661,46 +661,6 @@
   }
 }
 
-/* Dark Mode */
-@media (prefers-color-scheme: dark) {
-  .features-section,
-  .testimonials-section {
-    background-color: #343a40;
-    color: #f8f9fa;
-  }
-  
-  .feature-card,
-  .service-card,
-  .testimonial-card {
-    background: #212529;
-    color: #f8f9fa;
-  }
-  
-  .contact-info {
-    background: #212529;
-    color: #f8f9fa;
-  }
-  
-  .contact-form-container {
-    background: #343a40;
-    color: #f8f9fa;
-  }
-  
-  .form-control {
-    background-color: #495057;
-    border-color: #6c757d;
-    color: #f8f9fa;
-  }
-  
-  .form-control::placeholder {
-    color: rgba(248, 249, 250, 0.6);
-  }
-  
-  .testimonial-avatar {
-    border-color: #212529;
-  }
-}
-
 /* Additional Helper Classes */
 .text-gradient {
   background: linear-gradient(45deg, #0062cc, #007bff);

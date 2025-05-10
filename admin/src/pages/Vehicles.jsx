@@ -163,79 +163,79 @@ const Vehicles = () => {
               <button className="retry-btn" onClick={fetchVehicles}>Retry</button>
             </div>
           ) : (
-            <div className="vehicles-table-container">
-              <table className="vehicles-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Vehicle</th>
-                    <th>Plate Number</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredVehicles.length > 0 ? (
-                    filteredVehicles.map((vehicle) => (
-                      <tr key={vehicle.id}>
-                        <td className="vehicle-id">{vehicle.id}</td>
-                        <td className="vehicle-name">
-                          <div className="name-cell">
-                            <div className="avatar">{vehicle.name.charAt(0)}{vehicle.model?.charAt(0) || 'V'}</div>
-                            <div className="name-text">
-                              <div>{vehicle.name}</div>
-                              {vehicle.model && <div className="model-text">{vehicle.model}</div>}
-                            </div>
+            <>
+              {filteredVehicles.length > 0 ? (
+                <div className="vehicle-cards-container">
+                  {filteredVehicles.map((vehicle) => (
+                    <div key={vehicle.id} className="vehicle-card">
+                      <div className="vehicle-image">
+                        {vehicle.image_url ? (
+                          <img src={vehicle.image_url} alt={vehicle.name} />
+                        ) : (
+                          <div className="vehicle-avatar">
+                            {vehicle.name.charAt(0)}{vehicle.model?.charAt(0) || 'V'}
                           </div>
-                        </td>
-                        <td className="vehicle-plate">{vehicle.plate_number}</td>
-                        <td className="vehicle-type">{vehicle.type}</td>
-                        <td>
+                        )}
+                      </div>
+                      <div className="vehicle-details">
+                        <h3 className="vehicle-name">{vehicle.name}</h3>
+                        {vehicle.model && <p className="vehicle-model">{vehicle.model}</p>}
+                        <div className="vehicle-info">
+                          <span className="info-label">ID:</span>
+                          <span className="info-value">{vehicle.id}</span>
+                        </div>
+                        <div className="vehicle-info">
+                          <span className="info-label">Plate:</span>
+                          <span className="info-value">{vehicle.plate_number}</span>
+                        </div>
+                        <div className="vehicle-info">
+                          <span className="info-label">Type:</span>
+                          <span className="info-value">{vehicle.type}</span>
+                        </div>
+                        <div className="vehicle-status">
                           <span className={`status-badge ${vehicle.status.toLowerCase().replace(/\s+/g, '-')}`}>
                             {vehicle.status}
                           </span>
-                        </td>
-                        <td>
-                          <div className="table-actions">
-                            <button
-                              className="view-btn"
-                              onClick={() => handleViewClick(vehicle)}
-                              title="View vehicle details"
-                            >
-                              <Eye size={16} />
-                              <span>View</span>
-                            </button>
-                            <button
-                              className="delete-btn"
-                              onClick={() => deleteVehicle(vehicle.id)}
-                              title="Delete vehicle"
-                            >
-                              <Trash2 size={16} />
-                              <span>Delete</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6" className="no-results">
-                        <div className="no-data">
-                          <Search size={32} />
-                          <p>No vehicles found matching your search</p>
-                          {searchQuery && (
-                            <button className="clear-search" onClick={() => setSearchQuery("")}>
-                              Clear search
-                            </button>
-                          )}
                         </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                        <div className="vehicle-card-actions">
+                          <button 
+                            className="view-details-btn"
+                            onClick={() => handleViewClick(vehicle)}
+                          >
+                            <Eye size={16} />
+                            <span>View Details</span>
+                          </button>
+                          <button 
+                            className="delete-vehicle-btn"
+                            onClick={() => deleteVehicle(vehicle.id)}
+                          >
+                            <Trash2 size={16} />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="no-vehicles-container">
+                  <div className="no-data">
+                    <Car size={64} />
+                    <h3>No Vehicles Found</h3>
+                    <p>
+                      {searchQuery
+                        ? "No vehicles matching your search criteria"
+                        : "No vehicles in the database yet"}
+                    </p>
+                    {searchQuery && (
+                      <button className="clear-search" onClick={() => setSearchQuery("")}>
+                        Clear search
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>

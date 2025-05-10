@@ -41,7 +41,10 @@ export const getSelectedPackage = (req, res) => {
   const studentId = req.userId;
 
   const query = `
-  SELECT p.title AS packageName, p.price
+  SELECT 
+    p.package_id,
+    p.title AS packageName, 
+    p.price
   FROM selected_packages sp
   JOIN packages p ON sp.package_id = p.package_id
   WHERE sp.student_id = ?

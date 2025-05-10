@@ -9,34 +9,68 @@ const Payments = () => {
   const { user } = useAuth();
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [alreadyPaid, setAlreadyPaid] = useState(0);
+  const [remainingAmount, setRemainingAmount] = useState(0);
+  const [paymentError, setPaymentError] = useState('');
   
-  // localStorage.setItem('token', response.token);
+  const fetchData = () => {
+    setIsLoading(true);
+    
+    // Fetch both endpoints in parallel
+    Promise.all([
+      fetch('http://localhost:8081/api/select-package/get-selected-package', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
+      }).then(res => res.json()),
+      fetch('http://localhost:8081/api/student/payments', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
+      }).then(res => res.json())
+    ])
+    .then(([packageData, payments]) => {
+      if (!packageData.message) {
+        setSelectedPackage(packageData);
+        
+        // Filter only successful payments and parse amounts
+        const successfulPayments = payments
+          .filter(p => p.status.toLowerCase() === 'paid')
+          .map(p => ({
+            ...p,
+            amount: parseFloat(p.amount)
+          }));
+        
+        setPaymentHistory(successfulPayments);
+        
+        // Calculate total paid amount
+        const paidTotal = successfulPayments.reduce((sum, p) => sum + p.amount, 0);
+        setAlreadyPaid(paidTotal);
+        
+        // Calculate remaining amount
+        const packagePrice = parseFloat(packageData.price);
+        const remaining = packagePrice - paidTotal;
+        setRemainingAmount(Math.max(0, remaining));
+      }
+      setIsLoading(false);
+    })
+    .catch(err => {
+      console.error('Error fetching data:', err);
+      setIsLoading(false);
+    });
+  };
 
   useEffect(() => {
-    // Fetch selected package
-    fetch('http://localhost:8081/api/select-package/get-selected-package', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('authToken')}`
-      }
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (!data.message) { // If no error message
-        setSelectedPackage(data);
-      }
-    })
-    .catch(err => console.error('Error fetching selected package:', err));
-
-    // Fetch payment history (dummy for now, you can replace with real API)
-    fetch('http://localhost:8081/api/student/payments', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('authToken')}`
-      }
-    })
-    .then(res => res.json())
-    .then(data => setPaymentHistory(data))
-    .catch(err => console.error('Error fetching payment history:', err));
+    fetchData();
   }, []);
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-LK', {
+      style: 'currency',
+      currency: 'LKR',
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 2
+    }).format(amount);
+  };
 
   const getStatusClass = (status) => {
     switch(status.toLowerCase()) {
@@ -57,8 +91,100 @@ const Payments = () => {
   };
 
   const handlePaymentClick = () => {
-    console.log('Redirecting to payment page...');
-    // You can navigate to a payment page here or trigger a payment modal
+    if (selectedPackage && remainingAmount > 0) {
+      setShowPaymentModal(true);
+    }
+  };
+
+  const handlePaymentChange = (e) => {
+    const value = e.target.value;
+    setPaymentAmount(value);
+    setPaymentError('');
+  };
+
+  const validatePayment = () => {
+    const amount = parseFloat(paymentAmount);
+    if (isNaN(amount)) {
+      setPaymentError('Please enter a valid number');
+      return false;
+    }
+    if (amount <= 0) {
+      setPaymentError('Amount must be greater than 0');
+      return false;
+    }
+    if (amount > remainingAmount) {
+      setPaymentError(`Amount cannot exceed remaining balance (${formatCurrency(remainingAmount)})`);
+      return false;
+    }
+    return true;
+  };
+
+  const generateTransactionId = () => {
+    return `txn_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!validatePayment()) return;
+
+    try {
+      const amount = parseFloat(paymentAmount);
+      
+      // Optimistic update
+      const newPayment = {
+        id: Date.now(), // temporary ID
+        amount,
+        date: new Date().toISOString(),
+        status: 'paid'
+      };
+
+      const newPaidTotal = alreadyPaid + amount;
+      const newRemaining = Math.max(0, parseFloat(selectedPackage.price) - newPaidTotal);
+
+      setAlreadyPaid(newPaidTotal);
+      setRemainingAmount(newRemaining);
+      setPaymentHistory([...paymentHistory, newPayment]);
+
+      const response = await fetch(
+        'http://localhost:8081/api/student/payments/make-payment',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`
+          },
+          body: JSON.stringify({
+            amount,
+            packageId: selectedPackage.package_id,
+            transactionId: generateTransactionId()
+          })
+        }
+      );
+
+      if (!response.ok) throw new Error('Payment failed');
+
+      // Final data refresh
+      setPaymentAmount('');
+      setShowPaymentModal(false);
+      fetchData();
+      
+      alert(`Payment of ${formatCurrency(amount)} successful!`);
+    } catch (err) {
+      console.error('Payment error:', err);
+      setPaymentError('Payment failed. Please try again.');
+      // Rollback optimistic update
+      fetchData();
+    }
+  };
+
+  const closePaymentModal = () => {
+    setShowPaymentModal(false);
+    setPaymentAmount('');
+    setPaymentError('');
+  };
+
+  const calculatePaymentPercentage = () => {
+    if (!selectedPackage || parseFloat(selectedPackage.price) <= 0) return 0;
+    return Math.min(100, (alreadyPaid / parseFloat(selectedPackage.price)) * 100);
   };
 
   return (
@@ -84,18 +210,50 @@ const Payments = () => {
             </div>
 
             {/* Selected Package */}
-            {selectedPackage ? (
+            {isLoading ? (
               <div className="selected-package">
+                <div className="loading-spinner"></div>
+                <p>Loading your package information...</p>
+              </div>
+            ) : selectedPackage ? (
+              <div className="selected-package">
+                <div className="package-badge">
+                  {remainingAmount <= 0 ? 'Fully Paid' : 'Active'}
+                </div>
                 <h2>Your Selected Package</h2>
                 <p className="package-name">{selectedPackage.packageName}</p>
-                <p className="package-price">Rs.{selectedPackage.price}</p>
-                <button className="make-payment-btn" onClick={handlePaymentClick}>
-                  Make Payment
-                </button>
+                <p className="package-price">{formatCurrency(selectedPackage.price)}</p>
+                <div className="payment-progress">
+                  <div className="progress-details">
+                    <span>Paid: {formatCurrency(alreadyPaid)}</span>
+                    <span>Remaining: {formatCurrency(remainingAmount)}</span>
+                  </div>
+                  <div className="progress-bar">
+                    <div 
+                      className="progress-fill" 
+                      style={{ 
+                        width: `${calculatePaymentPercentage()}%`,
+                        backgroundColor: remainingAmount <= 0 ? '#10b759' : '#3a86ff'
+                      }}
+                    ></div>
+                  </div>
+                </div>
+                {remainingAmount > 0 && (
+                  <button 
+                    className="make-payment-btn" 
+                    onClick={handlePaymentClick}
+                  >
+                    Make Payment
+                  </button>
+                )}
               </div>
             ) : (
               <div className="selected-package">
-                <p>You have not selected any package yet.</p>
+                <h2>No Package Selected</h2>
+                <p>You have not selected any package yet. Select a package to begin your learning journey.</p>
+                <button className="make-payment-btn" onClick={() => window.location.href = '/select-package'}>
+                  Browse Packages
+                </button>
               </div>
             )}
 
@@ -120,10 +278,10 @@ const Payments = () => {
                       paymentHistory.map((payment) => (
                         <tr key={payment.id}>
                           <td>{formatDate(payment.date)}</td>
-                          <td className="amount-cell">${payment.amount}</td>
+                          <td className="amount-cell">{formatCurrency(payment.amount)}</td>
                           <td>
                             <span className={`status-badge ${getStatusClass(payment.status)}`}>
-                              {payment.status}
+                              {payment.status.charAt(0).toUpperCase() + payment.status.slice(1).toLowerCase()}
                             </span>
                           </td>
                         </tr>
@@ -140,6 +298,67 @@ const Payments = () => {
           </div>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className="payment-modal-overlay">
+          <div className="payment-modal">
+            <div className="payment-modal-header">
+              <h3>Make a Payment</h3>
+              <button className="modal-close-btn" onClick={closePaymentModal}>×</button>
+            </div>
+            
+            <div className="payment-modal-body">
+              <div className="payment-summary">
+                <div className="summary-item">
+                  <span>Package:</span>
+                  <span>{selectedPackage.packageName}</span>
+                </div>
+                <div className="summary-item">
+                  <span>Total Price:</span>
+                  <span>{formatCurrency(selectedPackage.price)}</span>
+                </div>
+                <div className="summary-item">
+                  <span>Already Paid:</span>
+                  <span>{formatCurrency(alreadyPaid)}</span>
+                </div>
+                <div className="summary-item highlight">
+                  <span>Remaining Balance:</span>
+                  <span>{formatCurrency(remainingAmount)}</span>
+                </div>
+              </div>
+
+              <div className="payment-form">
+                <div className="form-group">
+                  <label>Enter Payment Amount</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max={remainingAmount}
+                    step="1"
+                    value={paymentAmount}
+                    onChange={handlePaymentChange}
+                    placeholder={`Enter amount (max ${formatCurrency(remainingAmount)})`}
+                  />
+                </div>
+                
+                {paymentError && <div className="error-message">{paymentError}</div>}
+              </div>
+            </div>
+            
+            <div className="payment-modal-footer">
+              <button className="cancel-btn" onClick={closePaymentModal}>Cancel</button>
+              <button 
+                className="confirm-btn" 
+                onClick={handleConfirmPayment}
+                disabled={!paymentAmount || parseFloat(paymentAmount) <= 0 || parseFloat(paymentAmount) > remainingAmount}
+              >
+                Pay {paymentAmount ? formatCurrency(paymentAmount) : formatCurrency(0)}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

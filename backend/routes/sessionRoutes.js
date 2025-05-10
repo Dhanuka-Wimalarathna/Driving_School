@@ -1,6 +1,12 @@
 import express from 'express';
-import { getStudentProgress } from '../controllers/sessionController.js';
+import {
+  getStudentProgressDetails,
+  markSessionCompletedCtrl
+} from '../controllers/sessionController.js';
 
 const router = express.Router();
-router.get('/student-progress/:id', getStudentProgress);
+
+router.post('/mark-completed', markSessionCompletedCtrl);
+router.get('/progress/:studentId', getStudentProgressDetails);
+
 export default router;

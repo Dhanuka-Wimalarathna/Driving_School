@@ -10,13 +10,10 @@ const Package = () => {
   const [error, setError] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
   const [selectedPackageId, setSelectedPackageId] = useState(null);
-  
-  // Add states for popup
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
-  const [popupType, setPopupType] = useState("success"); // success or error
-  
-  // Fetch packages when the component is loaded
+  const [popupType, setPopupType] = useState("success");
+
   useEffect(() => {
     const fetchPackages = async () => {
       try {
@@ -28,18 +25,17 @@ const Package = () => {
         setLoading(false);
       }
     };
-    fetchPackages();
 
     const fetchSelectedPackage = async () => {
       try {
         const token = localStorage.getItem("authToken");
-        if (!token) return; 
+        if (!token) return;
         const response = await axios.get("http://localhost:8081/api/selected-package", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-    
+
         if (response.data.packageId) {
           setSelectedPackageId(response.data.packageId);
         }
@@ -47,36 +43,32 @@ const Package = () => {
         console.error("Error fetching selected package:", err);
       }
     };
-    
+
+    fetchPackages();
     fetchSelectedPackage();
-    
   }, []);
 
-  // Toggle expanded package
   const toggleExpand = (id) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  // Handle close popup
   const handleClosePopup = () => {
     setShowPopup(false);
   };
 
-  // Handle select package
   const handleSelectPackage = async (e, packageId) => {
     e.stopPropagation();
-  
     const token = localStorage.getItem("authToken");
-  
+
     if (!token) {
-      setPopupMessage("Student not logged in.");
+      setPopupMessage("Please login to select a package.");
       setPopupType("error");
       setShowPopup(true);
       return;
     }
-  
+
     try {
-      const response = await axios.post(
+      await axios.post(
         "http://localhost:8081/api/select-package",
         { packageId },
         {
@@ -85,21 +77,24 @@ const Package = () => {
           },
         }
       );
-  
+
       setPopupMessage("Package selected successfully!");
       setPopupType("success");
       setShowPopup(true);
       setSelectedPackageId(packageId);
-      console.log(response.data);
     } catch (error) {
-      console.error("Error selecting package:", error.response?.data || error.message);
-      const errorMessage = error.response?.data?.message || "Failed to select package. Please try again.";
-      setPopupMessage(errorMessage);
+      console.error("Error selecting package:", error);
+      setPopupMessage(error.response?.data?.message || "Failed to select package. Please try again.");
       setPopupType("error");
       setShowPopup(true);
     }
   };
-  
+
+  const getVehicleSessions = (pkg, vehicleId) => {
+    const vehicle = pkg.vehicles?.find(v => v.vehicle_id === vehicleId);
+    return vehicle ? vehicle.lesson_count : 0;
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -113,12 +108,10 @@ const Package = () => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-layout">
-        {/* Sidebar */}
         <div className="sidebar-wrapper">
           <Sidebar />
         </div>
 
-        {/* Main Content */}
         <div className="dashboard-content">
           <div className="dashboard-wrapper">
             <div className="dashboard-header">
@@ -149,7 +142,6 @@ const Package = () => {
               </div>
             )}
 
-            {/* Popup Message */}
             {showPopup && (
               <div className="popup-overlay">
                 <div className={`popup-container ${popupType}`}>
@@ -170,14 +162,14 @@ const Package = () => {
 
             <div className="packages-grid">
               {packages.map((pkg) => (
-                <div key={pkg.id} className="dashboard-card package-card">
-                  <div className="package-top">
+                <div key={pkg.id} className={`dashboard-card package-card ${expandedId === pkg.id ? "expanded" : ""}`}>
+                  <div className="package-top" onClick={() => toggleExpand(pkg.id)}>
                     <div className="card-header">
                       <h2 className="card-title">
                         <i className="bi bi-box-seam"></i>
                         {pkg.title}
                       </h2>
-                      <div className="price-badge">Rs.{pkg.price}</div>
+                      <div className="price-badge">Rs. {pkg.price}</div>
                     </div>
 
                     <div className="card-body">
@@ -185,10 +177,7 @@ const Package = () => {
                         {pkg.description.substring(0, 80)}...
                       </div>
                       
-                      <div 
-                        className="view-details-button"
-                        onClick={() => toggleExpand(pkg.id)}
-                      >
+                      <div className="view-details-button">
                         <span>{expandedId === pkg.id ? "View less" : "View details"}</span>
                         <i className={`bi ${expandedId === pkg.id ? 'bi-chevron-up' : 'bi-chevron-down'}`}></i>
                       </div>
@@ -197,48 +186,77 @@ const Package = () => {
 
                   <div className={`package-details ${expandedId === pkg.id ? 'open' : ''}`}>
                     <div className="details-content">
-                      <p className="description">{pkg.description}</p>
+
                       
-                      {pkg.details && <p className="details-text">{pkg.details}</p>}
-                      
-                      {pkg.vehicles && pkg.vehicles.length > 0 && (
-                        <div className="vehicles-section">
-                          <h3 className="section-title">
-                            <i className="bi bi-car-front"></i>
-                            Vehicles & Lessons:
-                          </h3>
-                          <div className="vehicle-list">
-                            {pkg.vehicles.map((vehicle, idx) => (
-                              <div key={idx} className="vehicle-item">
-                                <span className="vehicle-name">{vehicle.name}</span>
-                                <span className="vehicle-model">({vehicle.model})</span>
-                                <span className="lesson-count">{vehicle.lesson_count} Lessons</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                      {pkg.details && (
+                        <>
+                          <h5>Detailed Information</h5>
+                          <p className="details-text">{pkg.details}</p>
+                        </>
                       )}
                       
-                      {selectedPackageId === null ? (
-  <button 
-    className="confirm-button active"
-    onClick={(e) => handleSelectPackage(e, pkg.id)}
-  >
-    <i className="bi bi-check-circle"></i>
-    Select Package
-  </button>
-) : selectedPackageId === pkg.id ? (
-  <button className="confirm-button selected" disabled>
-    <i className="bi bi-check2-circle"></i>
-    Package Selected
-  </button>
-) : (
-  <button className="confirm-button disabled" disabled>
-    <i className="bi bi-x-circle"></i>
-    Already Selected Another
-  </button>
-)}
+                      <div className="sessions-section">
+                        <h4>
+                          <i className="bi bi-car-front"></i>
+                          Included Training Sessions
+                        </h4>
+                        <div className="sessions-grid">
+                          <div className="session-card bike-session">
+                            <div className="session-icon">
+                              <i className="bi bi-bicycle"></i>
+                            </div>
+                            <div className="session-info">
+                              <div className="session-name">Bike Sessions</div>
+                              <div className="session-count">
+                                {getVehicleSessions(pkg, 1)} lessons
+                              </div>
+                            </div>
+                          </div>
 
+                          <div className="session-card tricycle-session">
+                            <div className="session-icon">
+                              <i className="bi bi-tricycle"></i>
+                            </div>
+                            <div className="session-info">
+                              <div className="session-name">Tricycle Sessions</div>
+                              <div className="session-count">
+                                {getVehicleSessions(pkg, 2)} lessons
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="session-card van-session">
+                            <div className="session-icon">
+                              <i className="bi bi-truck"></i>
+                            </div>
+                            <div className="session-info">
+                              <div className="session-name">Van Sessions</div>
+                              <div className="session-count">
+                                {getVehicleSessions(pkg, 3)} lessons
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="package-actions">
+                        {selectedPackageId === null ? (
+                          <button 
+                            className="btn btn-primary select-btn"
+                            onClick={(e) => handleSelectPackage(e, pkg.id)}
+                          >
+                            <i className="bi bi-check-circle"></i> Select Package
+                          </button>
+                        ) : selectedPackageId === pkg.id ? (
+                          <button className="btn btn-success selected-btn" disabled>
+                            <i className="bi bi-check2-circle"></i> Selected
+                          </button>
+                        ) : (
+                          <button className="btn btn-secondary disabled-btn" disabled>
+                            <i className="bi bi-x-circle"></i> Already Selected Another
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

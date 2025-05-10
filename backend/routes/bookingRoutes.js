@@ -8,5 +8,4 @@ router.post('/book', authMiddleware, createBooking);
 router.get('/schedule/:instructorId', getInstructorSchedule);
 router.get('/student', authMiddleware, getStudentBookings);
 
-
 export default router;

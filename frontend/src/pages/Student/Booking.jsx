@@ -120,7 +120,7 @@ const Booking = () => {
     const token = localStorage.getItem('authToken');
 
     const bookingPayload = {
-      date: date.toISOString().split('T')[0],
+      date: date.toLocaleDateString('en-CA'),
       vehicle_slots: selectedVehicles.map(vehicle => ({
         vehicle,
         time_slot: selectedSlots[vehicle],
