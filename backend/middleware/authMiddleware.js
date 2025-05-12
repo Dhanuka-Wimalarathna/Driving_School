@@ -23,6 +23,8 @@ const authMiddleware = (req, res, next) => {
     // Verify the token with the secret key
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    console.log('Decoded token:', decoded);
+
     // Store user details in the request object
     req.userId = decoded.id;  // Assuming `id` is the user ID
     req.userRole = decoded.role;  // Assuming `role` is the user role

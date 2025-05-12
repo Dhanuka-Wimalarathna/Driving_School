@@ -17,6 +17,7 @@ import InstructorVehicles from './instructor/InstructorVehicles';
 import InstructorStudents from './instructor/InstructorStudents';
 import InstructorSchedule from './instructor/InstructorSchedule';                                     
 import MarkProgress from './instructor/MarkProgress';
+import PaymentPage from './pages/Payments';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
         <Route path="/admin/instructors" element={<Instructor />} />
         <Route path="/admin/students" element={<Students />} />
         <Route path='/admin/students/:id' element={<StudentDetails />} />
+        <Route path="/admin/payments" element={<PaymentPage />} />
 
         {/* Instructor Pages */}
         <Route path="/instructor/dashboard" element={<InstructorDashboard />} />

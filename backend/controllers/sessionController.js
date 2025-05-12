@@ -10,6 +10,11 @@ export const getStudentProgressDetails = (req, res) => {
     return res.status(400).json({ error: 'Student ID is required' });
   }
 
+  // Prevent caching
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   getStudentProgressSummary(studentId, (err, summary) => {
     if (err) {
       console.error("Error fetching progress:", err);
@@ -21,13 +26,19 @@ export const getStudentProgressDetails = (req, res) => {
 };
 
 export const markSessionCompletedCtrl = (req, res) => {
-  const { studentId, vehicleId } = req.body;
+  const { studentId, vehicleType } = req.body; // Changed from vehicleId to vehicleType
 
-  if (!studentId || !vehicleId) {
+  if (!studentId || !vehicleType) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  markSessionCompleted(studentId, vehicleId, (err, result) => {
+  // Validate vehicleType
+  const validTypes = ['Bike', 'Three-Wheeler', 'Van'];
+  if (!validTypes.includes(vehicleType)) {
+    return res.status(400).json({ error: 'Invalid vehicle type' });
+  }
+
+  markSessionCompleted(studentId, vehicleType, (err, result) => {
     if (err) {
       console.error("Error marking session:", err);
       return res.status(400).json({ error: err.message });
@@ -38,8 +49,8 @@ export const markSessionCompletedCtrl = (req, res) => {
       summary: result.summary,
       vehicleProgress: result.vehicleProgress,
       message: result.allCompleted 
-        ? 'All sessions completed! Student is now eligible for final test.' 
-        : 'Session marked as completed successfully!'
+        ? `All ${vehicleType} sessions completed!` 
+        : `${vehicleType} session marked as completed successfully!`
     });
   });
 };

@@ -4,6 +4,8 @@ import Sidebar from '../../components/Sidebar';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Payments.css';
 import '../../components/Sidebar.css';
+import { useNavigate } from 'react-router-dom';
+
 
 const Payments = () => {
   const { user } = useAuth();
@@ -15,6 +17,7 @@ const Payments = () => {
   const [alreadyPaid, setAlreadyPaid] = useState(0);
   const [remainingAmount, setRemainingAmount] = useState(0);
   const [paymentError, setPaymentError] = useState('');
+  const navigate = useNavigate();
   
   const fetchData = () => {
     setIsLoading(true);
@@ -24,7 +27,7 @@ const Payments = () => {
       fetch('http://localhost:8081/api/select-package/get-selected-package', {
         headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
       }).then(res => res.json()),
-      fetch('http://localhost:8081/api/student/payments', {
+      fetch('http://localhost:8081/api/payments', {
         headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
       }).then(res => res.json())
     ])
@@ -145,7 +148,7 @@ const Payments = () => {
       setPaymentHistory([...paymentHistory, newPayment]);
 
       const response = await fetch(
-        'http://localhost:8081/api/student/payments/make-payment',
+        'http://localhost:8081/api/payments/make-payment',
         {
           method: 'POST',
           headers: {
@@ -251,11 +254,11 @@ const Payments = () => {
               <div className="selected-package">
                 <h2>No Package Selected</h2>
                 <p>You have not selected any package yet. Select a package to begin your learning journey.</p>
-                <button className="make-payment-btn" onClick={() => window.location.href = '/select-package'}>
+                <button className="make-payment-btn" onClick={() => navigate('/Student/Package')}>
                   Browse Packages
                 </button>
               </div>
-            )}
+            )} 
 
             {/* Payment History */}
             <div className="payments-container">

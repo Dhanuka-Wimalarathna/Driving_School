@@ -58,7 +58,7 @@ app.use('/api/notifications', notificationRoutes); // Assuming notification rout
 app.use('/api/booking', bookingRoutes); // Assuming booking routes are in bookingRoutes
 app.use('/api/progress', progressRoutes); // Assuming progress routes are in progressRoutes
 app.use('/api/session', sessionRoutes);
-app.use('/api/student', paymentRoutes);
+app.use('/api', paymentRoutes);
 
 // In your server.js, right before the 404 handler:
 app.use((req, res, next) => {

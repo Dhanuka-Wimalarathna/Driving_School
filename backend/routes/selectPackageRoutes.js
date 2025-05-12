@@ -8,7 +8,3 @@ router.post('/select-package', authenticateToken, selectPackage);
 router.get('/select-package/get-selected-package', authenticateToken, getSelectedPackage);
 
 export default router;
-
-
-
-// router.post('/select-package', selectPackage);

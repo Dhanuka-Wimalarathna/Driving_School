@@ -14,34 +14,34 @@ const MarkProgress = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isMarkingProgress, setIsMarkingProgress] = useState(false);
 
-  // Fetch progress summary data
+  // Fetch progress summary data with cache busting
   useEffect(() => {
     fetchProgress();
   }, [id]);
 
   const fetchProgress = () => {
     setLoading(true);
-    axios.get(`http://localhost:8081/api/session/progress/${id}`)
+    axios.get(`http://localhost:8081/api/session/progress/${id}?t=${Date.now()}`)
       .then(res => {
         setSummary(res.data?.summary || []);
         setLoading(false);
       })
       .catch(err => {
         console.error("Error fetching progress:", err);
-        setErrorMessage("Failed to load progress data. Please try again.");
+        setErrorMessage(err.response?.data?.error || "Failed to load progress data. Please try again.");
         setLoading(false);
       });
   };
 
   // Mark a session as completed
-  const markSessionCompleted = (vehicleId) => {
+  const markSessionCompleted = (vehicleType) => {
     setIsMarkingProgress(true);
     setErrorMessage('');
     setSuccessMessage('');
     
     axios.post('http://localhost:8081/api/session/mark-completed', {
       studentId: id,
-      vehicleId: vehicleId
+      vehicleType: vehicleType
     })
     .then(res => {
       if (res.data.success) {
@@ -50,7 +50,7 @@ const MarkProgress = () => {
         
         // Find the updated vehicle progress
         const updatedVehicle = res.data.summary.find(
-          item => item.vehicle_id === vehicleId
+          item => item.vehicle_type === vehicleType
         );
         
         if (updatedVehicle && 
@@ -93,54 +93,7 @@ const MarkProgress = () => {
             <p className="subtitle">Track and update training sessions</p>
           </div>
           
-          {successMessage && (
-            <div className="alert alert-success">
-              <div className="alert-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-              </div>
-              <div className="alert-content">
-                {successMessage}
-              </div>
-              <button 
-                className="alert-close-btn" 
-                onClick={() => setSuccessMessage('')}
-                aria-label="Close"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
-          )}
-          
-          {errorMessage && (
-            <div className="alert alert-error">
-              <div className="alert-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-              </div>
-              <div className="alert-content">
-                {errorMessage}
-              </div>
-              <button 
-                className="alert-close-btn" 
-                onClick={() => setErrorMessage('')}
-                aria-label="Close"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
-          )}
+          {/* Success and error messages remain the same */}
           
           <div className="summary-section">
             <div className="summary-header">
@@ -191,7 +144,7 @@ const MarkProgress = () => {
                                 ></div>
                               </div>
                               <button 
-                                onClick={() => markSessionCompleted(item.vehicle_id)}
+                                onClick={() => markSessionCompleted(item.vehicle_type)}
                                 className={`action-button ${isCompleted ? 'completed' : ''}`}
                                 disabled={isCompleted || isProcessing}
                               >

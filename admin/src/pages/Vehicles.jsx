@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar/Sidebar";
 import { 
   Search, 
-  Eye,
+  Edit,
   Plus,
   Trash2,
   AlertCircle,
@@ -19,6 +18,8 @@ const Vehicles = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [currentVehicle, setCurrentVehicle] = useState(null);
   const [newVehicle, setNewVehicle] = useState({
     name: "",
     model: "",
@@ -26,7 +27,11 @@ const Vehicles = () => {
     type: "",
     status: "Available"
   });
-  const navigate = useNavigate();
+  const [newStatus, setNewStatus] = useState("Available");
+
+  // Vehicle types and statuses from database schema
+  const vehicleTypes = ['Van', 'Car', 'Three-Wheeler', 'Bike'];
+  const vehicleStatuses = ['Available', 'Unavailable', 'In Service'];
 
   useEffect(() => {
     fetchVehicles();
@@ -58,7 +63,7 @@ const Vehicles = () => {
       setFilteredVehicles(response.data);
     } catch (error) {
       console.error("Error fetching vehicles:", error);
-      setErrorMessage("Failed to load vehicle data. Please try again later.");
+      setErrorMessage(error.response?.data?.message || "Failed to load vehicle data. Please try again later.");
       setVehicles([]);
       setFilteredVehicles([]);
     } finally {
@@ -70,34 +75,72 @@ const Vehicles = () => {
     setSearchQuery(e.target.value);
   };
 
-  const handleViewClick = (vehicle) => {
-    navigate(`/admin/vehicles/${vehicle.id}`, { state: { vehicle } });
+  const handleEditStatusClick = (vehicle) => {
+    setCurrentVehicle(vehicle);
+    setNewStatus(vehicle.status);
+    setShowStatusModal(true);
+  };
+
+  const handleStatusChange = async () => {
+    if (!currentVehicle) return;
+
+    try {
+      const response = await axios.put(
+        `http://localhost:8081/api/vehicles/${currentVehicle.id}/status`,
+        { status: newStatus }
+      );
+
+      // Update the vehicle in state
+      setVehicles(vehicles.map(v => 
+        v.id === currentVehicle.id ? { ...v, status: newStatus } : v
+      ));
+      setFilteredVehicles(filteredVehicles.map(v => 
+        v.id === currentVehicle.id ? { ...v, status: newStatus } : v
+      ));
+
+      setShowStatusModal(false);
+      setCurrentVehicle(null);
+    } catch (error) {
+      console.error("Error updating vehicle status:", error);
+      alert(error.response?.data?.message || "Failed to update vehicle status. Please try again.");
+    }
   };
 
   const deleteVehicle = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this vehicle?")) return;
+    
     try {
       await axios.delete(`http://localhost:8081/api/vehicles/${id}`);
-      setVehicles(vehicles.filter((vehicle) => vehicle.id !== id));
-      setFilteredVehicles(filteredVehicles.filter((vehicle) => vehicle.id !== id));
+      setVehicles(vehicles.filter(v => v.id !== id));
+      setFilteredVehicles(filteredVehicles.filter(v => v.id !== id));
     } catch (error) {
       console.error("Error deleting vehicle:", error);
+      alert(error.response?.data?.message || "Failed to delete vehicle. Please try again.");
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewVehicle({ ...newVehicle, [name]: value });
+    setNewVehicle(prev => ({ ...prev, [name]: value }));
   };
 
   const handleAddVehicle = async () => {
     if (!newVehicle.name || !newVehicle.plate_number || !newVehicle.type) {
-      alert("Please fill in all required fields");
+      alert("Please fill in all required fields (Name, Plate Number, and Type)");
       return;
     }
 
     try {
-      await axios.post("http://localhost:8081/api/vehicles/addVehicle", newVehicle);
-      setShowModal(false);
+      const response = await axios.post(
+        "http://localhost:8081/api/vehicles/addVehicle", 
+        newVehicle
+      );
+      
+      // Add the new vehicle to the list
+      setVehicles(prev => [...prev, response.data.vehicle]);
+      setFilteredVehicles(prev => [...prev, response.data.vehicle]);
+      
+      // Reset form and close modal
       setNewVehicle({ 
         name: "", 
         model: "", 
@@ -105,10 +148,20 @@ const Vehicles = () => {
         type: "", 
         status: "Available"
       });
-      fetchVehicles();
+      setShowModal(false);
     } catch (error) {
       console.error("Error adding vehicle:", error);
-      alert("Failed to add vehicle. Please try again.");
+      alert(error.response?.data?.message || "Failed to add vehicle. Please try again.");
+    }
+  };
+
+  const getVehicleIcon = (type) => {
+    switch(type) {
+      case 'Van': return <i className="bi bi-truck"></i>;
+      case 'Car': return <i className="bi bi-car-front"></i>;
+      case 'Three-Wheeler': return <i className="bi bi-tricycle"></i>;
+      case 'Bike': return <i className="bi bi-bicycle"></i>;
+      default: return <i className="bi bi-question-circle"></i>;
     }
   };
 
@@ -169,13 +222,9 @@ const Vehicles = () => {
                   {filteredVehicles.map((vehicle) => (
                     <div key={vehicle.id} className="vehicle-card">
                       <div className="vehicle-image">
-                        {vehicle.image_url ? (
-                          <img src={vehicle.image_url} alt={vehicle.name} />
-                        ) : (
-                          <div className="vehicle-avatar">
-                            {vehicle.name.charAt(0)}{vehicle.model?.charAt(0) || 'V'}
-                          </div>
-                        )}
+                        <div className="vehicle-type-icon">
+                          {getVehicleIcon(vehicle.type)}
+                        </div>
                       </div>
                       <div className="vehicle-details">
                         <h3 className="vehicle-name">{vehicle.name}</h3>
@@ -199,11 +248,11 @@ const Vehicles = () => {
                         </div>
                         <div className="vehicle-card-actions">
                           <button 
-                            className="view-details-btn"
-                            onClick={() => handleViewClick(vehicle)}
+                            className="edit-status-btn"
+                            onClick={() => handleEditStatusClick(vehicle)}
                           >
-                            <Eye size={16} />
-                            <span>View Details</span>
+                            <Edit size={16} />
+                            <span>Edit Status</span>
                           </button>
                           <button 
                             className="delete-vehicle-btn"
@@ -242,8 +291,8 @@ const Vehicles = () => {
 
       {/* Add Vehicle Modal */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Add New Vehicle</h2>
             
             <div className="form-group">
@@ -253,19 +302,19 @@ const Vehicles = () => {
                 name="name" 
                 value={newVehicle.name} 
                 onChange={handleInputChange} 
-                placeholder="Vanette, TownAce etc" 
+                placeholder="e.g., Vanette, TownAce" 
                 required 
               />
             </div>
 
             <div className="form-group">
-              <label>Vehicle Brand</label>
+              <label>Vehicle Brand/Model</label>
               <input 
                 type="text" 
                 name="model" 
                 value={newVehicle.model} 
                 onChange={handleInputChange} 
-                placeholder="Nissan, Toyota etc" 
+                placeholder="e.g., Nissan, Toyota" 
               />
             </div>
 
@@ -276,7 +325,7 @@ const Vehicles = () => {
                 name="plate_number" 
                 value={newVehicle.plate_number} 
                 onChange={handleInputChange} 
-                placeholder="ABC-1234" 
+                placeholder="e.g., ABC-1234" 
                 required 
               />
             </div>
@@ -290,10 +339,9 @@ const Vehicles = () => {
                 required
               >
                 <option value="">Select Type</option>
-                <option value="Van">Van</option>
-                <option value="Car">Car</option>
-                <option value="Three-Wheeler">Three-Wheeler</option>
-                <option value="Bike">Bike</option>
+                {vehicleTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
               </select>
             </div>
 
@@ -304,10 +352,9 @@ const Vehicles = () => {
                 value={newVehicle.status} 
                 onChange={handleInputChange}
               >
-                <option value="Available">Available</option>
-                <option value="In Maintenance">In Maintenance</option>
-                <option value="In Use">In Use</option>
-                <option value="Out of Service">Out of Service</option>
+                {vehicleStatuses.map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
               </select>
             </div>
 
@@ -323,6 +370,60 @@ const Vehicles = () => {
                 onClick={handleAddVehicle}
               >
                 Add Vehicle
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Status Modal */}
+      {showStatusModal && currentVehicle && (
+        <div className="modal-overlay" onClick={() => setShowStatusModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Edit Vehicle Status</h2>
+            
+            <div className="form-group">
+              <label>Vehicle</label>
+              <input 
+                type="text" 
+                value={`${currentVehicle.name} (${currentVehicle.plate_number})`}
+                readOnly
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Current Status</label>
+              <input 
+                type="text" 
+                value={currentVehicle.status}
+                readOnly
+              />
+            </div>
+
+            <div className="form-group">
+              <label>New Status</label>
+              <select 
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value)}
+              >
+                {vehicleStatuses.map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="modal-actions">
+              <button 
+                className="cancel-btn" 
+                onClick={() => setShowStatusModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="save-btn" 
+                onClick={handleStatusChange}
+              >
+                Update Status
               </button>
             </div>
           </div>

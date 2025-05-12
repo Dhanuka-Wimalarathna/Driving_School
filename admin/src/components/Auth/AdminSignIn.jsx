@@ -52,8 +52,8 @@ const AdminSignIn = () => {
       // Store admin details and token in local storage
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('admin', JSON.stringify(data.admin));
-      localStorage.removeItem('adminToken');
-
+      
+      console.log("Login successful, token:", data.token);
       console.log("Admin Token:", data.token);
 
       // Redirect to admin dashboard

@@ -27,15 +27,15 @@ const Packages = () => {
     description: "",
     price: "",
     details: "",
-    bikeSessionAmount: "",
-    tricycleSessionAmount: "",
-    vanSessionAmount: "",
+    bike_sessions: "",
+    tricycle_sessions: "",
+    van_sessions: "",
   });
   const [inputErrors, setInputErrors] = useState({
     price: false,
-    bikeSessionAmount: false,
-    tricycleSessionAmount: false,
-    vanSessionAmount: false,
+    bike_sessions: false,
+    tricycle_sessions: false,
+    van_sessions: false,
   });
 
   useEffect(() => {
@@ -62,28 +62,8 @@ const Packages = () => {
     setErrorMessage("");
     try {
       const response = await axios.get("http://localhost:8081/api/packages");
-      const packagesWithSessions = response.data.map(pkg => {
-        let bikeSessionAmount = "";
-        let tricycleSessionAmount = "";
-        let vanSessionAmount = "";
-  
-        if (pkg.vehicles && Array.isArray(pkg.vehicles)) {
-          pkg.vehicles.forEach(vehicle => {
-            if (vehicle.vehicle_id === 1) bikeSessionAmount = vehicle.lesson_count;
-            if (vehicle.vehicle_id === 2) tricycleSessionAmount = vehicle.lesson_count;
-            if (vehicle.vehicle_id === 3) vanSessionAmount = vehicle.lesson_count;
-          });
-        }
-  
-        return {
-          ...pkg,
-          bikeSessionAmount,
-          tricycleSessionAmount,
-          vanSessionAmount
-        };
-      });
-      setPackages(packagesWithSessions);
-      setFilteredPackages(packagesWithSessions);
+      setPackages(response.data);
+      setFilteredPackages(response.data);
     } catch (error) {
       console.error("Error fetching packages:", error);
       setErrorMessage("Failed to load packages. Please try again later.");
@@ -103,7 +83,7 @@ const Packages = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
-    if (["price", "bikeSessionAmount", "tricycleSessionAmount", "vanSessionAmount"].includes(name)) {
+    if (["price", "bike_sessions", "tricycle_sessions", "van_sessions"].includes(name)) {
       const isValid = validateNumberInput(name, value);
       
       setInputErrors({
@@ -138,10 +118,19 @@ const Packages = () => {
     }
 
     try {
+      const packageData = editingPackage || newPackage;
+      const formattedData = {
+        ...packageData,
+        price: parseFloat(packageData.price),
+        bike_sessions: parseInt(packageData.bike_sessions),
+        tricycle_sessions: parseInt(packageData.tricycle_sessions),
+        van_sessions: parseInt(packageData.van_sessions)
+      };
+
       if (editingPackage) {
-        await axios.put(`http://localhost:8081/api/packages/${editingPackage.id}`, editingPackage);
+        await axios.put(`http://localhost:8081/api/packages/${editingPackage.id}`, formattedData);
       } else {
-        await axios.post("http://localhost:8081/api/packages/addPackage", newPackage);
+        await axios.post("http://localhost:8081/api/packages/addPackage", formattedData);
       }
 
       setShowModal(false);
@@ -151,15 +140,15 @@ const Packages = () => {
         description: "",
         price: "",
         details: "",
-        bikeSessionAmount: "",
-        tricycleSessionAmount: "",
-        vanSessionAmount: "",
+        bike_sessions: "",
+        tricycle_sessions: "",
+        van_sessions: "",
       });
       setInputErrors({
         price: false,
-        bikeSessionAmount: false,
-        tricycleSessionAmount: false,
-        vanSessionAmount: false,
+        bike_sessions: false,
+        tricycle_sessions: false,
+        van_sessions: false,
       });
       fetchPackages();
     } catch (error) {
@@ -257,25 +246,23 @@ const Packages = () => {
                       </div>
                       
                       <p className="package-description">{pkg.description}</p>
-                      
-                      <div className="package-sessions">
-                        <div className="session-item">
-                          <Bike size={18} className="session-icon" />
-                          <span className="session-label">Bike:</span>
-                          <span className="session-value">{pkg.bikeSessionAmount || "0"}</span>
+                        <div className="package-sessions">
+                          <div className="session-item">
+                            <Bike size={18} className="session-icon" />
+                            <span className="session-label">Bike:</span>
+                            <span className="session-value">{pkg.bike_sessions}</span>
+                          </div>
+                          <div className="session-item">
+                            <Car size={18} className="session-icon" />
+                            <span className="session-label">Tricycle:</span>
+                            <span className="session-value">{pkg.tricycle_sessions}</span>
+                          </div>
+                          <div className="session-item">
+                            <Truck size={18} className="session-icon" />
+                            <span className="session-label">Van:</span>
+                            <span className="session-value">{pkg.van_sessions}</span>
+                          </div>
                         </div>
-                        <div className="session-item">
-                          <Car size={18} className="session-icon" />
-                          <span className="session-label">Tricycle:</span>
-                          <span className="session-value">{pkg.tricycleSessionAmount || "0"}</span>
-                        </div>
-                        <div className="session-item">
-                          <Truck size={18} className="session-icon" />
-                          <span className="session-label">Van:</span>
-                          <span className="session-value">{pkg.vanSessionAmount || "0"}</span>
-                        </div>
-                      </div>
-                      
                       <div className="package-actions">
                         <button 
                           className="edit-btn"
@@ -405,54 +392,54 @@ const Packages = () => {
                 <h3>Session Information</h3>
                 <div className="session-fields">
                   <div className="form-group">
-                    <label htmlFor="bikeSessionAmount">
+                    <label htmlFor="bike_sessions">
                       <Bike size={18} className="field-icon" />
                       Bike Sessions
                     </label>
                     <input
-                      id="bikeSessionAmount"
+                      id="bike_sessions"
                       type="text"
-                      name="bikeSessionAmount"
-                      value={editingPackage ? editingPackage.bikeSessionAmount : newPackage.bikeSessionAmount}
+                      name="bike_sessions"
+                      value={editingPackage ? editingPackage.bike_sessions : newPackage.bike_sessions}
                       onChange={handleInputChange}
                       placeholder="Number of sessions"
-                      className={inputErrors.bikeSessionAmount ? "input-error" : ""}
+                      className={inputErrors.bike_sessions ? "input-error" : ""}
                     />
-                    {inputErrors.bikeSessionAmount && <div className="error-message">Please enter a valid number</div>}
+                    {inputErrors.bike_sessions && <div className="error-message">Please enter a valid number</div>}
                   </div>
                   
                   <div className="form-group">
-                    <label htmlFor="tricycleSessionAmount">
+                    <label htmlFor="tricycle_sessions">
                       <Car size={18} className="field-icon" />
                       Tricycle Sessions
                     </label>
                     <input
-                      id="tricycleSessionAmount"
+                      id="tricycle_sessions"
                       type="text"
-                      name="tricycleSessionAmount"
-                      value={editingPackage ? editingPackage.tricycleSessionAmount : newPackage.tricycleSessionAmount}
+                      name="tricycle_sessions"
+                      value={editingPackage ? editingPackage.tricycle_sessions : newPackage.tricycle_sessions}
                       onChange={handleInputChange}
                       placeholder="Number of sessions"
-                      className={inputErrors.tricycleSessionAmount ? "input-error" : ""}
+                      className={inputErrors.tricycle_sessions ? "input-error" : ""}
                     />
-                    {inputErrors.tricycleSessionAmount && <div className="error-message">Please enter a valid number</div>}
+                    {inputErrors.tricycle_sessions && <div className="error-message">Please enter a valid number</div>}
                   </div>
                   
                   <div className="form-group">
-                    <label htmlFor="vanSessionAmount">
+                    <label htmlFor="van_sessions">
                       <Truck size={18} className="field-icon" />
                       Van Sessions
                     </label>
                     <input
-                      id="vanSessionAmount"
+                      id="van_sessions"
                       type="text"
-                      name="vanSessionAmount"
-                      value={editingPackage ? editingPackage.vanSessionAmount : newPackage.vanSessionAmount}
+                      name="van_sessions"
+                      value={editingPackage ? editingPackage.van_sessions : newPackage.van_sessions}
                       onChange={handleInputChange}
                       placeholder="Number of sessions"
-                      className={inputErrors.vanSessionAmount ? "input-error" : ""}
+                      className={inputErrors.van_sessions ? "input-error" : ""}
                     />
-                    {inputErrors.vanSessionAmount && <div className="error-message">Please enter a valid number</div>}
+                    {inputErrors.van_sessions && <div className="error-message">Please enter a valid number</div>}
                   </div>
                 </div>
               </div>

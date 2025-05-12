@@ -18,7 +18,16 @@ const Package = () => {
     const fetchPackages = async () => {
       try {
         const response = await axios.get("http://localhost:8081/api/packages");
-        setPackages(response.data);
+        // Transform the data to match the frontend structure
+        const transformedPackages = response.data.map(pkg => ({
+          ...pkg,
+          vehicles: [
+            { vehicle_id: 1, lesson_count: pkg.bike_sessions },
+            { vehicle_id: 2, lesson_count: pkg.tricycle_sessions },
+            { vehicle_id: 3, lesson_count: pkg.van_sessions }
+          ]
+        }));
+        setPackages(transformedPackages);
         setLoading(false);
       } catch (error) {
         setError("Error fetching packages.");
@@ -169,12 +178,12 @@ const Package = () => {
                         <i className="bi bi-box-seam"></i>
                         {pkg.title}
                       </h2>
-                      <div className="price-badge">Rs. {pkg.price}</div>
+                      <div className="price-badge">Rs. {pkg.price.toLocaleString()}</div>
                     </div>
 
                     <div className="card-body">
                       <div className="package-summary">
-                        {pkg.description.substring(0, 80)}...
+                        {pkg.description?.substring(0, 80)}...
                       </div>
                       
                       <div className="view-details-button">
@@ -186,8 +195,6 @@ const Package = () => {
 
                   <div className={`package-details ${expandedId === pkg.id ? 'open' : ''}`}>
                     <div className="details-content">
-
-                      
                       {pkg.details && (
                         <>
                           <h5>Detailed Information</h5>
@@ -208,7 +215,7 @@ const Package = () => {
                             <div className="session-info">
                               <div className="session-name">Bike Sessions</div>
                               <div className="session-count">
-                                {getVehicleSessions(pkg, 1)} lessons
+                                {pkg.bike_sessions} lessons
                               </div>
                             </div>
                           </div>
@@ -220,7 +227,7 @@ const Package = () => {
                             <div className="session-info">
                               <div className="session-name">Tricycle Sessions</div>
                               <div className="session-count">
-                                {getVehicleSessions(pkg, 2)} lessons
+                                {pkg.tricycle_sessions} lessons
                               </div>
                             </div>
                           </div>
@@ -232,7 +239,7 @@ const Package = () => {
                             <div className="session-info">
                               <div className="session-name">Van Sessions</div>
                               <div className="session-count">
-                                {getVehicleSessions(pkg, 3)} lessons
+                                {pkg.van_sessions} lessons
                               </div>
                             </div>
                           </div>

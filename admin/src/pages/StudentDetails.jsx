@@ -12,10 +12,10 @@ import {
   Package, 
   Clock,
   Send,
-  CheckSquare,
-  AlertCircle,
   FileText,
-  MessageSquare
+  MessageSquare,
+  CreditCard,
+  AlertCircle
 } from "lucide-react";
 import "./StudentDetails.css";
 
@@ -26,6 +26,11 @@ const StudentDetails = () => {
   const [notificationMessage, setNotificationMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [showNotificationForm, setShowNotificationForm] = useState(false);
+
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [showPaymentHistory, setShowPaymentHistory] = useState(false);
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
 
   const handleBack = () => {
     navigate("/admin/students");
@@ -39,7 +44,6 @@ const StudentDetails = () => {
 
     try {
       setIsSending(true);
-      
       await axios.post("http://localhost:8081/api/notifications/send", {
         studentIds: [student.id],
         message: notificationMessage,
@@ -56,8 +60,6 @@ const StudentDetails = () => {
       setShowNotificationForm(false);
     } catch (error) {
       console.error("Error sending notification:", error);
-      
-      // Show error toast
       const toast = document.createElement("div");
       toast.className = "toast-notification error";
       toast.innerHTML = `<div class="toast-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>Failed to send notification.`;
@@ -99,6 +101,55 @@ const StudentDetails = () => {
     });
   };
 
+  const fetchPaymentHistory = async () => {
+    if (!student?.id) return;
+    setIsLoadingPayments(true);
+    setPaymentError(null);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await axios.get(
+        `http://localhost:8081/api/payments?studentId=${student.id}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      setPaymentHistory(response.data);
+    } catch (error) {
+      console.error("Payment history error:", error.response?.data || error.message);
+
+      if (error.response?.status === 401) {
+        setPaymentError("Please login again");
+      } else if (error.response?.status === 403) {
+        setPaymentError("You don't have permission to view this payment history");
+      } else {
+        setPaymentError("Failed to load payment history. Please try again.");
+      }
+    } finally {
+      setIsLoadingPayments(false);
+    }
+  };
+
+  const handlePaymentHistoryClick = () => {
+    setShowPaymentHistory(true);
+    fetchPaymentHistory();
+  };
+
+  // Currency formatter
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-LK', {
+      style: 'currency',
+      currency: 'LKR'
+    }).format(amount);
+  };
+
+  // Calculate totals
+  const paidTotal = paymentHistory
+    .filter(payment => payment.status === "paid")
+    .reduce((sum, payment) => sum + Number(payment.amount), 0);
+
   return (
     <div className="dashboard-layout">
       <Sidebar />
@@ -133,7 +184,6 @@ const StudentDetails = () => {
                   </span>
                 </div>
               </div>
-
               <div className="info-grid">
                 <div className="info-item">
                   <Mail size={18} />
@@ -183,9 +233,11 @@ const StudentDetails = () => {
             <div className="profile-card action-card">
               <h3>Quick Actions</h3>
               <div className="action-buttons">
-                <button className="action-btn academic">
+                <button className="action-btn academic"
+                  onClick={handlePaymentHistoryClick}
+                >
                   <FileText size={18} />
-                  <span>Academic History</span>
+                  <span>Payment History</span>
                 </button>
                 <button className="action-btn message">
                   <MessageSquare size={18} />
@@ -233,6 +285,81 @@ const StudentDetails = () => {
                 >
                   {isSending ? "Sending..." : "Send Notification"}
                 </button>
+              </div>
+            </div>
+          )}
+
+          {showPaymentHistory && (
+            <div className="modal-overlay">
+              <div className="payment-history-modal">
+                <div className="modal-header">
+                  <h3>
+                    <CreditCard size={20} />
+                    <span>Payment History for {student.firstName}</span>
+                  </h3>
+                  <button 
+                    className="close-btn"
+                    onClick={() => setShowPaymentHistory(false)}
+                  >
+                    &times;
+                  </button>
+                </div>
+                {isLoadingPayments ? (
+                  <div className="loading-payments">
+                    <div className="spinner"></div>
+                    <p>Loading payment history...</p>
+                  </div>
+                ) : paymentError ? (
+                  <div className="payment-error">
+                    <AlertCircle size={24} />
+                    <p>{paymentError}</p>
+                    <button 
+                      className="retry-btn"
+                      onClick={fetchPaymentHistory}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : paymentHistory.length === 0 ? (
+                  <div className="no-payments">
+                    <p>No payment history found for this student.</p>
+                  </div>
+                ) : (
+                  <div className="payments-table-container">
+                    {/* Totals Section */}
+                    <div className="payment-totals">
+                      <div>
+                        <strong>Total Paid:</strong> {formatCurrency(paidTotal)}
+                      </div>
+                    </div>
+                    <table className="payments-table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Transaction ID</th>
+                          <th>Package</th>
+                          <th>Amount</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paymentHistory.map((payment) => (
+                          <tr key={payment.payment_id}>
+                            <td>{formatDate(payment.transaction_date)}</td>
+                            <td>{payment.transaction_id}</td>
+                            <td>{student.selectedPackage}</td>
+                            <td>{formatCurrency(payment.amount)}</td>
+                            <td>
+                              <span className={`status-badge ${payment.status}`}>
+                                {payment.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           )}

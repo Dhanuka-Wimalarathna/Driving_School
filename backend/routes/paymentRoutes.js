@@ -4,7 +4,6 @@ import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Corrected routes
 router.post('/payments/make-payment', authMiddleware, handleCreatePayment);
 router.get('/payments', authMiddleware, handleGetPayments);
 

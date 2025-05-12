@@ -1,4 +1,3 @@
-// controllers/paymentController.js
 import { createPayment, getPaymentHistory } from '../models/paymentModel.js';
 
 export const handleCreatePayment = (req, res) => {
@@ -48,16 +47,29 @@ export const handleCreatePayment = (req, res) => {
 };
 
 export const handleGetPayments = (req, res) => {
-  const studentId = req.userId; // Use req.userId from middleware
+  // Determine which student ID to use
+  const studentId = req.userRole === 'admin' && req.query.studentId 
+    ? req.query.studentId 
+    : req.userId;
+
+  // Validate studentId exists and is a number
+  if (!studentId || isNaN(Number(studentId))) {
+    return res.status(400).json({ 
+      message: 'Invalid student ID',
+      received: studentId
+    });
+  }
 
   getPaymentHistory(studentId, (err, rows) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ 
         message: 'Failed to retrieve payments',
-        error: err.sqlMessage 
+        error: err.message 
       });
     }
-    res.status(200).json(rows);
+    
+    // If no rows found, return empty array rather than null
+    res.status(200).json(rows || []);
   });
 };
