@@ -19,6 +19,7 @@ import bookingRoutes from './routes/bookingRoutes.js'; // Assuming booking route
 import progressRoutes from './routes/progressRoutes.js'; // Assuming progress routes are in progressRoutes
 import sessionRoutes from './routes/sessionRoutes.js'; // Assuming session routes are in sessionRoutes
 import paymentRoutes from './routes/paymentRoutes.js'; // Assuming payment routes are in paymentRoutes
+import instructorDashboardRoutes from './routes/instructorDashboardRoutes.js';
 
 dotenv.config(); // Load environment variables
 
@@ -59,6 +60,7 @@ app.use('/api/booking', bookingRoutes); // Assuming booking routes are in bookin
 app.use('/api/progress', progressRoutes); // Assuming progress routes are in progressRoutes
 app.use('/api/session', sessionRoutes);
 app.use('/api', paymentRoutes);
+app.use('/api/instructorDashboard', instructorDashboardRoutes);
 
 // In your server.js, right before the 404 handler:
 app.use((req, res, next) => {

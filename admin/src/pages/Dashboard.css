@@ -8,15 +8,14 @@ body {
   background-color: #f9fafb;
   color: #1f2937;
   line-height: 1.5;
+  font-family: 'Inter', sans-serif;
 }
 
-/* Layout */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
 }
 
-/* Main Content */
 .main-content {
   flex: 1;
   display: flex;
@@ -30,7 +29,6 @@ body {
   margin-left: 80px;
 }
 
-/* Dashboard Content */
 .dashboard-content {
   padding: 1.5rem;
   flex: 1;
@@ -53,7 +51,27 @@ body {
   color: #111827;
 }
 
-/* Stats Grid */
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: #dc2626;
+}
+
+.logout-icon {
+  stroke-width: 2;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -96,12 +114,12 @@ body {
   background-color: #10b981;
 }
 
-.stat-icon-wrapper.warning {
-  background-color: #f59e0b;
-}
-
 .stat-icon-wrapper.info {
   background-color: #0ea5e9;
+}
+
+.stat-icon-wrapper.warning {
+  background-color: #f59e0b;
 }
 
 .stat-content {
@@ -134,18 +152,12 @@ body {
   color: #10b981;
 }
 
-.stat-change.negative {
-  color: #ef4444;
-}
-
-/* Charts Container */
 .charts-container {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-/* Charts Row */
 .charts-row {
   display: flex;
   gap: 1.5rem;
@@ -157,7 +169,6 @@ body {
   min-width: 300px;
 }
 
-/* Chart Section */
 .chart-section {
   background-color: white;
   border-radius: 0.75rem;
@@ -175,39 +186,11 @@ body {
   color: #111827;
 }
 
-.summary-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.summary-card {
-  background-color: #f9fafb;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  text-align: center;
-}
-
-.summary-card h4 {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #6b7280;
-  margin-bottom: 0.5rem;
-}
-
-.summary-card p {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #111827;
-}
-
 .chart-container {
-  height: 250px;
+  height: 350px;
   position: relative;
 }
 
-/* Loading Spinner */
 .loading-spinner {
   display: flex;
   flex-direction: column;
@@ -249,7 +232,6 @@ body {
   border: 1px dashed #e5e7eb;
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -267,10 +249,6 @@ body {
   
   .dashboard-content {
     padding: 1rem;
-  }
-  
-  .summary-cards {
-    grid-template-columns: 1fr;
   }
   
   .charts-row {

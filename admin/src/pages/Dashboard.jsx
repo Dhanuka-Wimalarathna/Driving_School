@@ -10,9 +10,10 @@ import {
   Tooltip, 
   Legend 
 } from 'chart.js';
+import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 import Sidebar from '../components/Sidebar/Sidebar';
-import { BookOpen, Users, Calendar, DollarSign } from 'lucide-react';
+import { BookOpen, Users, Calendar, DollarSign, LogOut } from 'lucide-react';
 
 // Register ChartJS components
 ChartJS.register(
@@ -25,25 +26,31 @@ ChartJS.register(
 );
 
 function Dashboard() {
+  const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [stats, setStats] = useState({
     totalStudents: 0,
     activeInstructors: 0,
     upcomingExams: 0,
-    revenue: 0,
+    totalRevenue: 0,
   });
 
   const [monthlyStats, setMonthlyStats] = useState([]);
-  const [paymentSummary, setPaymentSummary] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userRole');
+    navigate('/admin/sign-in');
+  };
+
   useEffect(() => {
     fetchDashboardStats();
-    fetchPaymentStats();
+    fetchMonthlyStats();
   }, []);
 
   const fetchDashboardStats = async () => {
@@ -55,18 +62,10 @@ function Dashboard() {
     }
   };
 
-  const fetchPaymentStats = async () => {
+  const fetchMonthlyStats = async () => {
     try {
       const response = await axios.get("http://localhost:8081/api/dashboard/payment-stats");
-      
-      // Extract monthly stats and summary
       setMonthlyStats(response.data.monthlyStats || []);
-      setPaymentSummary({
-        total_transactions: response.data.total_transactions,
-        total_revenue: response.data.total_revenue,
-        paid_students: response.data.paid_students,
-      });
-
       setLoading(false);
     } catch (error) {
       console.error("Error fetching payment stats:", error);
@@ -79,7 +78,7 @@ function Dashboard() {
     labels: monthlyStats.map(item => item.month),
     datasets: [
       {
-        label: '  Total Revenue (LKR.)',
+        label: 'Monthly Revenue (LKR)',
         data: monthlyStats.map(item => item.total_amount),
         backgroundColor: 'rgba(99, 102, 241, 0.7)',
         borderColor: 'rgba(99, 102, 241, 1)',
@@ -93,7 +92,7 @@ function Dashboard() {
     labels: monthlyStats.map(item => item.month),
     datasets: [
       {
-        label: '  Number of Payments',
+        label: 'Number of Payments',
         data: monthlyStats.map(item => item.payment_count),
         backgroundColor: 'rgba(14, 165, 233, 0.7)',
         borderColor: 'rgba(14, 165, 233, 1)',
@@ -162,6 +161,11 @@ function Dashboard() {
     }
   };
 
+  // Calculate current month revenue
+  const currentMonthRevenue = monthlyStats.length > 0 
+    ? monthlyStats[monthlyStats.length - 1].total_amount 
+    : 0;
+
   return (
     <div className="dashboard-layout">
       <Sidebar sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
@@ -169,7 +173,11 @@ function Dashboard() {
       <main className={`main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="dashboard-content">
           <div className="page-header">
-            <h1>Dashboard Overview</h1>
+            <h1>Admin Dashboard</h1>
+            <button onClick={handleLogout} className="logout-btn">
+              <LogOut size={20} className="logout-icon" />
+              Logout
+            </button>
           </div>
 
           {/* Stats Cards */}
@@ -197,26 +205,29 @@ function Dashboard() {
             </div>
 
             <div className="stat-card">
-              <div className="stat-icon-wrapper warning">
-                <Calendar size={22} />
-              </div>
-              <div className="stat-content">
-                <h3 className="stat-title">Upcoming Exams</h3>
-                <p className="stat-value">{stats.upcomingExams}</p>
-                <p className="stat-change negative">-1.5% from last month</p>
-              </div>
-            </div>
-
-            <div className="stat-card">
               <div className="stat-icon-wrapper info">
                 <DollarSign size={22} />
               </div>
               <div className="stat-content">
-                <h3 className="stat-title">Revenue</h3>
-                <p className="stat-value">
-                  LKR {paymentSummary ? paymentSummary.total_revenue : 'Loading...'}
-                </p>
+                <h3 className="stat-title">Total Revenue</h3>
+                <p className="stat-value">LKR {stats.totalRevenue}</p>
                 <p className="stat-change positive">+4.7% from last month</p>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon-wrapper warning">
+                <DollarSign size={22} />
+              </div>
+              <div className="stat-content">
+                <h3 className="stat-title">This Month's Revenue</h3>
+                <p className="stat-value">LKR {currentMonthRevenue}</p>
+                <p className="stat-change positive">
+                  {monthlyStats.length > 1 ? 
+                    `+${Math.round(((currentMonthRevenue - monthlyStats[monthlyStats.length - 2].total_amount) / 
+                      monthlyStats[monthlyStats.length - 2].total_amount) * 100)}% from last month` 
+                    : 'No previous data'}
+                </p>
               </div>
             </div>
           </div>
@@ -228,45 +239,26 @@ function Dashboard() {
                 <div className="spinner"></div>
                 <p>Loading payment data...</p>
               </div>
-            ) : paymentSummary ? (
-              <>
-                <div className="summary-cards">
-                  <div className="summary-card">
-                    <h4>Total Transactions</h4>
-                    <p>{paymentSummary.total_transactions}</p>
+            ) : monthlyStats.length > 0 ? (
+              <div className="charts-row">
+                <div className="chart-section">
+                  <div className="section-header">
+                    <h2>Monthly Revenue Breakdown</h2>
                   </div>
-                  <div className="summary-card">
-                    <h4>Total Revenue</h4>
-                    <p>LKR {paymentSummary.total_revenue}</p>
-                  </div>
-                  <div className="summary-card">
-                    <h4>Paid Students</h4>
-                    <p>{paymentSummary.paid_students}</p>
+                  <div className="chart-container">
+                    <Bar data={revenueChartData} options={chartOptions} height={350} />
                   </div>
                 </div>
                 
-                <div className="charts-row">
-                  {/* Revenue Chart */}
-                  <div className="chart-section">
-                    <div className="section-header">
-                      <h2>Monthly Revenue</h2>
-                    </div>
-                    <div className="chart-container">
-                      <Bar data={revenueChartData} options={chartOptions} height={250} />
-                    </div>
+                <div className="chart-section">
+                  <div className="section-header">
+                    <h2>Monthly Payment Activity</h2>
                   </div>
-                  
-                  {/* Payments Count Chart */}
-                  <div className="chart-section">
-                    <div className="section-header">
-                      <h2>Monthly Payment Count</h2>
-                    </div>
-                    <div className="chart-container">
-                      <Bar data={paymentsChartData} options={chartOptions} height={250} />
-                    </div>
+                  <div className="chart-container">
+                    <Bar data={paymentsChartData} options={chartOptions} height={350} />
                   </div>
                 </div>
-              </>
+              </div>
             ) : (
               <div className="no-data">
                 <p>No payment data available</p>

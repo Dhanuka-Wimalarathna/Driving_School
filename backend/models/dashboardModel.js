@@ -18,6 +18,18 @@ export const getActiveInstructors = () => {
   });
 };
 
+export const getTotalRevenue = () => {
+  return new Promise((resolve, reject) => {
+    sqldb.query(
+      "SELECT SUM(amount) AS totalRevenue FROM payments WHERE status = 'paid'", 
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result[0].totalRevenue || 0);
+      }
+    );
+  });
+};
+
 export const fetchPaymentStats = () => {
   return new Promise((resolve, reject) => {
     const summarySql = `

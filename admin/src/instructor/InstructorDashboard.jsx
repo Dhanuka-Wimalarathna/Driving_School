@@ -1,224 +1,191 @@
 import React, { useState, useEffect } from 'react';
-import './InstructorDashboard.css';
-import InstructorSidebar from '../components/Sidebar/InstructorSidebar';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import './InstructorDashboard.css';
+import InstructorSidebar from "../components/Sidebar/InstructorSidebar";
+import { Users, Calendar, LogOut } from 'lucide-react'; 
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 function InstructorDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [instructor, setInstructor] = useState(null);
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    assignedStudents: 0,
+    scheduledSessions: 0,
+    completedSessions: 0,
+    upcomingSessions: []
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Single declaration of toggleSidebar
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    navigate('/instructor/sign-in');
+  };
+
   useEffect(() => {
-    const fetchInstructorData = async () => {
+    const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem('token');
-        if (!token) {
-          navigate('/instructor/sign-in');
-          return;
-        }
-    
-        const response = await axios.get('http://localhost:8081/api/instructors/me', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        const response = await axios.get('http://localhost:8081/api/instructorDashboard', {
+          headers: { Authorization: `Bearer ${token}` }
         });
-    
-        // Remove the .instructor check since data is at root level
-        if (!response.data) {
-          throw new Error('No instructor data received');
-        }
-    
-        setInstructor(response.data); // Set the entire response data
-      } catch (err) {
-        setError(err.response?.data?.message || err.message);
-        console.error('Error fetching instructor:', err);
-        
-        if (err.response?.status === 401) {
-          localStorage.removeItem('token');
-          navigate('/instructor/sign-in');
-        }
+        setStats({
+          ...response.data.data,
+          scheduledSessions: Number(response.data.data.scheduledSessions) || 0,
+          completedSessions: Number(response.data.data.completedSessions) || 0
+        });
+      } catch (error) {
+        setError(error.response?.data?.message || "Failed to load dashboard data");
       } finally {
         setLoading(false);
       }
     };
+    fetchDashboardData();
+  }, []);
 
-    fetchInstructorData();
-  }, [navigate]);
+  // Pie chart data configuration for today's sessions
+  const pieChartData = {
+    labels: ['Scheduled', 'Completed'],
+    datasets: [
+      {
+        data: [stats.scheduledSessions, stats.completedSessions],
+        backgroundColor: ['#FF6384', '#4BC0C0'],
+        hoverBackgroundColor: ['#FF6384', '#4BC0C0'],
+        borderWidth: 1,
+      },
+    ],
+  };
 
-  if (loading) {
-    return (
-      <div className="loading-screen">
-        <div className="spinner"></div>
-        <p>Loading your dashboard...</p>
-      </div>
-    );
-  }
+  const pieChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 20,
+          usePointStyle: true,
+          pointStyle: 'circle'
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const label = context.label || '';
+            const value = context.raw || 0;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+            return `${label}: ${value} (${percentage}%)`;
+          }
+        }
+      }
+    },
+  };
 
-  if (error) {
-    return (
-      <div className="error-screen">
-        <p className="error-message">{error}</p>
-        <button 
-          className="retry-btn"
-          onClick={() => window.location.reload()}
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
-
-  if (!instructor) {
-    return (
-      <div className="error-screen">
-        <p className="error-message">Instructor data not available</p>
-        <button 
-          className="retry-btn"
-          onClick={() => navigate('/instructor/sign-in')}
-        >
-          Return to Login
-        </button>
-      </div>
-    );
-  }
+  if (loading) return <div className="loading-screen">Loading...</div>;
+  if (error) return <div className="error-screen">{error}</div>;
 
   return (
     <div className="dashboard-layout">
-      <InstructorSidebar 
-        sidebarCollapsed={sidebarCollapsed} 
-        toggleSidebar={toggleSidebar} 
-        instructorName={instructor.firstName + ' ' + instructor.lastName}
-      />
-
+      <InstructorSidebar sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
+      
       <main className={`main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
-        <header className="header">
-          <div className="welcome-message">
-            <h2>Welcome back, {instructor.firstName}!</h2>
-            <p>Here's your teaching overview</p>
+        <div className="dashboard-content">
+          <div className="page-header">
+            <h1>Instructor Dashboard</h1>
+            <button onClick={handleLogout} className="logout-btn">
+              <LogOut size={18} className="logout-icon" />
+              Logout
+            </button>
           </div>
-          <div className="header-right">
-            <div className="notification">
-              <span className="notification-icon">🔔</span>
-              <span className="notification-badge">2</span>
-            </div>
-            <div className="user-menu">
-              <img 
-                src={`https://ui-avatars.com/api/?name=${instructor.firstName}+${instructor.lastName}&background=random`} 
-                alt="User" 
-                className="user-avatar" 
-              />
-              <span className="user-name">{instructor.firstName} {instructor.lastName}</span>
-            </div>
-          </div>
-        </header>
 
-        <div className="dashboard-content instructor-dashboard">
-          <div className="performance-stats">
+          <div className="stats-grid">
             <div className="stat-card">
-              <div className="stat-icon">👨‍🎓</div>
-              <div className="stat-info">
-                <h3>Total Students</h3>
-                <p className="stat-value">42</p>
-                <p className="stat-change positive">↑ 5 this month</p>
+              <div className="stat-icon-wrapper primary">
+                <Users size={22} />
+              </div>
+              <div className="stat-content">
+                <h3 className="stat-title">Total Students</h3>
+                <p className="stat-value">{stats.totalStudents}</p>
+                <p className="stat-change">All students in system</p>
               </div>
             </div>
-            
+
             <div className="stat-card">
-              <div className="stat-icon">📅</div>
-              <div className="stat-info">
-                <h3>Scheduled Lessons</h3>
-                <p className="stat-value">8</p>
-                <p className="stat-change">Next: Tomorrow 10AM</p>
+              <div className="stat-icon-wrapper success">
+                <Users size={22} />
+              </div>
+              <div className="stat-content">
+                <h3 className="stat-title">Your Students</h3>
+                <p className="stat-value">{stats.assignedStudents}</p>
+                <p className="stat-change">Assigned to you</p>
               </div>
             </div>
-            
+
             <div className="stat-card">
-              <div className="stat-icon">⭐</div>
-              <div className="stat-info">
-                <h3>Your Rating</h3>
-                <p className="stat-value">4.8</p>
-                <p className="stat-change positive">↑ 0.1 this month</p>
+              <div className="stat-icon-wrapper info">
+                <Calendar size={22} />
+              </div>
+              <div className="stat-content">
+                <h3 className="stat-title">Today's Sessions</h3>
+                <p className="stat-value">
+                  {stats.scheduledSessions + stats.completedSessions}
+                </p>
+                <p className="stat-change">
+                  {stats.completedSessions} completed, {stats.scheduledSessions} upcoming
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="dashboard-sections">
-            <section className="upcoming-lessons">
-              <h3>Upcoming Lessons</h3>
-              <div className="lesson-list">
-                <div className="lesson-item">
-                  <div className="lesson-time">Mon, 10:00 AM</div>
-                  <div className="lesson-details">
-                    <h4>Beginner Driving</h4>
-                    <p>Student: John Smith</p>
-                  </div>
-                </div>
-                <div className="lesson-item">
-                  <div className="lesson-time">Tue, 2:00 PM</div>
-                  <div className="lesson-details">
-                    <h4>Defensive Driving</h4>
-                    <p>Student: Sarah Johnson</p>
-                  </div>
-                </div>
+          <div className="horizontal-section">
+            <div className="chart-section">
+              <h2>Today's Session Status</h2>
+              <div className="pie-chart-container">
+                {stats.scheduledSessions === 0 && stats.completedSessions === 0 ? (
+                  <div className="no-sessions-chart">No sessions today</div>
+                ) : (
+                  <Pie data={pieChartData} options={pieChartOptions} />
+                )}
               </div>
-              <button className="view-all-btn">View All Lessons</button>
-            </section>
-
-            <section className="recent-students">
-              <h3>Recent Students</h3>
-              <div className="student-list">
-                <div className="student-item">
-                  <img 
-                    src="https://ui-avatars.com/api/?name=John+Smith" 
-                    alt="Student" 
-                    className="student-avatar" 
-                  />
-                  <div className="student-info">
-                    <h4>John Smith</h4>
-                    <p>3 lessons completed</p>
-                  </div>
-                </div>
-                <div className="student-item">
-                  <img 
-                    src="https://ui-avatars.com/api/?name=Sarah+Johnson" 
-                    alt="Student" 
-                    className="student-avatar" 
-                  />
-                  <div className="student-info">
-                    <h4>Sarah Johnson</h4>
-                    <p>5 lessons completed</p>
-                  </div>
-                </div>
-              </div>
-              <button className="view-all-btn">View All Students</button>
-            </section>
-          </div>
-
-          <section className="quick-actions">
-            <h3>Quick Actions</h3>
-            <div className="action-buttons">
-              <button className="action-btn">
-                <span className="action-icon">➕</span>
-                Schedule New Lesson
-              </button>
-              <button className="action-btn">
-                <span className="action-icon">📝</span>
-                Update Availability
-              </button>
-              <button className="action-btn">
-                <span className="action-icon">📊</span>
-                View Performance
-              </button>
             </div>
-          </section>
+
+            <div className="sessions-section">
+              <h2>Today's Sessions ({new Date().toLocaleDateString()})</h2>
+              <div className="sessions-grid">
+                {stats.upcomingSessions.length === 0 ? (
+                  <div className="no-sessions">No sessions scheduled for today</div>
+                ) : (
+                  stats.upcomingSessions.slice(0, 6).map(session => (
+                    <div key={session.booking_id} className="session-card">
+                      <div className="session-header">
+                        <span className="student-names">
+                          {session.first_name} {session.last_name}
+                        </span>
+                        <span className="session-time">{session.time_slot}</span>
+                      </div>
+                      <div className="session-details">
+                        <span className="session-vehicle">{session.vehicle}</span>
+                        <span className={`session-status ${session.status.toLowerCase()}`}>
+                          {session.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
