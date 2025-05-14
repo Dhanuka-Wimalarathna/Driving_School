@@ -1,0 +1,173 @@
+CREATE SCHEMA driving_school;
+
+USE driving_school;
+
+show tables;
+
+drop table student;
+drop table otp_verifications;
+drop table payments;
+drop table user_packages;
+
+CREATE TABLE IF NOT EXISTS student (
+    STU_ID INT AUTO_INCREMENT PRIMARY KEY,
+    FIRST_NAME VARCHAR(50) NOT NULL,
+    LAST_NAME VARCHAR(50) NOT NULL,
+   ADDRESS TEXT NOT NULL,
+       EMAIL VARCHAR(100) NOT NULL UNIQUE,
+    PASSWORD VARCHAR(255) NOT NULL,
+    NIC VARCHAR(20) NOT NULL UNIQUE,
+    PHONE VARCHAR(15) NOT NULL,
+    BIRTHDAY DATE NOT NULL,
+  CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS otp_verifications (
+    OTP_ID INT AUTO_INCREMENT PRIMARY KEY,
+    STU_ID INT NOT NULL,  -- Reference to student via STU_ID
+    OTP_CODE VARCHAR(6) NOT NULL,
+    EXPIRES_AT DATETIME NOT NULL,
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (STU_ID) REFERENCES student(STU_ID) ON DELETE CASCADE  -- Foreign key relationship to STU_ID
+);
+
+CREATE TABLE packages (
+    package_id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    price DECIMAL(10,2) NOT NULL,
+    details TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    bike_sessions INT UNSIGNED NOT NULL DEFAULT 0,
+    tricycle_sessions INT UNSIGNED NOT NULL DEFAULT 0,
+    van_sessions INT UNSIGNED NOT NULL DEFAULT 0
+);
+drop table packages;
+
+CREATE TABLE vehicles (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    model VARCHAR(255) NOT NULL,
+    plate_number VARCHAR(255) NOT NULL,
+    type ENUM('Van', 'Car', 'Three-Wheeler', 'Bike') NOT NULL,
+    status ENUM('Available', 'Unavailable', 'In Service') NOT NULL DEFAULT 'Available',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+drop table vehicles;
+
+CREATE TABLE package_vehicles (
+  package_id INT NOT NULL,
+  vehicle_id INT NOT NULL,
+  lesson_count INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (package_id, vehicle_id),
+  FOREIGN KEY (package_id) REFERENCES packages(package_id),
+  FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+);
+drop table package_vehicles;
+
+CREATE TABLE admins (
+    admin_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    email VARCHAR(255) UNIQUE,
+    password VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE instructors (
+    ins_id INT AUTO_INCREMENT PRIMARY KEY,
+    firstName VARCHAR(100) NOT NULL,
+    lastName VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    nic VARCHAR(20) NOT NULL UNIQUE,
+    licenseNo VARCHAR(50) NOT NULL UNIQUE,
+    birthday DATE NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    phone VARCHAR(15) NOT NULL UNIQUE,
+    grade ENUM('A', 'B', 'C') NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+drop table instructors;
+
+CREATE TABLE IF NOT EXISTS selected_packages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  package_id INT NOT NULL,
+  selected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES student(STU_ID),
+  FOREIGN KEY (package_id) REFERENCES packages(package_id)
+);
+drop table selected_packages;
+
+CREATE TABLE notifications (
+  notification_id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  message TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT 0, -- 0 = unread, 1 = read
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES student(STU_ID) ON DELETE CASCADE
+);
+drop table notifications;
+
+CREATE TABLE bookings (
+  booking_id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  vehicle VARCHAR(50) NOT NULL,
+  date DATE NOT NULL,
+  time_slot VARCHAR(50) NOT NULL,
+  status ENUM('Scheduled', 'Completed') DEFAULT 'Scheduled',
+  instructor_id INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES student(STU_ID) ON DELETE CASCADE,
+  FOREIGN KEY (instructor_id) REFERENCES instructors(ins_id) ON DELETE SET NULL
+);
+drop table bookings;
+
+CREATE TABLE IF NOT EXISTS progress (
+  progress_id INT AUTO_INCREMENT PRIMARY KEY,
+  booking_id INT NOT NULL UNIQUE,
+  student_id INT,
+  student_name VARCHAR(255),
+  vehicle VARCHAR(50),
+  time_slot VARCHAR(50),
+  status VARCHAR(50),
+  completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES student(STU_ID)
+);
+drop table progress;
+
+CREATE TABLE student_progress (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  vehicle_type ENUM('Bike', 'Three-Wheeler', 'Van') NOT NULL,
+  completed_sessions INT DEFAULT 0,
+  total_sessions INT NOT NULL,
+  last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES student(STU_ID) ON DELETE CASCADE
+);
+drop table student_progress;
+
+CREATE TABLE completed_sessions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  vehicle_type ENUM('Bike', 'Three-Wheeler', 'Van') NOT NULL,
+  completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  instructor_id INT,
+  FOREIGN KEY (student_id) REFERENCES student(STU_ID),
+  FOREIGN KEY (instructor_id) REFERENCES instructors(ins_id)
+);
+drop table completed_sessions;
+
+CREATE TABLE IF NOT EXISTS payments (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    package_id INT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    status ENUM('pending', 'paid', 'failed') DEFAULT 'pending',
+    transaction_id VARCHAR(255),
+    transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES student(STU_ID),
+    FOREIGN KEY (package_id) REFERENCES packages(package_id)
+);
+drop table payments;
