@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { Pie } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import Sidebar from "../../components/Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Dashboard.css";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Dashboard = () => {
   const [student, setStudent] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -16,8 +21,8 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("authToken");
+        console.log("Token:", token);
         if (!token) {
-          console.error("No authentication token found");
           navigate("/login");
           return;
         }
@@ -30,25 +35,30 @@ const Dashboard = () => {
 
         // Fetch notifications
         const notificationsResponse = await axios.get('http://localhost:8081/api/notifications/show', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'studentId': studentResponse.data.id
-          }
+          headers: { 'Authorization': `Bearer ${token}`, 'studentId': studentResponse.data.id }
         });
         setNotifications(notificationsResponse.data || []);
 
-        // Fetch upcoming bookings
+        // Fetch bookings
         const bookingsResponse = await axios.get('http://localhost:8081/api/booking/student', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` }
         });
         setBookings(bookingsResponse.data || []);
-      } catch (error) {
-        console.error("Error fetching data:", error.response?.data || error);
-        if (error.response?.status === 401) {
-          navigate("/login");
+
+        // Fetch payments
+        const paymentsResponse = await axios.get('http://localhost:8081/api/studentDashboard', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+  
+        if (paymentsResponse.data && paymentsResponse.data.success === false) {
+          console.error('Backend reported error:', paymentsResponse.data.message);
+          throw new Error(paymentsResponse.data.message);
         }
+        setPayments(paymentsResponse.data.payments || []);
+
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        if (error.response?.status === 401) navigate("/login");
       } finally {
         setLoading(false);
       }
@@ -56,6 +66,63 @@ const Dashboard = () => {
 
     fetchData();
   }, [navigate]);
+  // Payment status chart configuration
+  const getPaymentChartData = () => {
+    // Calculate total and remaining amounts
+    let totalAmount = 0;
+    let paidAmount = 0;
+    
+    // Group payments by status and calculate totals
+    const statusCounts = payments.reduce((acc, payment) => {
+      const status = payment.status.toLowerCase();
+      acc[status] = (acc[status] || 0) + 1;
+      
+      // Calculate total and paid amounts
+      const amount = parseFloat(payment.amount);
+      totalAmount += amount;
+      if (status === 'paid' || status === 'completed') {
+        paidAmount += amount;
+      }
+      
+      return acc;
+    }, {});
+    
+    // If we have package information, use that for total amount
+    const packagePrice = payments.length > 0 && payments[0].package_price ? 
+      parseFloat(payments[0].package_price) : 0;
+    
+    if (packagePrice > 0) {
+      totalAmount = packagePrice;
+    }
+    
+    // Calculate remaining amount
+    const remainingAmount = Math.max(0, totalAmount - paidAmount);
+    
+    // Add remaining amount to chart data if it exists
+    const chartData = {
+      labels: [...Object.keys(statusCounts)],
+      datasets: [{
+        data: [...Object.values(statusCounts)],
+        backgroundColor: ['#4CC9F0', '#F72585', '#7209B7', '#3A86FF'],
+        borderColor: 'rgba(255, 255, 255, 0.8)',
+        borderWidth: 2,
+        hoverBackgroundColor: ['#3DB9E0', '#E71575', '#6208A7', '#2A76EF'],
+        hoverBorderColor: 'white',
+        hoverBorderWidth: 3,
+        hoverOffset: 6
+      }]
+    };
+    
+    // If there's a remaining amount, add it to the chart
+    if (remainingAmount > 0) {
+      chartData.labels.push('Remaining');
+      chartData.datasets[0].data.push(1); // Adding as 1 count
+      chartData.datasets[0].backgroundColor.push('#6930C3');
+      chartData.datasets[0].hoverBackgroundColor.push('#5B2BA3');
+    }
+    
+    return chartData;
+  };
 
   const handleBookLesson = () => {
     navigate("/student/booking");
@@ -130,9 +197,85 @@ const Dashboard = () => {
                   <p className="page-subtitle">Your driving progress overview</p>
                 </div>
               </div>
-            </div>
-
-            <div className="dashboard-grid">
+            </div>            <div className="dashboard-grid">
+              {/* Payment Overview Card - Moved to the top */}
+              <div className="dashboard-card payments-overview-card">
+                <div className="card-header">
+                  <h2 className="card-title">
+                    <i className="bi bi-graph-up"></i>
+                    Payment Overview
+                  </h2>
+                </div>
+                <div className="card-body">
+                  {payments.length > 0 ? (
+                    <div className="modern-chart-container">
+                      <Pie 
+                        data={getPaymentChartData()} 
+                        options={{ 
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: { 
+                              position: 'right',
+                              labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                  size: 12,
+                                  weight: 'bold'
+                                }
+                              }
+                            },
+                            tooltip: { 
+                              enabled: true,
+                              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                              padding: 12,
+                              cornerRadius: 8,
+                              titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                              },
+                              bodyFont: {
+                                size: 13
+                              },
+                              callbacks: {
+                                label: function(context) {
+                                  return ` ${context.label}: ${context.raw} payment(s)`;
+                                }
+                              }
+                            }
+                          },
+                          elements: {
+                            arc: {
+                              borderWidth: 1,
+                              borderColor: '#fff'
+                            }
+                          },
+                          animation: {
+                            animateRotate: true,
+                            animateScale: true
+                          }
+                        }}
+                      />
+                      <div className="payment-stats">
+                        <div className="total-payments">
+                          <div className="stat-number">{payments.length}</div>
+                          <div className="stat-label">Total Payments</div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="empty-state">
+                      <div className="empty-icon">
+                        <i className="bi bi-credit-card-2-back"></i>
+                      </div>
+                      <h3 className="empty-title">No payment history</h3>
+                      <p className="empty-subtitle">Your transactions will appear here</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
               {/* Notifications */}
               <div className="dashboard-card notifications-card">
                 <div className="card-header">
@@ -249,41 +392,81 @@ const Dashboard = () => {
                   </h2>
                 </div>
                 <div className="card-body">
-  {bookings.length > 0 ? (
-    <div className="lessons-list">
-      {bookings.map((booking) => (
-        <div key={booking.id} className="lesson-item">
-          <div className="lesson-info">
-            <h5 className="lesson-title">{booking.vehicle_type} session</h5>
-            <p className="lesson-date">
-              {new Date(booking.date).toLocaleDateString()} — {booking.time}
-            </p>
-            {booking.instructor_name && (
-              <p className="lesson-instructor">Instructor: {booking.instructor_name}</p>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  ) : (
-    <div className="empty-lessons">
-      <div className="empty-icon">
-        <i className="bi bi-calendar-x"></i>
-      </div>
-      <h3 className="empty-title">No upcoming lessons</h3>
-      <p className="empty-subtitle">Book your first driving lesson now</p>
-    </div>
-  )}
-
-  {/* Always show this button */}
-  <div className="book-lesson-button">
-    <button className="confirm-button active" onClick={handleBookLesson}>
-      <i className="bi bi-plus-circle"></i>
-      Book New Lesson
-    </button>
-  </div>
-</div>
-
+                  {bookings.length > 0 ? (
+                    <div className="lessons-list">
+                      {bookings.map((booking) => (
+                        <div key={booking.id} className="lesson-item">
+                          <div className="lesson-info">
+                            <h5 className="lesson-title">{booking.vehicle_type} session</h5>
+                            <p className="lesson-date">
+                              {new Date(booking.date).toLocaleDateString()} — {booking.time}
+                            </p>
+                            {booking.instructor_name && (
+                              <p className="lesson-instructor">Instructor: {booking.instructor_name}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty-lessons">
+                      <div className="empty-icon">
+                        <i className="bi bi-calendar-x"></i>
+                      </div>
+                      <h3 className="empty-title">No upcoming lessons</h3>
+                      <p className="empty-subtitle">Book your first driving lesson now</p>
+                    </div>
+                  )}                  {/* Always show this button */}
+                  <div className="book-lesson-button">
+                    <button className="confirm-button active" onClick={handleBookLesson}>
+                      <i className="bi bi-plus-circle"></i>
+                      Book New Lesson
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Recent Transactions Card */}
+              <div className="dashboard-card transactions-card">
+                <div className="card-header">
+                  <h2 className="card-title">
+                    <i className="bi bi-receipt"></i>
+                    Recent Transactions
+                  </h2>
+                </div>
+                <div className="card-body">
+                  {payments.length > 0 ? (
+                    <div className="transactions-list">
+                      {payments.slice(0, 5).map(payment => (
+                        <div key={payment.id} className="transaction-item">
+                          <div className="transaction-icon">
+                            <i className={`bi bi-${payment.status === 'completed' ? 'check-circle' : payment.status === 'pending' ? 'hourglass' : 'exclamation-circle'}`}></i>
+                          </div>
+                          <div className="transaction-content">
+                            <div className="transaction-title">Payment #{payment.id}</div>
+                            <div className="transaction-date">
+                              {new Date(payment.transaction_date).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="transaction-meta">
+                            <div className="transaction-amount">${payment.amount}</div>
+                            <span className={`transaction-status ${payment.status}`}>
+                              {payment.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty-state">
+                      <div className="empty-icon">
+                        <i className="bi bi-receipt"></i>
+                      </div>
+                      <h3 className="empty-title">No transaction history</h3>
+                      <p className="empty-subtitle">Your recent payments will appear here</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

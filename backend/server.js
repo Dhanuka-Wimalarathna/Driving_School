@@ -20,6 +20,7 @@ import progressRoutes from './routes/progressRoutes.js'; // Assuming progress ro
 import sessionRoutes from './routes/sessionRoutes.js'; // Assuming session routes are in sessionRoutes
 import paymentRoutes from './routes/paymentRoutes.js'; // Assuming payment routes are in paymentRoutes
 import instructorDashboardRoutes from './routes/instructorDashboardRoutes.js';
+import studentDashboardRoutes from './routes/studentDashboardRoutes.js'; // Assuming student routes are in studentRoutes
 
 dotenv.config(); // Load environment variables
 
@@ -61,6 +62,7 @@ app.use('/api/progress', progressRoutes); // Assuming progress routes are in pro
 app.use('/api/session', sessionRoutes);
 app.use('/api', paymentRoutes);
 app.use('/api/instructorDashboard', instructorDashboardRoutes);
+app.use('/api/studentDashboard', studentDashboardRoutes); // Assuming student routes are in studentRoutes
 
 // In your server.js, right before the 404 handler:
 app.use((req, res, next) => {
