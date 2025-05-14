@@ -205,6 +205,26 @@
   color: #b91c1c;
 }
 
+.method-cell {
+  min-width: 130px;
+}
+
+.method-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: #f0f6ff;
+  color: #3a86ff;
+}
+
+.method-badge i {
+  font-size: 0.85rem;
+}
+
 /* Selected Package Styling */
 .selected-package {
   background: #ffffff;

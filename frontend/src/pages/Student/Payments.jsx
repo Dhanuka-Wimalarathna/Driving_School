@@ -86,12 +86,25 @@ const Payments = () => {
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    try {
+      // Check if dateString is valid
+      if (!dateString) return 'N/A';
+      
+      // Handle both ISO string format and MySQL datetime format
+      const date = new Date(dateString);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) return 'Invalid Date';
+      
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Error';
+    }
   };
 
   const handlePaymentMethodChange = (method) => {
@@ -291,6 +304,7 @@ const Payments = () => {
                     <tr>
                       <th>Date</th>
                       <th>Amount</th>
+                      <th>Method</th>
                       <th>Status</th>
                     </tr>
                   </thead>
@@ -298,8 +312,29 @@ const Payments = () => {
                     {paymentHistory.length > 0 ? (
                       paymentHistory.map((payment) => (
                         <tr key={payment.id}>
-                          <td>{formatDate(payment.date)}</td>
+                          <td>
+                            {payment.transaction_date 
+                              ? formatDate(payment.transaction_date) 
+                              : formatDate(payment.date)}
+                          </td>
                           <td className="amount-cell">{formatCurrency(payment.amount)}</td>
+                          <td className="method-cell">
+                            {payment.method ? (
+                              <span className="method-badge">
+                                <i className={`bi ${
+                                  payment.method === 'card' ? 'bi-credit-card' : 
+                                  payment.method === 'cash' ? 'bi-cash' : 
+                                  payment.method === 'bank' ? 'bi-bank' : 'bi-dash'
+                                }`}></i>
+                                {getPaymentMethodDisplay(payment.method)}
+                              </span>
+                            ) : (
+                              <span className="method-badge">
+                                <i className="bi bi-dash"></i>
+                                Unknown
+                              </span>
+                            )}
+                          </td>
                           <td>
                             <span className={`status-badge ${getStatusClass(payment.status)}`}>
                               {payment.status.charAt(0).toUpperCase() + payment.status.slice(1).toLowerCase()}
@@ -309,7 +344,7 @@ const Payments = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="3" style={{ textAlign: 'center' }}>No payment records found.</td>
+                        <td colSpan="4" style={{ textAlign: 'center' }}>No payment records found.</td>
                       </tr>
                     )}
                   </tbody>
