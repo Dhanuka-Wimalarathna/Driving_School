@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Pie } from "react-chartjs-2";
@@ -15,57 +15,162 @@ const Dashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [lastPaymentCheck, setLastPaymentCheck] = useState(Date.now());
   const navigate = useNavigate();
+  const notificationsRef = useRef(null);
 
+  // Create a reusable fetch function using useCallback
+  const fetchAllData = useCallback(async () => {
+    try {
+      setLoading(true); // Show loading indicator when refreshing
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      // Fetch student details
+      const studentResponse = await axios.get("http://localhost:8081/api/auth/user", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setStudent(studentResponse.data);
+
+      // Fetch notifications
+      const notificationsResponse = await axios.get('http://localhost:8081/api/notifications/show', {
+        headers: { 'Authorization': `Bearer ${token}`, 'studentId': studentResponse.data.id }
+      });
+      setNotifications(notificationsResponse.data || []);
+
+      // Fetch bookings
+      const bookingsResponse = await axios.get('http://localhost:8081/api/booking/student', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setBookings(bookingsResponse.data || []);
+
+      // Separate function to fetch payments with better error handling
+      const fetchPayments = async () => {
+        console.log("Fetching payments data...");
+        try {
+          // Add cache-busting and increase timeout
+          const paymentsResponse = await axios.get(
+            `http://localhost:8081/api/studentDashboard?timestamp=${Date.now()}`, 
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              timeout: 10000 // 10 second timeout
+            }
+          );
+          
+          console.log("Payments response:", paymentsResponse.data);
+          
+          // Make sure we have valid data
+          if (paymentsResponse.data) {
+            if (paymentsResponse.data.success === false) {
+              console.error("Payment fetch returned error:", paymentsResponse.data.message);
+              return [];
+            }
+            
+            // Sort payments by most recent first
+            const payments = paymentsResponse.data.payments || [];
+            return payments.sort((a, b) => {
+              return new Date(b.transaction_date) - new Date(a.transaction_date);
+            });
+          }
+          return [];
+        } catch (error) {
+          console.error("Error fetching payments:", error);
+          return [];
+        }
+      };
+
+      const paymentsData = await fetchPayments();
+      console.log("Setting payments state with:", paymentsData);
+      setPayments(paymentsData);
+      setLastPaymentCheck(Date.now());
+
+    } catch (error) {
+      console.error("Error in fetchAllData:", error);
+      if (error.response?.status === 401) navigate("/login");
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  // Initial data loading
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        console.log("Token:", token);
-        if (!token) {
-          navigate("/login");
-          return;
+    fetchAllData();
+  }, [fetchAllData]);
+
+  // Setup periodic refresh for payments (every 30 seconds)
+  useEffect(() => {
+    const refreshInterval = setInterval(async () => {
+      if (document.visibilityState === 'visible') {
+        console.log("Running automatic payment refresh");
+        try {
+          const token = localStorage.getItem("authToken");
+          if (!token) return;
+          
+          // Use the same URL format as the initial fetch
+          const paymentsResponse = await axios.get(
+            `http://localhost:8081/api/studentDashboard?timestamp=${Date.now()}`, 
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              timeout: 8000
+            }
+          );
+          
+          if (paymentsResponse.data) {
+            // Make sure we're updating with the latest data, sorted properly
+            const newPayments = paymentsResponse.data.payments || [];
+            const sortedPayments = newPayments.sort((a, b) => {
+              return new Date(b.transaction_date) - new Date(a.transaction_date);
+            });
+            
+            console.log("Auto-refresh got payments:", sortedPayments);
+            setPayments(sortedPayments);
+            setLastPaymentCheck(Date.now());
+          }
+        } catch (error) {
+          console.error("Error in auto-refresh payments:", error);
         }
+      }
+    }, 15000); // Every 15 seconds
 
-        // Fetch student details
-        const studentResponse = await axios.get("http://localhost:8081/api/auth/user", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setStudent(studentResponse.data);
+    return () => clearInterval(refreshInterval);
+  }, []);
 
-        // Fetch notifications
-        const notificationsResponse = await axios.get('http://localhost:8081/api/notifications/show', {
-          headers: { 'Authorization': `Bearer ${token}`, 'studentId': studentResponse.data.id }
-        });
-        setNotifications(notificationsResponse.data || []);
-
-        // Fetch bookings
-        const bookingsResponse = await axios.get('http://localhost:8081/api/booking/student', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setBookings(bookingsResponse.data || []);
-
-        // Fetch payments
-        const paymentsResponse = await axios.get('http://localhost:8081/api/studentDashboard', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-  
-        if (paymentsResponse.data && paymentsResponse.data.success === false) {
-          console.error('Backend reported error:', paymentsResponse.data.message);
-          throw new Error(paymentsResponse.data.message);
-        }
-        setPayments(paymentsResponse.data.payments || []);
-
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        if (error.response?.status === 401) navigate("/login");
-      } finally {
-        setLoading(false);
+  // Add visibility change listener to refresh data when tab becomes visible again
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && 
+          Date.now() - lastPaymentCheck > 60000) { // Only refresh if more than 1 minute passed
+        fetchAllData();
       }
     };
 
-    fetchData();
-  }, [navigate]);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchAllData, lastPaymentCheck]);
+
+  // Handle clicks outside notifications dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+
   // Payment status chart configuration
   const getPaymentChartData = () => {
     // Calculate total and remaining amounts
@@ -197,14 +302,106 @@ const Dashboard = () => {
                   <p className="page-subtitle">Your driving progress overview</p>
                 </div>
               </div>
-            </div>            <div className="dashboard-grid">
-              {/* Payment Overview Card - Moved to the top */}
+              <div className="header-actions" ref={notificationsRef}>
+                <button 
+                  className="notification-bell"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                >
+                  <i className="bi bi-bell"></i>
+                  {unreadCount > 0 && (
+                    <span className="notification-badge">{unreadCount}</span>
+                  )}
+                </button>
+
+                {/* Notifications Dropdown */}
+                {showNotifications && (
+                  <>
+                    <div className="notification-overlay" onClick={() => setShowNotifications(false)}></div>
+                    <div className="notifications-dropdown">
+                      <div className="dropdown-header">
+                        <h4>Notifications</h4>
+                        <button 
+                          className="mark-all-read"
+                          onClick={handleClearAllNotifications}
+                        >
+                          Mark all as read
+                        </button>
+                        {/* Removed the close button */}
+                      </div>
+                      <div className="notifications-list">
+                        {notifications.length > 0 ? (
+                          notifications.map((notification) => (
+                            <div
+                              key={notification.id}
+                              className={`notification-item ${!notification.is_read ? "unread" : ""}`}
+                              onClick={() => handleMarkAsRead(notification.id)}
+                            >
+                              <div className="notification-icon">
+                                <i className={`bi ${getNotificationIcon(notification.type)}`}></i>
+                              </div>
+                              <div className="notification-content">
+                                <h4 className="notification-title">{notification.title}</h4>
+                                <p className="notification-message">{notification.message}</p>
+                                <div className="notification-meta">
+                                  <span className="notification-time">
+                                    {new Date(notification.created_at).toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="empty-notifications">
+                            <i className="bi bi-bell-slash"></i>
+                            <p>No new notifications</p>
+                          </div>
+                        )}
+                      </div>
+                      {notifications.length > 0 && (
+                        <div className="dropdown-footer">
+                          <button onClick={() => setShowNotifications(false)}>
+                            Close
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            
+            <div className="dashboard-grid">
+              {/* Payment Overview Card */}
               <div className="dashboard-card payments-overview-card">
                 <div className="card-header">
                   <h2 className="card-title">
                     <i className="bi bi-graph-up"></i>
                     Payment Overview
                   </h2>
+                  <button 
+                    className="action-button refresh-button" 
+                    onClick={() => {
+                      const btn = document.querySelector('.refresh-button i');
+                      btn.classList.add('rotating');
+                      
+                      // Add a loading indicator to show something is happening
+                      const refreshBtn = document.querySelector('.refresh-button');
+                      refreshBtn.disabled = true;
+                      refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise rotating"></i> Refreshing...';
+                      
+                      fetchAllData().then(() => {
+                        setTimeout(() => {
+                          btn.classList.remove('rotating');
+                          refreshBtn.disabled = false;
+                          refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh';
+                        }, 800);
+                      });
+                    }}
+                    title="Refresh payment data"
+                  >
+                    <i className="bi bi-arrow-clockwise"></i>
+                    Refresh
+                  </button>
                 </div>
                 <div className="card-body">
                   {payments.length > 0 ? (
@@ -263,17 +460,21 @@ const Dashboard = () => {
                         <div className="recent-payments-container">
                           <h5 className="recent-payments-title">Recent Payments</h5>
                           <div className="recent-payments-list">
-                            {payments.slice(0, 3).map(payment => (
-                              <div key={payment.id} className="recent-payment-item">
-                                <div className="payment-amount">${payment.amount}</div>
-                                <div className="payment-date">
-                                  {new Date(payment.transaction_date).toLocaleDateString()}
+                            {payments.length > 0 ? (
+                              payments.slice(0, 3).map(payment => (
+                                <div key={payment.id} className="recent-payment-item">
+                                  <div className="payment-amount">LKR. {payment.amount}</div>
+                                  <div className="payment-date">
+                                    {new Date(payment.transaction_date).toLocaleDateString()}
+                                  </div>
+                                  <div className={`payment-status-badge ${payment.status.toLowerCase()}`}>
+                                    {payment.status}
+                                  </div>
                                 </div>
-                                <div className={`payment-status-badge ${payment.status}`}>
-                                  {payment.status}
-                                </div>
-                              </div>
-                            ))}
+                              ))
+                            ) : (
+                              <div className="empty-payment-message">No payment records found</div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -296,63 +497,6 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              {/* Notifications */}
-              <div className="dashboard-card notifications-card">
-                <div className="card-header">
-                  <h2 className="card-title">
-                    <i className="bi bi-bell"></i>
-                    Notifications
-                  </h2>
-                  {notifications.length > 0 && (
-                    <button className="action-button" onClick={handleClearAllNotifications}>
-                      <i className="bi bi-check-all"></i>
-                      Mark All Read
-                    </button>
-                  )}
-                </div>
-                <div className="card-body">
-                  {notifications.length > 0 ? (
-                    <div className="notifications-list">
-                      {notifications.map((notification) => (
-                        <div
-                          key={notification.id}
-                          className={`notification-item ${!notification.is_read ? "unread" : ""}`}
-                        >
-                          <div className="notification-icon">
-                            <i className={`bi ${getNotificationIcon(notification.type)}`}></i>
-                          </div>
-                          <div className="notification-content">
-                            <h4 className="notification-title">{notification.title}</h4>
-                            <p className="notification-message">{notification.message}</p>
-                            <div className="notification-meta">
-                              <span className="notification-time">
-                                {new Date(notification.created_at).toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-                          {!notification.is_read && (
-                            <button
-                              className="notification-action"
-                              onClick={() => handleMarkAsRead(notification.id)}
-                            >
-                              <i className="bi bi-check-circle"></i>
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="empty-notifications">
-                      <div className="empty-icon">
-                        <i className="bi bi-bell-slash"></i>
-                      </div>
-                      <h3 className="empty-title">No new notifications</h3>
-                      <p className="empty-subtitle">We'll notify you when there's something important</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
               {/* Profile */}
               <div className="dashboard-card profile-card">
                 <div className="card-header">
@@ -436,7 +580,8 @@ const Dashboard = () => {
                       <h3 className="empty-title">No upcoming lessons</h3>
                       <p className="empty-subtitle">Book your first driving lesson now</p>
                     </div>
-                  )}                  {/* Always show this button */}
+                  )}
+                  {/* Always show this button */}
                   <div className="book-lesson-button">
                     <button className="confirm-button active" onClick={handleBookLesson}>
                       <i className="bi bi-plus-circle"></i>

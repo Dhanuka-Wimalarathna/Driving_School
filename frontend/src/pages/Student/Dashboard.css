@@ -124,18 +124,242 @@
   transform: translateY(-2px);
 }
 
-/* Dashboard Grid */
+/* Notification Bell Styles */
+.notification-bell {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.85);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.notification-bell:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: scale(1.1);
+}
+
+.notification-badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: #F72585;
+  color: white;
+  font-size: 0.7rem;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  font-weight: bold;
+}
+
+/* Notifications Dropdown - Updated for center position with larger width */
+.notifications-dropdown {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px; /* Increased from 450px */
+  max-width: 95vw;
+  max-height: 80vh;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  z-index: 1050;
+  animation: dropdownFade 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Updated animation for centered dropdown */
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Add overlay background */
+.notification-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+  animation: overlayFade 0.3s ease-out;
+}
+
+@keyframes overlayFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Update notifications list to handle max-height in new modal format */
+.notifications-dropdown .notifications-list {
+  max-height: calc(80vh - 120px); /* Account for header and footer */
+  overflow-y: auto;
+  padding: 0.5rem 1rem;
+  flex: 1;
+}
+
+/* Fix for dropdown header layout - updated to remove close button */
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.dropdown-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  flex: 1;
+}
+
+.mark-all-read {
+  background: none;
+  border: none;
+  color: #4cc9f0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* We can remove or comment out the close button styles since it's no longer used */
+/*
+.dropdown-close {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #6c757d;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.dropdown-close:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #343a40;
+}
+*/
+
+.notifications-dropdown .notifications-list {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.notifications-dropdown .notification-item {
+  padding: 0.75rem;
+  margin: 0.25rem 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.notifications-dropdown .notification-item.unread {
+  background-color: rgba(76, 201, 240, 0.05);
+}
+
+.notifications-dropdown .notification-icon {
+  width: 30px;
+  height: 30px;
+  font-size: 1rem;
+}
+
+.notifications-dropdown .notification-title {
+  font-size: 0.95rem;
+}
+
+.notifications-dropdown .notification-message {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.notifications-dropdown .notification-meta {
+  font-size: 0.75rem;
+}
+
+.empty-notifications {
+  padding: 1.5rem;
+  text-align: center;
+  color: #6c757d;
+}
+
+.empty-notifications i {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.dropdown-footer {
+  padding: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.dropdown-footer button {
+  background: none;
+  border: none;
+  color: #4cc9f0;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Dashboard Grid - Updated layout since notifications card is removed */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
 
-/* Make notifications card span full width */
-.notifications-card {
+/* Remove the notifications-card selector */
+/* .notifications-card {
   grid-column: 1 / -1;
+} */
+
+/* Modify the dropdown-footer to handle the removed notifications-card */
+.dropdown-footer button {
+  background: none;
+  border: none;
+  color: #4cc9f0;
+  cursor: pointer;
+  font-weight: 500;
+  /* Remove the scrollIntoView functionality since the card doesn't exist anymore */
 }
 
+/* Dashboard Card */
 .dashboard-card {
   background-color: #fff;
   border-radius: 16px;
@@ -691,6 +915,17 @@
     position: static;
     margin-top: 0.5rem;
   }
+
+  .notifications-dropdown {
+    width: 95vw; /* Make it use most of the screen on mobile */
+    max-width: 500px;
+  }
+  
+  .notification-bell {
+    width: 40px;
+    height: 40px;
+    padding: 0.6rem;
+  }
 }
 
 @media (max-width: 576px) {
@@ -734,4 +969,64 @@
   .lesson-action-button {
     opacity: 1;
   }
+}
+
+/* Add refresh button animation */
+.refresh-button .bi-arrow-clockwise {
+  transition: transform 0.3s ease;
+}
+
+.refresh-button:active .bi-arrow-clockwise {
+  transform: rotate(180deg);
+}
+
+/* Improved refresh button animation */
+.refresh-button .bi-arrow-clockwise {
+  transition: transform 0.5s ease;
+}
+
+.rotating {
+  animation: rotate-animation 0.8s linear;
+}
+
+@keyframes rotate-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Enhanced refresh button styles */
+.refresh-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.refresh-button:disabled {
+  opacity: 0.8;
+  cursor: wait;
+}
+
+/* Animation for the refresh icon */
+.rotating {
+  animation: rotate-animation 1s linear infinite;
+}
+
+@keyframes rotate-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Empty payment message */
+.empty-payment-message {
+  text-align: center;
+  color: #6c757d;
+  padding: 1rem;
+  font-style: italic;
 }
