@@ -209,54 +209,74 @@ const Dashboard = () => {
                 <div className="card-body">
                   {payments.length > 0 ? (
                     <div className="modern-chart-container">
-                      <Pie 
-                        data={getPaymentChartData()} 
-                        options={{ 
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          plugins: {
-                            legend: { 
-                              position: 'right',
-                              labels: {
-                                usePointStyle: true,
-                                padding: 20,
-                                font: {
-                                  size: 12,
-                                  weight: 'bold'
+                      <div className="chart-and-payments-wrapper">
+                        <div className="reduced-chart">
+                          <Pie 
+                            data={getPaymentChartData()} 
+                            options={{ 
+                              responsive: true,
+                              maintainAspectRatio: true,
+                              plugins: {
+                                legend: { 
+                                  position: 'bottom',
+                                  labels: {
+                                    usePointStyle: true,
+                                    padding: 10,
+                                    font: {
+                                      size: 11,
+                                      weight: 'bold'
+                                    }
+                                  }
+                                },
+                                tooltip: { 
+                                  enabled: true,
+                                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                  padding: 12,
+                                  cornerRadius: 8,
+                                  titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                  },
+                                  bodyFont: {
+                                    size: 13
+                                  },
+                                  callbacks: {
+                                    label: function(context) {
+                                      return ` ${context.label}: ${context.raw} payment(s)`;
+                                    }
+                                  }
                                 }
-                              }
-                            },
-                            tooltip: { 
-                              enabled: true,
-                              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                              padding: 12,
-                              cornerRadius: 8,
-                              titleFont: {
-                                size: 14,
-                                weight: 'bold'
                               },
-                              bodyFont: {
-                                size: 13
-                              },
-                              callbacks: {
-                                label: function(context) {
-                                  return ` ${context.label}: ${context.raw} payment(s)`;
+                              elements: {
+                                arc: {
+                                  borderWidth: 1,
+                                  borderColor: '#fff'
                                 }
+                              },
+                              animation: {
+                                animateRotate: true,
+                                animateScale: true
                               }
-                            }
-                          },
-                          elements: {
-                            arc: {
-                              borderWidth: 1,
-                              borderColor: '#fff'
-                            }
-                          },
-                          animation: {
-                            animateRotate: true,
-                            animateScale: true
-                          }
-                        }}
-                      />
+                            }}
+                          />
+                        </div>
+                        <div className="recent-payments-container">
+                          <h5 className="recent-payments-title">Recent Payments</h5>
+                          <div className="recent-payments-list">
+                            {payments.slice(0, 3).map(payment => (
+                              <div key={payment.id} className="recent-payment-item">
+                                <div className="payment-amount">${payment.amount}</div>
+                                <div className="payment-date">
+                                  {new Date(payment.transaction_date).toLocaleDateString()}
+                                </div>
+                                <div className={`payment-status-badge ${payment.status}`}>
+                                  {payment.status}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                       <div className="payment-stats">
                         <div className="total-payments">
                           <div className="stat-number">{payments.length}</div>
@@ -426,48 +446,7 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              {/* Recent Transactions Card */}
-              <div className="dashboard-card transactions-card">
-                <div className="card-header">
-                  <h2 className="card-title">
-                    <i className="bi bi-receipt"></i>
-                    Recent Transactions
-                  </h2>
-                </div>
-                <div className="card-body">
-                  {payments.length > 0 ? (
-                    <div className="transactions-list">
-                      {payments.slice(0, 5).map(payment => (
-                        <div key={payment.id} className="transaction-item">
-                          <div className="transaction-icon">
-                            <i className={`bi bi-${payment.status === 'completed' ? 'check-circle' : payment.status === 'pending' ? 'hourglass' : 'exclamation-circle'}`}></i>
-                          </div>
-                          <div className="transaction-content">
-                            <div className="transaction-title">Payment #{payment.id}</div>
-                            <div className="transaction-date">
-                              {new Date(payment.transaction_date).toLocaleDateString()}
-                            </div>
-                          </div>
-                          <div className="transaction-meta">
-                            <div className="transaction-amount">${payment.amount}</div>
-                            <span className={`transaction-status ${payment.status}`}>
-                              {payment.status}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="empty-state">
-                      <div className="empty-icon">
-                        <i className="bi bi-receipt"></i>
-                      </div>
-                      <h3 className="empty-title">No transaction history</h3>
-                      <p className="empty-subtitle">Your recent payments will appear here</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+              {/* End of dashboard grid */}
             </div>
           </div>
         </div>

@@ -536,6 +536,116 @@
   color: #ffc107;
 }
 
+/* Chart and Recent Payments Layout */
+.chart-and-payments-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.reduced-chart {
+  flex: 0 0 40%;
+  max-width: 200px;
+}
+
+.recent-payments-container {
+  flex: 1;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 1rem;
+  min-width: 0; /* Prevents overflow issues */
+}
+
+.recent-payments-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 0.5rem;
+}
+
+.recent-payments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.recent-payment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.recent-payment-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.payment-amount {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.payment-date {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.payment-status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.payment-status-badge.completed,
+.payment-status-badge.paid {
+  background-color: rgba(25, 135, 84, 0.1);
+  color: #198754;
+}
+
+.payment-status-badge.pending {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+}
+
+.payment-status-badge.failed,
+.payment-status-badge.canceled {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+/* Make payments-overview-card match other cards width */
+.payments-overview-card {
+  width: 100%;
+  grid-column: 1 / -1; /* Make it span the full width like notifications-card */
+}
+
+/* Responsive adjustments for the payment section */
+@media (max-width: 768px) {
+  .chart-and-payments-wrapper {
+    flex-direction: column;
+  }
+  
+  .reduced-chart {
+    max-width: 180px;
+    margin-bottom: 1rem;
+  }
+  
+  .recent-payments-container {
+    width: 100%;
+  }
+}
+
 /* Responsive Adjustments */
 @media (max-width: 992px) {
   .dashboard-grid {
@@ -544,6 +654,11 @@
   
   .notifications-card {
     grid-column: auto;
+  }
+
+  .payments-overview-card {
+    grid-column: auto;
+    width: 100%;
   }
 }
 
