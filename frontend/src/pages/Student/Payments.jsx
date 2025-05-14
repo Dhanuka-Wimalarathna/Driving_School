@@ -17,6 +17,7 @@ const Payments = () => {
   const [alreadyPaid, setAlreadyPaid] = useState(0);
   const [remainingAmount, setRemainingAmount] = useState(0);
   const [paymentError, setPaymentError] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('card'); // Default payment method
   const navigate = useNavigate();
   
   const fetchData = () => {
@@ -93,9 +94,14 @@ const Payments = () => {
     });
   };
 
+  const handlePaymentMethodChange = (method) => {
+    setPaymentMethod(method);
+  };
+
   const handlePaymentClick = () => {
     if (selectedPackage && remainingAmount > 0) {
       setShowPaymentModal(true);
+      setPaymentMethod('card'); // Reset to default payment method when opening modal
     }
   };
 
@@ -137,7 +143,8 @@ const Payments = () => {
         id: Date.now(), // temporary ID
         amount,
         date: new Date().toISOString(),
-        status: 'paid'
+        status: 'paid',
+        method: paymentMethod // Add payment method to the local state
       };
 
       const newPaidTotal = alreadyPaid + amount;
@@ -158,7 +165,8 @@ const Payments = () => {
           body: JSON.stringify({
             amount,
             packageId: selectedPackage.package_id,
-            transactionId: generateTransactionId()
+            transactionId: generateTransactionId(),
+            paymentMethod: paymentMethod // Include payment method in API request
           })
         }
       );
@@ -170,7 +178,7 @@ const Payments = () => {
       setShowPaymentModal(false);
       fetchData();
       
-      alert(`Payment of ${formatCurrency(amount)} successful!`);
+      alert(`Payment of ${formatCurrency(amount)} via ${paymentMethod} successful!`);
     } catch (err) {
       console.error('Payment error:', err);
       setPaymentError('Payment failed. Please try again.');
@@ -188,6 +196,16 @@ const Payments = () => {
   const calculatePaymentPercentage = () => {
     if (!selectedPackage || parseFloat(selectedPackage.price) <= 0) return 0;
     return Math.min(100, (alreadyPaid / parseFloat(selectedPackage.price)) * 100);
+  };
+
+  // Add a helper function to get payment method display name
+  const getPaymentMethodDisplay = (method) => {
+    switch(method) {
+      case 'card': return 'Card Payment';
+      case 'cash': return 'Cash Payment';
+      case 'bank': return 'Bank Transfer';
+      default: return method;
+    }
   };
 
   return (
@@ -345,6 +363,50 @@ const Payments = () => {
                   />
                 </div>
                 
+                <div className="form-group">
+                  <label>Select Payment Method</label>
+                  <div className="payment-methods">
+                    <div 
+                      className={`payment-method-option ${paymentMethod === 'card' ? 'selected' : ''}`}
+                      onClick={() => handlePaymentMethodChange('card')}
+                    >
+                      <div className="payment-method-icon">
+                        <i className="bi bi-credit-card"></i>
+                      </div>
+                      <span>Card Payment</span>
+                    </div>
+                    <div 
+                      className={`payment-method-option ${paymentMethod === 'cash' ? 'selected' : ''}`}
+                      onClick={() => handlePaymentMethodChange('cash')}
+                    >
+                      <div className="payment-method-icon">
+                        <i className="bi bi-cash"></i>
+                      </div>
+                      <span>Cash Payment</span>
+                    </div>
+                    <div 
+                      className={`payment-method-option ${paymentMethod === 'bank' ? 'selected' : ''}`}
+                      onClick={() => handlePaymentMethodChange('bank')}
+                    >
+                      <div className="payment-method-icon">
+                        <i className="bi bi-bank"></i>
+                      </div>
+                      <span>Bank Transfer</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {paymentMethod === 'bank' && (
+                  <div className="bank-info-box">
+                    <h4>Bank Account Details</h4>
+                    <p><strong>Account Name:</strong> Madushani Driving School</p>
+                    <p><strong>Account Number:</strong> 1234567890</p>
+                    <p><strong>Bank Name:</strong> Bank of Ceylon</p>
+                    <p><strong>Branch:</strong> Colombo</p>
+                    <p className="bank-note">Please include your name and student ID as reference</p>
+                  </div>
+                )}
+                
                 {paymentError && <div className="error-message">{paymentError}</div>}
               </div>
             </div>
@@ -357,6 +419,7 @@ const Payments = () => {
                 disabled={!paymentAmount || parseFloat(paymentAmount) <= 0 || parseFloat(paymentAmount) > remainingAmount}
               >
                 Pay {paymentAmount ? formatCurrency(paymentAmount) : formatCurrency(0)}
+                {paymentAmount ? ` via ${getPaymentMethodDisplay(paymentMethod)}` : ''}
               </button>
             </div>
           </div>
