@@ -173,41 +173,18 @@ const Dashboard = () => {
 
   // Payment status chart configuration
   const getPaymentChartData = () => {
-    // Calculate total and remaining amounts
-    let totalAmount = 0;
-    let paidAmount = 0;
-    
-    // Group payments by status and calculate totals
+    // Group payments by status and calculate counts
     const statusCounts = payments.reduce((acc, payment) => {
       const status = payment.status.toLowerCase();
       acc[status] = (acc[status] || 0) + 1;
-      
-      // Calculate total and paid amounts
-      const amount = parseFloat(payment.amount);
-      totalAmount += amount;
-      if (status === 'paid' || status === 'completed') {
-        paidAmount += amount;
-      }
-      
       return acc;
     }, {});
     
-    // If we have package information, use that for total amount
-    const packagePrice = payments.length > 0 && payments[0].package_price ? 
-      parseFloat(payments[0].package_price) : 0;
-    
-    if (packagePrice > 0) {
-      totalAmount = packagePrice;
-    }
-    
-    // Calculate remaining amount
-    const remainingAmount = Math.max(0, totalAmount - paidAmount);
-    
-    // Add remaining amount to chart data if it exists
+    // Only include actual payment statuses in the chart (not remaining amount)
     const chartData = {
-      labels: [...Object.keys(statusCounts)],
+      labels: Object.keys(statusCounts),
       datasets: [{
-        data: [...Object.values(statusCounts)],
+        data: Object.values(statusCounts),
         backgroundColor: ['#4CC9F0', '#F72585', '#7209B7', '#3A86FF'],
         borderColor: 'rgba(255, 255, 255, 0.8)',
         borderWidth: 2,
@@ -217,14 +194,6 @@ const Dashboard = () => {
         hoverOffset: 6
       }]
     };
-    
-    // If there's a remaining amount, add it to the chart
-    if (remainingAmount > 0) {
-      chartData.labels.push('Remaining');
-      chartData.datasets[0].data.push(1); // Adding as 1 count
-      chartData.datasets[0].backgroundColor.push('#6930C3');
-      chartData.datasets[0].hoverBackgroundColor.push('#5B2BA3');
-    }
     
     return chartData;
   };
