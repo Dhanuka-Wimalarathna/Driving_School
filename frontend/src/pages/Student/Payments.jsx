@@ -36,18 +36,19 @@ const Payments = () => {
       if (!packageData.message) {
         setSelectedPackage(packageData);
         
-        // Filter only successful payments and parse amounts
-        const successfulPayments = payments
-          .filter(p => p.status.toLowerCase() === 'paid')
-          .map(p => ({
-            ...p,
-            amount: parseFloat(p.amount)
-          }));
+        // Process all payments (not just 'paid' ones)
+        const allPayments = payments.map(p => ({
+          ...p,
+          amount: parseFloat(p.amount)
+        }));
         
-        setPaymentHistory(successfulPayments);
+        // Show all payments (ordered by date, newest first)
+        allPayments.sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date));
+        setPaymentHistory(allPayments);
         
-        // Calculate total paid amount
-        const paidTotal = successfulPayments.reduce((sum, p) => sum + p.amount, 0);
+        // Calculate total paid amount (only count 'paid' status for financial calculations)
+        const paidPayments = allPayments.filter(p => p.status.toLowerCase() === 'paid');
+        const paidTotal = paidPayments.reduce((sum, p) => sum + p.amount, 0);
         setAlreadyPaid(paidTotal);
         
         // Calculate remaining amount
@@ -156,15 +157,11 @@ const Payments = () => {
         id: Date.now(), // temporary ID
         amount,
         date: new Date().toISOString(),
-        status: 'paid',
-        method: paymentMethod // Add payment method to the local state
+        status: 'pending', // Changed from 'paid' to 'pending'
+        method: paymentMethod
       };
 
-      const newPaidTotal = alreadyPaid + amount;
-      const newRemaining = Math.max(0, parseFloat(selectedPackage.price) - newPaidTotal);
-
-      setAlreadyPaid(newPaidTotal);
-      setRemainingAmount(newRemaining);
+      // Note: We don't update the paid total or remaining amount until payment is approved
       setPaymentHistory([...paymentHistory, newPayment]);
 
       const response = await fetch(
@@ -179,7 +176,7 @@ const Payments = () => {
             amount,
             packageId: selectedPackage.package_id,
             transactionId: generateTransactionId(),
-            paymentMethod: paymentMethod // Include payment method in API request
+            paymentMethod: paymentMethod
           })
         }
       );
@@ -191,7 +188,7 @@ const Payments = () => {
       setShowPaymentModal(false);
       fetchData();
       
-      alert(`Payment of ${formatCurrency(amount)} via ${paymentMethod} successful!`);
+      alert(`Payment of ${formatCurrency(amount)} via ${paymentMethod} submitted! Status: Pending Approval`);
     } catch (err) {
       console.error('Payment error:', err);
       setPaymentError('Payment failed. Please try again.');
@@ -208,7 +205,13 @@ const Payments = () => {
 
   const calculatePaymentPercentage = () => {
     if (!selectedPackage || parseFloat(selectedPackage.price) <= 0) return 0;
-    return Math.min(100, (alreadyPaid / parseFloat(selectedPackage.price)) * 100);
+    
+    // Only include payments with 'paid' status
+    const paidTotal = paymentHistory
+      .filter(payment => payment.status === 'paid')
+      .reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
+      
+    return Math.min(100, (paidTotal / parseFloat(selectedPackage.price)) * 100);
   };
 
   // Add a helper function to get payment method display name
@@ -319,14 +322,14 @@ const Payments = () => {
                           </td>
                           <td className="amount-cell">{formatCurrency(payment.amount)}</td>
                           <td className="method-cell">
-                            {payment.method ? (
+                            {payment.payment_method ? (
                               <span className="method-badge">
                                 <i className={`bi ${
-                                  payment.method === 'card' ? 'bi-credit-card' : 
-                                  payment.method === 'cash' ? 'bi-cash' : 
-                                  payment.method === 'bank' ? 'bi-bank' : 'bi-dash'
+                                  payment.payment_method === 'card' ? 'bi-credit-card' : 
+                                  payment.payment_method === 'cash' ? 'bi-cash' : 
+                                  payment.payment_method === 'bank' ? 'bi-bank' : 'bi-dash'
                                 }`}></i>
-                                {getPaymentMethodDisplay(payment.method)}
+                                {getPaymentMethodDisplay(payment.payment_method)}
                               </span>
                             ) : (
                               <span className="method-badge">
