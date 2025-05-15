@@ -93,9 +93,10 @@
 
 /* Progress Grid */
 .progress-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
   gap: 1.5rem;
+  justify-content: center;
 }
 
 /* Progress Card */
@@ -261,6 +262,9 @@
   .progress-grid {
     grid-template-columns: 1fr;
   }
+  .vehicle-card {
+    max-width: 100%; /* Full width on smaller screens */
+  }
 }
 
 @media (max-width: 768px) {
@@ -306,6 +310,9 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   transition: transform 0.2s ease;
+  flex: 1;
+  min-width: 300px;
+  max-width: calc(50% - 1.5rem); /* Limit to approximately 2 cards per row */
 }
 
 .vehicle-card:hover {
@@ -351,7 +358,7 @@
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  background: linear-gradient(90deg, #4cc9f0, #3a86ff);
   transition: width 0.5s ease;
   display: flex;
   align-items: center;
@@ -409,29 +416,30 @@
 /* Progress Status */
 .progress-status {
   text-align: center;
-  padding: 1rem;
+  padding: 0.5rem;
   border-radius: 8px;
   margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.status-indicator {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
 }
 
 .status-complete {
   color: #388e3c;
   background: #e8f5e9;
-  padding: 0.5rem;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .status-in-progress {
   color: #1976d2;
   background: #e3f2fd;
-  padding: 0.5rem;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 /* Responsive Design */

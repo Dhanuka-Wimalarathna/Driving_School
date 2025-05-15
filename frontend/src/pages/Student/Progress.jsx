@@ -135,14 +135,14 @@ const Progress = () => {
 
                       <div className="progress-status">
                         {progress === 100 ? (
-                          <div className="status-complete">
+                          <div className="status-indicator status-complete">
                             <i className="bi bi-check-circle"></i>
-                            Training Completed
+                            <span>Training Completed</span>
                           </div>
                         ) : (
-                          <div className="status-in-progress">
+                          <div className="status-indicator status-in-progress">
                             <i className="bi bi-arrow-repeat"></i>
-                            Training In Progress
+                            <span>Training In Progress</span>
                           </div>
                         )}
                       </div>
