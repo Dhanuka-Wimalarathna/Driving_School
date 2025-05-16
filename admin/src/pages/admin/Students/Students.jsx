@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import InstructorSidebar from "../components/Sidebar/InstructorSidebar";
 import { useNavigate } from "react-router-dom";
-import { Search, Eye, AlertCircle, User } from "lucide-react";
-import "./InstructorStudents.css";
+import Sidebar from "../../../components/Sidebar/Sidebar";
+import { Search, Send, Eye, CheckSquare, AlertCircle, User 
+} from "lucide-react";
+import "./Students.module.css";
 
-const InstructorStudents = () => {
+const Students = () => {
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [selectAll, setSelectAll] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
@@ -68,12 +72,75 @@ const InstructorStudents = () => {
   };
 
   const handleViewClick = (student) => {
-    navigate(`/instructor/students/${student.id}`, { state: { student } });
+    navigate(`/admin/students/${student.id}`, { state: { student } });
   };
+
+  const handleCheckboxChange = (id) => {
+    setSelectedStudentIds((prev) =>
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedStudentIds([]);
+    } else {
+      const allIds = filteredStudents.map((student) => student.id);
+      setSelectedStudentIds(allIds);
+    }
+    setSelectAll(!selectAll);
+  };
+
+  // In Students.jsx
+const handleSendNotification = async () => {
+  if (selectedStudentIds.length === 0 || !notificationMessage.trim()) {
+    alert("Please select students and enter a message.");
+    return;
+  }
+
+  const token = localStorage.getItem("authToken");
+
+  if (!token) {
+    alert("Authentication token not found. Please log in again.");
+    return;
+  }
+
+  try {
+    // Send only studentIds and message
+    await axios.post("http://localhost:8081/api/notifications/send", {
+      studentIds: selectedStudentIds,
+      message: notificationMessage, // Only message is sent here
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`, // ✅ Include token here!
+      },
+    });
+
+    // Show success toast
+    const toast = document.createElement("div");
+    toast.className = "toast-notification success";
+    toast.innerHTML = `<CheckSquare size={20} /> Notification sent to ${selectedStudentIds.length} students!`;
+    document.body.appendChild(toast);
+    setTimeout(() => document.body.removeChild(toast), 3000);
+
+    setNotificationMessage("");
+    setSelectedStudentIds([]);
+    setSelectAll(false);
+  } catch (error) {
+    console.error("Error sending notifications:", error);
+    
+    // Show error toast
+    const toast = document.createElement("div");
+    toast.className = "toast-notification error";
+    toast.innerHTML = `<AlertCircle size={20} /> Failed to send notifications.`;
+    document.body.appendChild(toast);
+    setTimeout(() => document.body.removeChild(toast), 3000);
+  }
+};
 
   return (
     <div className="dashboard-layout">
-    <InstructorSidebar />
+      <Sidebar />
       <main className="students-main-content">
         <div className="students-container">
           <header className="students-header">
@@ -85,7 +152,7 @@ const InstructorStudents = () => {
                 Students
               </h1>
               <p className="subtitle">
-                {filteredStudents.length} {filteredStudents.length === 1 ? "student" : "students"} enrolled
+                {filteredStudents.length} {filteredStudents.length === 1 ? "student" : "students"} in database
               </p>
             </div>
             
@@ -103,6 +170,35 @@ const InstructorStudents = () => {
             </div>
           </header>
 
+          <div className="notification-panel">
+            <div className="notification-stats">
+              <div className="stat-card">
+                <span className="count">{selectedStudentIds.length}</span>
+                <span className="label">Selected</span>
+              </div>
+              <div className="stat-card total">
+                <span className="count">{filteredStudents.length}</span>
+                <span className="label">Total Students</span>
+              </div>
+            </div>
+            <div className="notification-compose">
+              <textarea
+                className="notification-textarea"
+                placeholder="Write notification message here..."
+                value={notificationMessage}
+                onChange={(e) => setNotificationMessage(e.target.value)}
+              />
+              <button
+                className="send-notification-btn"
+                onClick={handleSendNotification}
+                disabled={selectedStudentIds.length === 0}
+              >
+                <Send size={16} />
+                <span>Send to {selectedStudentIds.length} {selectedStudentIds.length === 1 ? "Student" : "Students"}</span>
+              </button>
+            </div>
+          </div>
+
           {isLoading ? (
             <div className="loading-container">
               <div className="loading-spinner"></div>
@@ -119,6 +215,17 @@ const InstructorStudents = () => {
               <table className="students-table">
                 <thead>
                   <tr>
+                    <th>
+                      <div className="checkbox-wrapper">
+                        <input
+                          type="checkbox"
+                          id="select-all"
+                          checked={selectAll}
+                          onChange={handleSelectAll}
+                        />
+                        <label htmlFor="select-all" className="checkbox-label"></label>
+                      </div>
+                    </th>
                     <th>ID</th>
                     <th>Name</th>
                     <th>Email</th>
@@ -130,7 +237,18 @@ const InstructorStudents = () => {
                 <tbody>
                   {filteredStudents.length > 0 ? (
                     filteredStudents.map((student) => (
-                      <tr key={student.id}>
+                      <tr key={student.id} className={selectedStudentIds.includes(student.id) ? "selected-row" : ""}>
+                        <td>
+                          <div className="checkbox-wrapper">
+                            <input
+                              type="checkbox"
+                              id={`student-${student.id}`}
+                              checked={selectedStudentIds.includes(student.id)}
+                              onChange={() => handleCheckboxChange(student.id)}
+                            />
+                            <label htmlFor={`student-${student.id}`} className="checkbox-label"></label>
+                          </div>
+                        </td>
                         <td className="student-id">{student.id}</td>
                         <td className="student-name">
                           <div className="name-cell">
@@ -153,7 +271,7 @@ const InstructorStudents = () => {
                               title="View student details"
                             >
                               <Eye size={16} />
-                              <span>Mark Progress</span>
+                              <span>View</span>
                             </button>
                           </div>
                         </td>
@@ -161,7 +279,7 @@ const InstructorStudents = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="no-results">
+                      <td colSpan="7" className="no-results">
                         <div className="no-data">
                           <Search size={32} />
                           <p>No students found matching your search</p>
@@ -184,4 +302,4 @@ const InstructorStudents = () => {
   );
 };
 
-export default InstructorStudents;
+export default Students;

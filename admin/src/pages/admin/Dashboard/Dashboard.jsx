@@ -11,12 +11,12 @@ import {
   Legend 
 } from 'chart.js';
 import { useNavigate } from 'react-router-dom';
-import './Dashboard.css';
-import Sidebar from '../components/Sidebar/Sidebar';
+import Sidebar from '../../../components/Sidebar/Sidebar';
 import { BookOpen, Users, Calendar, DollarSign, LogOut, Settings, Download } from 'lucide-react';
-import Report from '../components/Report/Report';
+import Report from '../../../components/Report/Report';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import styles from './Dashboard.module.css';
 
 // Register ChartJS components
 ChartJS.register(
@@ -118,7 +118,7 @@ function Dashboard() {
     labels: monthlyStats.map(item => item.month),
     datasets: [
       {
-        label: 'Monthly Revenue (LKR)',
+        label: '  Monthly Revenue (LKR)',
         data: monthlyStats.map(item => item.total_amount),
         backgroundColor: 'rgba(99, 102, 241, 0.7)',
         borderColor: 'rgba(99, 102, 241, 1)',
@@ -132,7 +132,7 @@ function Dashboard() {
     labels: monthlyStats.map(item => item.month),
     datasets: [
       {
-        label: 'Number of Payments',
+        label: '  Number of Payments',
         data: monthlyStats.map(item => item.payment_count),
         backgroundColor: 'rgba(14, 165, 233, 0.7)',
         borderColor: 'rgba(14, 165, 233, 1)',
@@ -207,92 +207,92 @@ function Dashboard() {
     : 0;
 
   return (
-    <div className="dashboard-layout">
+    <div className={styles['dashboard-layout']}>
       <Sidebar sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
       
       {showReport ? (
-        <div className="report-overlay">
-          <div className="report-wrapper" ref={reportRef}>
+        <div className={styles['report-overlay']}>
+          <div className={styles['report-wrapper']} ref={reportRef}>
             <Report 
               stats={stats} 
               monthlyStats={monthlyStats} 
               currentMonthRevenue={currentMonthRevenue} 
             />
           </div>
-          <div className="report-actions">
-            <button onClick={generatePDF} className="download-pdf-btn">
+          <div className={styles['report-actions']}>
+            <button onClick={generatePDF} className={styles['download-pdf-btn']}>
               <Download size={20} />
               Download PDF
             </button>
-            <button onClick={() => setShowReport(false)} className="close-report-btn">
+            <button onClick={() => setShowReport(false)} className={styles['close-report-btn']}>
               Close
             </button>
           </div>
         </div>
       ) : (
-        <main className={`main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
-          <div className="dashboard-content">
-            <div className="page-header">
+        <main className={`${styles['main-content']} ${sidebarCollapsed ? styles.collapsed : ''}`}>
+          <div className={styles['dashboard-content']}>
+            <div className={styles['page-header']}>
               <h1>Admin Dashboard</h1>
-              <div className="header-actions">
-                <button onClick={handleTrialExamStudents} className="trial-exam-btn">
-                  <Calendar size={20} className="trial-exam-icon" />
+              <div className={styles['header-actions']}>
+                <button className={styles['trial-exam-btn']} onClick={handleTrialExamStudents}>
+                  <Calendar size={20} className={styles['trial-exam-icon']} />
                   Trial Exam Students
                 </button>
-                <button onClick={handleSettings} className="download-btn">
-                  <Download size={20} className="download-icon" />
+                <button onClick={handleSettings} className={styles['download-btn']}>
+                  <Download size={20} className={styles['download-icon']} />
                   Report
                 </button>
-                <button onClick={handleLogout} className="logout-btn">
-                  <LogOut size={20} className="logout-icon" />
+                <button onClick={handleLogout} className={styles['logout-btn']}>
+                  <LogOut size={20} className={styles['logout-icon']} />
                   Logout
                 </button>
               </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-icon-wrapper primary">
+            <div className={styles['stats-grid']}>
+              <div className={styles['stat-card']}>
+                <div className={`${styles['stat-icon-wrapper']} ${styles.primary}`}>
                   <Users size={22} />
                 </div>
-                <div className="stat-content">
-                  <h3 className="stat-title">Total Students</h3>
-                  <p className="stat-value">{stats.totalStudents}</p>
-                  <p className="stat-change positive">+3.2% from last month</p>
+                <div className={styles['stat-content']}>
+                  <h3 className={styles['stat-title']}>Total Students</h3>
+                  <p className={styles['stat-value']}>{stats.totalStudents}</p>
+                  <p className={`${styles['stat-change']} ${styles.positive}`}>+3.2% from last month</p>
                 </div>
               </div>
 
-              <div className="stat-card">
-                <div className="stat-icon-wrapper success">
+              <div className={styles['stat-card']}>
+                <div className={`${styles['stat-icon-wrapper']} ${styles.success}`}>
                   <BookOpen size={22} />
                 </div>
-                <div className="stat-content">
-                  <h3 className="stat-title">Active Instructors</h3>
-                  <p className="stat-value">{stats.activeInstructors}</p>
-                  <p className="stat-change positive">+2.1% from last month</p>
+                <div className={styles['stat-content']}>
+                  <h3 className={styles['stat-title']}>Active Instructors</h3>
+                  <p className={styles['stat-value']}>{stats.activeInstructors}</p>
+                  <p className={`${styles['stat-change']} ${styles.positive}`}>+2.1% from last month</p>
                 </div>
               </div>
 
-              <div className="stat-card">
-                <div className="stat-icon-wrapper info">
+              <div className={styles['stat-card']}>
+                <div className={`${styles['stat-icon-wrapper']} ${styles.info}`}>
                   <DollarSign size={22} />
                 </div>
-                <div className="stat-content">
-                  <h3 className="stat-title">Total Revenue</h3>
-                  <p className="stat-value">LKR {stats.totalRevenue}</p>
-                  <p className="stat-change positive">+4.7% from last month</p>
+                <div className={styles['stat-content']}>
+                  <h3 className={styles['stat-title']}>Total Revenue</h3>
+                  <p className={styles['stat-value']}>LKR {stats.totalRevenue}</p>
+                  <p className={`${styles['stat-change']} ${styles.positive}`}>+4.7% from last month</p>
                 </div>
               </div>
 
-              <div className="stat-card">
-                <div className="stat-icon-wrapper warning">
+              <div className={styles['stat-card']}>
+                <div className={`${styles['stat-icon-wrapper']} ${styles.warning}`}>
                   <DollarSign size={22} />
                 </div>
-                <div className="stat-content">
-                  <h3 className="stat-title">This Month's Revenue</h3>
-                  <p className="stat-value">LKR {currentMonthRevenue}</p>
-                  <p className="stat-change positive">
+                <div className={styles['stat-content']}>
+                  <h3 className={styles['stat-title']}>This Month's Revenue</h3>
+                  <p className={styles['stat-value']}>LKR {currentMonthRevenue}</p>
+                  <p className={`${styles['stat-change']} ${styles.positive}`}>
                     {monthlyStats.length > 1 ? 
                       `+${Math.round(((currentMonthRevenue - monthlyStats[monthlyStats.length - 2].total_amount) / 
                         monthlyStats[monthlyStats.length - 2].total_amount) * 100)}% from last month` 
@@ -303,34 +303,34 @@ function Dashboard() {
             </div>
 
             {/* Payment Charts Section */}
-            <div className="charts-container">
+            <div className={styles['charts-container']}>
               {loading ? (
-                <div className="loading-spinner">
-                  <div className="spinner"></div>
+                <div className={styles['loading-spinner']}>
+                  <div className={styles.spinner}></div>
                   <p>Loading payment data...</p>
                 </div>
               ) : monthlyStats.length > 0 ? (
-                <div className="charts-row">
-                  <div className="chart-section">
-                    <div className="section-header">
+                <div className={styles['charts-row']}>
+                  <div className={styles['chart-section']}>
+                    <div className={styles['section-header']}>
                       <h2>Monthly Revenue Breakdown</h2>
                     </div>
-                    <div className="chart-container">
+                    <div className={styles['chart-container']}>
                       <Bar data={revenueChartData} options={chartOptions} height={350} />
                     </div>
                   </div>
                   
-                  <div className="chart-section">
-                    <div className="section-header">
+                  <div className={styles['chart-section']}>
+                    <div className={styles['section-header']}>
                       <h2>Monthly Payment Activity</h2>
                     </div>
-                    <div className="chart-container">
+                    <div className={styles['chart-container']}>
                       <Bar data={paymentsChartData} options={chartOptions} height={350} />
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="no-data">
+                <div className={styles['no-data']}>
                   <p>No payment data available</p>
                 </div>
               )}

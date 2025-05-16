@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Plus, AlertCircle, Search } from 'lucide-react';
-import './TrialExamStudents.css'; 
-import Sidebar from '../components/Sidebar/Sidebar';
+import './TrialExamStudents.module.css'; 
+import Sidebar from '../../../components/Sidebar/Sidebar';
 
 const TrialExamStudents = () => {
   const navigate = useNavigate();

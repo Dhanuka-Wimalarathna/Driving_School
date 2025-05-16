@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Calendar, Clock, Car, User, AlertCircle, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import "./InstructorSchedule.css";
-import InstructorSidebar from "../components/Sidebar/InstructorSidebar";
+import "./InstructorSchedule.module.css";
+import InstructorSidebar from '../../../components/Sidebar/InstructorSidebar';
 
 const InstructorSchedule = () => {
   const [schedule, setSchedule] = useState([]);

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Sidebar from "../components/Sidebar/Sidebar";
+import Sidebar from "../../../components/Sidebar/Sidebar";
 import axios from "axios";
 import { 
   User, 
@@ -17,7 +17,7 @@ import {
   CreditCard,
   AlertCircle
 } from "lucide-react";
-import "./StudentDetails.css";
+import "./StudentDetails.module.css";
 
 const StudentDetails = () => {
   const location = useLocation();

@@ -3,9 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import './InstructorDashboard.css';
-import InstructorSidebar from "../components/Sidebar/InstructorSidebar";
-import { Users, Calendar, LogOut } from 'lucide-react'; 
+import './InstructorDashboard.module.css';
+import InstructorSidebar from '../../../components/Sidebar/InstructorSidebar';import { Users, Calendar, LogOut } from 'lucide-react'; 
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 

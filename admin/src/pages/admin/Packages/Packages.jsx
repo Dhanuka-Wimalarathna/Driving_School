@@ -11,8 +11,8 @@ import {
   Car,
   Truck
 } from "lucide-react";
-import Sidebar from "../components/Sidebar/Sidebar";
-import "./Packages.css";
+import Sidebar from "../../../components/Sidebar/Sidebar";
+import "./Packages.module.css";
 
 const Packages = () => {
   const [packages, setPackages] = useState([]);

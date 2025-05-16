@@ -1,24 +1,30 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 import AdminSignIn from './components/Auth/AdminSignIn';
 import AdminSignUp from './components/Auth/AdminSignUp';
-import Dashboard from './pages/Dashboard';
-import Packages from './pages/Packages';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import FirstPage from './components/Auth/FirstPage';
 import InstructorSignIn from './components/Auth/InstrutorSignIn';
 import InstructorSignUp from './components/Auth/InstructorSignUp';
-import Vehicles from './pages/Vehicles';
-import Instructor from './pages/Instructor';
-import Students from './pages/Students';
-import StudentDetails from './pages/StudentDetails';
-import InstructorDashboard from './instructor/InstructorDashboard';
-import InstructorVehicles from './instructor/InstructorVehicles';
-import InstructorStudents from './instructor/InstructorStudents';
-import InstructorSchedule from './instructor/InstructorSchedule';                                     
-import MarkProgress from './instructor/MarkProgress';
-import PaymentPage from './pages/Payments';
-import TrialExamStudents from './pages/TrialExamStudents';
+import FirstPage from './components/Auth/FirstPage';
+
+import Dashboard from './pages/admin/Dashboard/Dashboard';
+import Packages from './pages/admin/Packages/Packages';
+import Vehicles from './pages/admin/Vehicles/Vehicles';
+import Instructor from './pages/admin/Instructor/Instructor';
+import Students from './pages/admin/Students/Students';
+import StudentDetails from './pages/admin/StudentDetails/StudentDetails';
+import TrialExamStudents from './pages/admin/TrialExamStudents/TrialExamStudents';
+import Payments from './pages/admin/Payments/Payments';
+
+import InstructorDashboard from './pages/instructor/InstructorDashboard/InstructorDashboard';
+import InstructorVehicles from './pages/instructor/InstructorVehicles/InstructorVehicles';
+import InstructorStudents from './pages/instructor/InstructorStudents/InstructorStudents';
+import InstructorSchedule from './pages/instructor/InstructorSchedule/InstructorSchedule';      
+import MarkProgress from './pages/instructor/MarkProgress/MarkProgress';
+
+
+
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   return (
@@ -40,7 +46,7 @@ function App() {
         <Route path="/admin/instructors" element={<Instructor />} />
         <Route path="/admin/students" element={<Students />} />
         <Route path='/admin/students/:id' element={<StudentDetails />} />
-        <Route path="/admin/payments" element={<PaymentPage />} />
+        <Route path="/admin/payments" element={<Payments />} />
         <Route path="/trial-exam-students" element={<TrialExamStudents />} />
 
         {/* Instructor Pages */}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Sidebar from "../components/Sidebar/Sidebar";
+import Sidebar from "../../../components/Sidebar/Sidebar";
 import { 
   Search, 
   Edit,
@@ -9,7 +9,7 @@ import {
   AlertCircle,
   Car
 } from "lucide-react";
-import "./Vehicles.css";
+import "./Vehicles.module.css";
 
 const Vehicles = () => {
   const [vehicles, setVehicles] = useState([]);

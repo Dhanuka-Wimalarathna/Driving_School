@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import axios from 'axios';
-import './MarkProgress.css';
-import InstructorSidebar from "../components/Sidebar/InstructorSidebar";
+import './MarkProgress.module.css';
+import InstructorSidebar from '../../../components/Sidebar/InstructorSidebar';
 
 const MarkProgress = () => {
   const { id } = useParams();

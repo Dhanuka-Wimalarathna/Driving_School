@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import InstructorSidebar from "../components/Sidebar/InstructorSidebar";
-import { 
+import InstructorSidebar from '../../../components/Sidebar/InstructorSidebar';import { 
   Search, 
   Eye,
   AlertCircle,
   Car
 } from "lucide-react";
-import "./InstructorVehicles.css";
+import "./InstructorVehicles.module.css";
 
 const InstructorVehicles = () => {
   const [vehicles, setVehicles] = useState([]);

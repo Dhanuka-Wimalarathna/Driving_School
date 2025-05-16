@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Search, CreditCard, AlertCircle, CheckCircle, RefreshCw, XCircle } from 'lucide-react';
-import Sidebar from '../components/Sidebar/Sidebar';
-import './Payments.css';
+import Sidebar from '../../../components/Sidebar/Sidebar';
+import './Payments.module.css';
 
 const Payments = () => {
   const navigate = useNavigate();
