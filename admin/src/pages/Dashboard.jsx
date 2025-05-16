@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Bar } from 'react-chartjs-2';
 import { 
@@ -13,7 +13,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 import Sidebar from '../components/Sidebar/Sidebar';
-import { BookOpen, Users, Calendar, DollarSign, LogOut } from 'lucide-react';
+import { BookOpen, Users, Calendar, DollarSign, LogOut, Settings, Download } from 'lucide-react';
+import Report from '../components/Report/Report';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 // Register ChartJS components
 ChartJS.register(
@@ -37,6 +40,8 @@ function Dashboard() {
 
   const [monthlyStats, setMonthlyStats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showReport, setShowReport] = useState(false);
+  const reportRef = useRef(null);
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -46,6 +51,33 @@ function Dashboard() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userRole');
     navigate('/admin/sign-in');
+  };
+
+  const handleSettings = async () => {
+    setShowReport(true);
+  };
+
+  const generatePDF = async () => {
+    if (!reportRef.current) return;
+    
+    try {
+      const report = reportRef.current;
+      const canvas = await html2canvas(report, { scale: 2 });
+      const imgData = canvas.toDataURL('image/png');
+      
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save('Madushani_Driving_School_Report.pdf');
+      
+      // Hide report after download
+      setShowReport(false);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    }
   };
 
   useEffect(() => {
@@ -170,103 +202,130 @@ function Dashboard() {
     <div className="dashboard-layout">
       <Sidebar sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
       
-      <main className={`main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
-        <div className="dashboard-content">
-          <div className="page-header">
-            <h1>Admin Dashboard</h1>
-            <button onClick={handleLogout} className="logout-btn">
-              <LogOut size={20} className="logout-icon" />
-              Logout
+      {showReport ? (
+        <div className="report-overlay">
+          <div className="report-wrapper" ref={reportRef}>
+            <Report 
+              stats={stats} 
+              monthlyStats={monthlyStats} 
+              currentMonthRevenue={currentMonthRevenue} 
+            />
+          </div>
+          <div className="report-actions">
+            <button onClick={generatePDF} className="download-pdf-btn">
+              <Download size={20} />
+              Download PDF
+            </button>
+            <button onClick={() => setShowReport(false)} className="close-report-btn">
+              Close
             </button>
           </div>
-
-          {/* Stats Cards */}
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon-wrapper primary">
-                <Users size={22} />
-              </div>
-              <div className="stat-content">
-                <h3 className="stat-title">Total Students</h3>
-                <p className="stat-value">{stats.totalStudents}</p>
-                <p className="stat-change positive">+3.2% from last month</p>
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon-wrapper success">
-                <BookOpen size={22} />
-              </div>
-              <div className="stat-content">
-                <h3 className="stat-title">Active Instructors</h3>
-                <p className="stat-value">{stats.activeInstructors}</p>
-                <p className="stat-change positive">+2.1% from last month</p>
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon-wrapper info">
-                <DollarSign size={22} />
-              </div>
-              <div className="stat-content">
-                <h3 className="stat-title">Total Revenue</h3>
-                <p className="stat-value">LKR {stats.totalRevenue}</p>
-                <p className="stat-change positive">+4.7% from last month</p>
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon-wrapper warning">
-                <DollarSign size={22} />
-              </div>
-              <div className="stat-content">
-                <h3 className="stat-title">This Month's Revenue</h3>
-                <p className="stat-value">LKR {currentMonthRevenue}</p>
-                <p className="stat-change positive">
-                  {monthlyStats.length > 1 ? 
-                    `+${Math.round(((currentMonthRevenue - monthlyStats[monthlyStats.length - 2].total_amount) / 
-                      monthlyStats[monthlyStats.length - 2].total_amount) * 100)}% from last month` 
-                    : 'No previous data'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Payment Charts Section */}
-          <div className="charts-container">
-            {loading ? (
-              <div className="loading-spinner">
-                <div className="spinner"></div>
-                <p>Loading payment data...</p>
-              </div>
-            ) : monthlyStats.length > 0 ? (
-              <div className="charts-row">
-                <div className="chart-section">
-                  <div className="section-header">
-                    <h2>Monthly Revenue Breakdown</h2>
-                  </div>
-                  <div className="chart-container">
-                    <Bar data={revenueChartData} options={chartOptions} height={350} />
-                  </div>
-                </div>
-                
-                <div className="chart-section">
-                  <div className="section-header">
-                    <h2>Monthly Payment Activity</h2>
-                  </div>
-                  <div className="chart-container">
-                    <Bar data={paymentsChartData} options={chartOptions} height={350} />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="no-data">
-                <p>No payment data available</p>
-              </div>
-            )}
-          </div>
         </div>
-      </main>
+      ) : (
+        <main className={`main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
+          <div className="dashboard-content">
+            <div className="page-header">
+              <h1>Admin Dashboard</h1>
+              <div className="header-actions">
+                <button onClick={handleSettings} className="download-btn">
+                  <Download size={20} className="download-icon" />
+                  Report
+                </button>
+                <button onClick={handleLogout} className="logout-btn">
+                  <LogOut size={20} className="logout-icon" />
+                  Logout
+                </button>
+              </div>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="stats-grid">
+              <div className="stat-card">
+                <div className="stat-icon-wrapper primary">
+                  <Users size={22} />
+                </div>
+                <div className="stat-content">
+                  <h3 className="stat-title">Total Students</h3>
+                  <p className="stat-value">{stats.totalStudents}</p>
+                  <p className="stat-change positive">+3.2% from last month</p>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon-wrapper success">
+                  <BookOpen size={22} />
+                </div>
+                <div className="stat-content">
+                  <h3 className="stat-title">Active Instructors</h3>
+                  <p className="stat-value">{stats.activeInstructors}</p>
+                  <p className="stat-change positive">+2.1% from last month</p>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon-wrapper info">
+                  <DollarSign size={22} />
+                </div>
+                <div className="stat-content">
+                  <h3 className="stat-title">Total Revenue</h3>
+                  <p className="stat-value">LKR {stats.totalRevenue}</p>
+                  <p className="stat-change positive">+4.7% from last month</p>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon-wrapper warning">
+                  <DollarSign size={22} />
+                </div>
+                <div className="stat-content">
+                  <h3 className="stat-title">This Month's Revenue</h3>
+                  <p className="stat-value">LKR {currentMonthRevenue}</p>
+                  <p className="stat-change positive">
+                    {monthlyStats.length > 1 ? 
+                      `+${Math.round(((currentMonthRevenue - monthlyStats[monthlyStats.length - 2].total_amount) / 
+                        monthlyStats[monthlyStats.length - 2].total_amount) * 100)}% from last month` 
+                      : 'No previous data'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Charts Section */}
+            <div className="charts-container">
+              {loading ? (
+                <div className="loading-spinner">
+                  <div className="spinner"></div>
+                  <p>Loading payment data...</p>
+                </div>
+              ) : monthlyStats.length > 0 ? (
+                <div className="charts-row">
+                  <div className="chart-section">
+                    <div className="section-header">
+                      <h2>Monthly Revenue Breakdown</h2>
+                    </div>
+                    <div className="chart-container">
+                      <Bar data={revenueChartData} options={chartOptions} height={350} />
+                    </div>
+                  </div>
+                  
+                  <div className="chart-section">
+                    <div className="section-header">
+                      <h2>Monthly Payment Activity</h2>
+                    </div>
+                    <div className="chart-container">
+                      <Bar data={paymentsChartData} options={chartOptions} height={350} />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="no-data">
+                  <p>No payment data available</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+      )}
     </div>
   );
 }
