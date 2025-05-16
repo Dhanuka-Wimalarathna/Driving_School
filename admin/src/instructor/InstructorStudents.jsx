@@ -82,7 +82,7 @@ const InstructorStudents = () => {
                 <span className="title-icon">
                   <User size={24} />
                 </span>
-                My Students
+                Students
               </h1>
               <p className="subtitle">
                 {filteredStudents.length} {filteredStudents.length === 1 ? "student" : "students"} enrolled
@@ -153,7 +153,7 @@ const InstructorStudents = () => {
                               title="View student details"
                             >
                               <Eye size={16} />
-                              <span>View</span>
+                              <span>Mark Progress</span>
                             </button>
                           </div>
                         </td>

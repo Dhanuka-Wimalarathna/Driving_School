@@ -82,7 +82,7 @@ const MarkProgress = () => {
     setErrorMessage('');
     setSuccessMessage('');
     
-    axios.post('http://localhost:8081/api/session/accept-trial', {
+    axios.post('http://localhost:8081/api/trial-exams/accept-trial', {
       studentId: id,
       vehicleType: vehicleType
     })

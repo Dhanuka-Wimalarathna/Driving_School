@@ -51,6 +51,29 @@ body {
   color: #111827;
 }
 
+.trial-exam-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.trial-exam-btn:hover {
+  background-color: #4338ca;
+}
+
+.trial-exam-icon {
+  stroke-width: 2;
+}
+
 .download-btn {
   display: flex;
   align-items: center;

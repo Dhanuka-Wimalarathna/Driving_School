@@ -42,6 +42,9 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showReport, setShowReport] = useState(false);
   const reportRef = useRef(null);
+  const [showTrialExamStudents, setShowTrialExamStudents] = useState(false);
+  const [trialExamStudents, setTrialExamStudents] = useState([]);
+  const [loadingTrialStudents, setLoadingTrialStudents] = useState(false);
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -103,6 +106,11 @@ function Dashboard() {
       console.error("Error fetching payment stats:", error);
       setLoading(false);
     }
+  };
+
+  // Add this function to handle trial exam students button click
+  const handleTrialExamStudents = () => {
+    navigate('/trial-exam-students');
   };
 
   // Revenue Chart Data
@@ -227,6 +235,10 @@ function Dashboard() {
             <div className="page-header">
               <h1>Admin Dashboard</h1>
               <div className="header-actions">
+                <button onClick={handleTrialExamStudents} className="trial-exam-btn">
+                  <Calendar size={20} className="trial-exam-icon" />
+                  Trial Exam Students
+                </button>
                 <button onClick={handleSettings} className="download-btn">
                   <Download size={20} className="download-icon" />
                   Report
