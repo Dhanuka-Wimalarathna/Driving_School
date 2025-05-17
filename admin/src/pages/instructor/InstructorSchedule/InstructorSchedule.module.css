@@ -15,6 +15,12 @@
   transition: margin-left 0.3s ease;
 }
 
+/* Add collapsed state for sidebar */
+.schedule-main-content.collapsed {
+  margin-left: 80px;
+  width: calc(100% - 80px);
+}
+
 .schedule-container {
   padding: 2rem;
   height: 100%;
@@ -46,6 +52,7 @@
 
 .title-icon {
   margin-right: 0.75rem;
+  color: #6366f1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,15 +73,34 @@
 .search-container {
   position: relative;
   width: 320px;
+  display: flex;
+  align-items: center;
 }
 
 .search-icon {
+  position: absolute;
+  left: 0.75rem;
   color: #6b7280;
-  margin-right: 0.5rem;
+}
+
+.search-input {
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  width: 100%;
+  background-color: #fff;
+  transition: border-color 0.15s ease-in-out;
 }
 
 .search-input::placeholder {
   color: #9ca3af;
+}
+
+.search-input:focus {
+  border-color: #6366f1;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
 /* Cards Container */
@@ -146,6 +172,12 @@
   color: #6b7280;
 }
 
+/* Add this to your status badge styles */
+.status-badge.not_completed {
+  background-color: #ffedd5;
+  color: #ea580c;
+}
+
 .lesson-actions {
   display: flex;
   gap: 0.5rem;
@@ -180,7 +212,7 @@
 .info-item {
   display: flex;
   align-items: center;
-  font-size: 0.938rem;
+  font-size: 0.85rem;
 }
 
 .info-icon {
@@ -193,7 +225,7 @@
   font-weight: 500;
   color: #4b5563;
   width: 4rem;
-  flex-shrink: 0;
+  flex-shrink: 1;
 }
 
 .info-value {
@@ -204,27 +236,27 @@
 /* Session Action Buttons - New */
 .session-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;  /* Changed from column to row */
   gap: 0.625rem;
-  margin-top: 1rem;
-  border-top: 1px solid #f3f4f6;
-  padding-top: 1rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  justify-content: space-between; /* Added to space buttons evenly */
 }
 
 .btn-complete {
   padding: 0.625rem;
   border: none;
   border-radius: 0.375rem;
-  background-color: #22c55e;
+  background-color: #3b82f6; /* Changed to blue */
   color: white;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  width: 100%;
+  flex: 1; /* Added to make buttons take equal width */
 }
 
 .btn-complete:hover {
-  background-color: #16a34a;
+  background-color: #2563eb; /* Darker blue on hover */
 }
 
 .btn-incomplete {
@@ -241,6 +273,23 @@
 
 .btn-incomplete:hover {
   background-color: #d97706;
+}
+
+/* Add these styles for the not-completed button */
+.btn-not-complete {
+  padding: 0.625rem;
+  border: none;
+  border-radius: 0.375rem;
+  background-color: #ef4444; /* Changed to red */
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1; /* Added to make buttons take equal width */
+}
+
+.btn-not-complete:hover {
+  background-color: #dc2626; /* Darker red on hover */
 }
 
 /* Empty, Loading, and Error States */
@@ -325,6 +374,84 @@
 
 .clear-search:hover {
   background-color: #d1d5db;
+}
+
+/* Toast Notification Styles */
+:global(.toast-notification) {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  max-width: 350px;
+  z-index: 1000;
+  animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
+}
+
+:global(.toast-notification.success) {
+  border-left: 4px solid #16a34a;
+}
+
+:global(.toast-notification.error) {
+  border-left: 4px solid #dc2626;
+}
+
+/* Add warning style for toast notifications */
+:global(.toast-notification.warning) {
+  border-left: 4px solid #f59e0b;
+}
+
+:global(.toast-icon) {
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Add this style for completed messages */
+.completed-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem;
+  background-color: #eff6ff; /* Light blue background */
+  border-radius: 0.375rem;
+  color: #3b82f6; /* Blue text */
+  font-weight: 500;
+  width: 100%;
+}
+
+/* Style for the not-completed message */
+.not-completed-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem;
+  background-color: #fee2e2; /* Light red background */
+  border-radius: 0.375rem;
+  color: #ef4444; /* Red text */
+  font-weight: 500;
+  width: 100%;
 }
 
 /* Responsive styles */

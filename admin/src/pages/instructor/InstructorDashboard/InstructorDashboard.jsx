@@ -3,8 +3,10 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import './InstructorDashboard.module.css';
-import InstructorSidebar from '../../../components/Sidebar/InstructorSidebar';import { Users, Calendar, LogOut } from 'lucide-react'; 
+// Change this import to use your CSS modules properly
+import styles from './InstructorDashboard.module.css';
+import InstructorSidebar from '../../../components/Sidebar/InstructorSidebar';
+import { Users, Calendar, LogOut, Car, Clock, Book } from 'lucide-react'; 
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -52,15 +54,21 @@ function InstructorDashboard() {
     fetchDashboardData();
   }, []);
 
+  // Calculate completion percentage for additional insights
+  const completionPercentage = stats.scheduledSessions + stats.completedSessions > 0
+    ? Math.round((stats.completedSessions / (stats.scheduledSessions + stats.completedSessions)) * 100)
+    : 0;
+
   // Pie chart data configuration for today's sessions
   const pieChartData = {
     labels: ['Scheduled', 'Completed'],
     datasets: [
       {
         data: [stats.scheduledSessions, stats.completedSessions],
-        backgroundColor: ['#FF6384', '#4BC0C0'],
-        hoverBackgroundColor: ['#FF6384', '#4BC0C0'],
-        borderWidth: 1,
+        backgroundColor: ['#4f46e5', '#10b981'],
+        hoverBackgroundColor: ['#4338ca', '#059669'],
+        borderWidth: 0,
+        borderRadius: 4,
       },
     ],
   };
@@ -74,10 +82,25 @@ function InstructorDashboard() {
         labels: {
           padding: 20,
           usePointStyle: true,
-          pointStyle: 'circle'
+          pointStyle: 'circle',
+          font: {
+            family: "Poppins, sans-serif",
+            size: 12
+          }
         }
       },
       tooltip: {
+        backgroundColor: 'rgba(17, 24, 39, 0.8)',
+        padding: 12,
+        bodyFont: {
+          family: "Poppins, sans-serif",
+          size: 13
+        },
+        titleFont: {
+          family: "Poppins, sans-serif",
+          size: 14,
+          weight: '600'
+        },
         callbacks: {
           label: function(context) {
             const label = context.label || '';
@@ -91,97 +114,138 @@ function InstructorDashboard() {
     },
   };
 
-  if (loading) return <div className="loading-screen">Loading...</div>;
-  if (error) return <div className="error-screen">{error}</div>;
+  if (loading) return (
+    <div className={styles['loading-screen']}>
+      <div className={styles['spinner']}></div>
+      <p>Loading dashboard data...</p>
+    </div>
+  );
+  
+  if (error) return (
+    <div className={styles['error-screen']}>
+      <h2>Error</h2>
+      <p>{error}</p>
+    </div>
+  );
 
   return (
-    <div className="dashboard-layout">
-      <InstructorSidebar sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
-      
-      <main className={`main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
-        <div className="dashboard-content">
-          <div className="page-header">
-            <h1>Instructor Dashboard</h1>
-            <button onClick={handleLogout} className="logout-btn">
-              <LogOut size={18} className="logout-icon" />
-              Logout
-            </button>
-          </div>
-
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon-wrapper primary">
-                <Users size={22} />
-              </div>
-              <div className="stat-content">
-                <h3 className="stat-title">Total Students</h3>
-                <p className="stat-value">{stats.totalStudents}</p>
-                <p className="stat-change">All students in system</p>
+    // Update these class names to use the styles object
+    <div className={styles['app-layout']}>
+      <InstructorSidebar collapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
+      <main className={`${styles['main-content']} ${sidebarCollapsed ? styles['collapsed'] : ''}`}>
+        <div className={styles['page-container']}>
+          <div className={styles['dashboard-content']}>
+            <div className={styles['page-header']}>
+              <h1>Instructor Dashboard</h1>
+              <div className={styles['header-actions']}>
+                <button onClick={handleLogout} className={styles['logout-btn']}>
+                  <LogOut size={20} className={styles['logout-icon']} />
+                  Logout
+                </button>
               </div>
             </div>
 
-            <div className="stat-card">
-              <div className="stat-icon-wrapper success">
-                <Users size={22} />
+            {/* Stats Cards */}
+            <div className={styles['stats-grid']}>
+              <div className={styles['stat-card']}>
+                <div className={`${styles['stat-icon-wrapper']} ${styles.primary}`}>
+                  <Users size={22} />
+                </div>
+                <div className={styles['stat-content']}>
+                  <h3 className={styles['stat-title']}>Total Students</h3>
+                  <p className={styles['stat-value']}>{stats.totalStudents}</p>
+                  <p className={styles['stat-change']}>In the system</p>
+                </div>
               </div>
-              <div className="stat-content">
-                <h3 className="stat-title">Your Students</h3>
-                <p className="stat-value">{stats.assignedStudents}</p>
-                <p className="stat-change">Assigned to you</p>
+
+              <div className={styles['stat-card']}>
+                <div className={`${styles['stat-icon-wrapper']} ${styles.success}`}>
+                  <Book size={22} />
+                </div>
+                <div className={styles['stat-content']}>
+                  <h3 className={styles['stat-title']}>Your Students</h3>
+                  <p className={styles['stat-value']}>{stats.assignedStudents}</p>
+                  <p className={styles['stat-change']}>Assigned to you</p>
+                </div>
+              </div>
+
+              <div className={styles['stat-card']}>
+                <div className={`${styles['stat-icon-wrapper']} ${styles.info}`}>
+                  <Calendar size={22} />
+                </div>
+                <div className={styles['stat-content']}>
+                  <h3 className={styles['stat-title']}>Today's Sessions</h3>
+                  <p className={styles['stat-value']}>{stats.scheduledSessions + stats.completedSessions}</p>
+                  <p className={styles['stat-change']}>
+                    <span className={styles.positive}>{stats.completedSessions} completed</span>, {stats.scheduledSessions} upcoming
+                  </p>
+                </div>
+              </div>
+
+              <div className={styles['stat-card']}>
+                <div className={`${styles['stat-icon-wrapper']} ${styles.warning}`}>
+                  <Clock size={22} />
+                </div>
+                <div className={styles['stat-content']}>
+                  <h3 className={styles['stat-title']}>Completion Rate</h3>
+                  <p className={styles['stat-value']}>{completionPercentage}%</p>
+                  <p className={`${styles['stat-change']} ${styles.positive}`}>
+                    Today's progress
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="stat-card">
-              <div className="stat-icon-wrapper info">
-                <Calendar size={22} />
-              </div>
-              <div className="stat-content">
-                <h3 className="stat-title">Today's Sessions</h3>
-                <p className="stat-value">
-                  {stats.scheduledSessions + stats.completedSessions}
-                </p>
-                <p className="stat-change">
-                  {stats.completedSessions} completed, {stats.scheduledSessions} upcoming
-                </p>
-              </div>
-            </div>
-          </div>
+            {/* Charts and Sessions Section */}
+            <div className={styles['charts-container']}>
+              <div className={styles['charts-row']}>
+                <div className={styles['chart-section']}>
+                  <div className={styles['section-header']}>
+                    <h2>Today's Session Status</h2>
+                  </div>
+                  <div className={styles['chart-container']}>
+                    {stats.scheduledSessions === 0 && stats.completedSessions === 0 ? (
+                      <div className={styles['no-sessions-chart']}>No sessions today</div>
+                    ) : (
+                      <Pie data={pieChartData} options={pieChartOptions} height={300} />
+                    )}
+                  </div>
+                </div>
 
-          <div className="horizontal-section">
-            <div className="chart-section">
-              <h2>Today's Session Status</h2>
-              <div className="pie-chart-container">
-                {stats.scheduledSessions === 0 && stats.completedSessions === 0 ? (
-                  <div className="no-sessions-chart">No sessions today</div>
-                ) : (
-                  <Pie data={pieChartData} options={pieChartOptions} />
-                )}
-              </div>
-            </div>
-
-            <div className="sessions-section">
-              <h2>Today's Sessions ({new Date().toLocaleDateString()})</h2>
-              <div className="sessions-grid">
-                {stats.upcomingSessions.length === 0 ? (
-                  <div className="no-sessions">No sessions scheduled for today</div>
-                ) : (
-                  stats.upcomingSessions.slice(0, 6).map(session => (
-                    <div key={session.booking_id} className="session-card">
-                      <div className="session-header">
-                        <span className="student-names">
-                          {session.first_name} {session.last_name}
-                        </span>
-                        <span className="session-time">{session.time_slot}</span>
+                <div className={styles['session-list-section']}>
+                  <div className={styles['section-header']}>
+                    <h2>Today's Sessions ({new Date().toLocaleDateString()})</h2>
+                  </div>
+                  <div className={styles['sessions-container']}>
+                    {stats.upcomingSessions.length === 0 ? (
+                      <div className={styles['no-data']}>
+                        <p>No sessions scheduled for today</p>
                       </div>
-                      <div className="session-details">
-                        <span className="session-vehicle">{session.vehicle}</span>
-                        <span className={`session-status ${session.status.toLowerCase()}`}>
-                          {session.status}
-                        </span>
+                    ) : (
+                      <div className={styles['sessions-grid']}>
+                        {stats.upcomingSessions.slice(0, 6).map(session => (
+                          <div key={session.booking_id} className={styles['session-card']}>
+                            <div className={styles['session-header']}>
+                              <span className={styles['student-names']}>
+                                {session.first_name} {session.last_name}
+                              </span>
+                              <span className={styles['session-time']}>{session.time_slot}</span>
+                            </div>
+                            <div className={styles['session-details']}>
+                              <span className={styles['session-vehicle']}>
+                                <Car size={14} />
+                                {session.vehicle}
+                              </span>
+                              <span className={`${styles['session-status']} ${styles[session.status.toLowerCase()]}`}>
+                                {session.status}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  ))
-                )}
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

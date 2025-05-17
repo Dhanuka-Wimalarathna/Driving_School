@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import InstructorSidebar from '../../../components/Sidebar/InstructorSidebar';import { useNavigate } from "react-router-dom";
-import { Search, Eye, AlertCircle, User } from "lucide-react";
-import "./InstructorStudents.module.css";
+import InstructorSidebar from '../../../components/Sidebar/InstructorSidebar';
+import { useNavigate } from "react-router-dom";
+import { Search, Eye, AlertCircle, User, Clock } from "lucide-react";
+import styles from "./InstructorStudents.module.css";
 
 const InstructorStudents = () => {
   const [students, setStudents] = useState([]);
@@ -10,6 +11,7 @@ const InstructorStudents = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem("authToken");
 
@@ -70,30 +72,34 @@ const InstructorStudents = () => {
     navigate(`/instructor/students/${student.id}`, { state: { student } });
   };
 
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
   return (
-    <div className="dashboard-layout">
-    <InstructorSidebar />
-      <main className="students-main-content">
-        <div className="students-container">
-          <header className="students-header">
-            <div className="header-title">
+    <div className={styles['dashboard-layout']}>
+      <InstructorSidebar collapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
+      <main className={`${styles['students-main-content']} ${sidebarCollapsed ? styles['collapsed'] : ''}`}>
+        <div className={styles['students-container']}>
+          <header className={styles['students-header']}>
+            <div className={styles['header-title']}>
               <h1>
-                <span className="title-icon">
+                <span className={styles['title-icon']}>
                   <User size={24} />
                 </span>
                 Students
               </h1>
-              <p className="subtitle">
+              <p className={styles['subtitle']}>
                 {filteredStudents.length} {filteredStudents.length === 1 ? "student" : "students"} enrolled
               </p>
             </div>
             
-            <div className="search-wrapper">
-              <div className="search-container">
-                <Search className="search-icon" size={18} />
+            <div className={styles['search-wrapper']}>
+              <div className={styles['search-container']}>
+                <Search className={styles['search-icon']} size={18} />
                 <input
                   type="text"
-                  className="search-input"
+                  className={styles['search-input']}
                   placeholder="Search by name, email, ID..."
                   value={searchQuery}
                   onChange={handleSearchChange}
@@ -103,19 +109,19 @@ const InstructorStudents = () => {
           </header>
 
           {isLoading ? (
-            <div className="loading-container">
-              <div className="loading-spinner"></div>
+            <div className={styles['loading-container']}>
+              <div className={styles['loading-spinner']}></div>
               <p>Loading students data...</p>
             </div>
           ) : errorMessage ? (
-            <div className="error-container">
+            <div className={styles['error-container']}>
               <AlertCircle size={24} />
               <p>{errorMessage}</p>
-              <button className="retry-btn" onClick={fetchStudents}>Retry</button>
+              <button className={styles['retry-btn']} onClick={fetchStudents}>Retry</button>
             </div>
           ) : (
-            <div className="students-table-container">
-              <table className="students-table">
+            <div className={styles['students-table-container']}>
+              <table className={styles['students-table']}>
                 <thead>
                   <tr>
                     <th>ID</th>
@@ -130,24 +136,24 @@ const InstructorStudents = () => {
                   {filteredStudents.length > 0 ? (
                     filteredStudents.map((student) => (
                       <tr key={student.id}>
-                        <td className="student-id">{student.id}</td>
-                        <td className="student-name">
-                          <div className="name-cell">
-                            <div className="avatar">{student.firstName.charAt(0)}{student.lastName.charAt(0)}</div>
-                            <div className="name-text">{student.firstName} {student.lastName}</div>
+                        <td className={styles['student-id']}>{student.id}</td>
+                        <td className={styles['student-name']}>
+                          <div className={styles['name-cell']}>
+                            <div className={styles['avatar']}>{student.firstName.charAt(0)}{student.lastName.charAt(0)}</div>
+                            <div className={styles['name-text']}>{student.firstName} {student.lastName}</div>
                           </div>
                         </td>
-                        <td className="student-email">{student.email}</td>
+                        <td className={styles['student-email']}>{student.email}</td>
                         <td>{student.phone || "—"}</td>
                         <td>
-                          <span className={`package-badge ${student.selectedPackage.toLowerCase() === "none" ? "none" : "active"}`}>
+                          <span className={`${styles['package-badge']} ${student.selectedPackage.toLowerCase() === "none" ? styles['none'] : styles['active']}`}>
                             {student.selectedPackage}
                           </span>
                         </td>
                         <td>
-                          <div className="table-actions">
+                          <div className={styles['table-actions']}>
                             <button
-                              className="view-btn"
+                              className={styles['view-btn']}
                               onClick={() => handleViewClick(student)}
                               title="View student details"
                             >
@@ -160,12 +166,12 @@ const InstructorStudents = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="no-results">
-                        <div className="no-data">
+                      <td colSpan="6" className={styles['no-results']}>
+                        <div className={styles['no-data']}>
                           <Search size={32} />
                           <p>No students found matching your search</p>
                           {searchQuery && (
-                            <button className="clear-search" onClick={() => setSearchQuery("")}>
+                            <button className={styles['clear-search']} onClick={() => setSearchQuery("")}>
                               Clear search
                             </button>
                           )}

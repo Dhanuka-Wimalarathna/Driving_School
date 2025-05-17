@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Calendar, Clock, Car, User, AlertCircle, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import "./InstructorSchedule.module.css";
+import styles from "./InstructorSchedule.module.css";
 import InstructorSidebar from '../../../components/Sidebar/InstructorSidebar';
 
 const InstructorSchedule = () => {
@@ -10,6 +10,7 @@ const InstructorSchedule = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
   const instructorId = localStorage.getItem("instructorId");
 
@@ -134,21 +135,24 @@ const InstructorSchedule = () => {
           bookingId: lesson.id,
         }),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to mark session as completed.");
       }
-  
+
       const result = await response.json();
-  
+
       // ✅ SUCCESS TOAST
       const toast = document.createElement("div");
       toast.className = "toast-notification success";
-      toast.innerHTML = `<span class="toast-icon">✅</span> ${result.message}`;
+      toast.innerHTML = `<span class="toast-icon">✅</span> ${result.message || "Session marked as completed!"}`;
       document.body.appendChild(toast);
-      setTimeout(() => document.body.removeChild(toast), 3000);
-  
+      setTimeout(() => {
+        toast.style.animation = "slideOut 0.3s forwards";
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 3000);
+
       // Update status in state - ensure it's lowercase for consistency
       setSchedule(prev =>
         prev.map(item => item.id === lesson.id ? { ...item, status: "completed" } : item)
@@ -158,46 +162,105 @@ const InstructorSchedule = () => {
       );
     } catch (error) {
       console.error("Error marking session as completed:", error);
-  
+
       // ❌ ERROR TOAST
       const toast = document.createElement("div");
       toast.className = "toast-notification error";
       toast.innerHTML = `<span class="toast-icon">❌</span> ${error.message}`;
       document.body.appendChild(toast);
-      setTimeout(() => document.body.removeChild(toast), 3000);
+      setTimeout(() => {
+        toast.style.animation = "slideOut 0.3s forwards";
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 3000);
     }
   };  
+
+  // Add this function below handleCompleteSession
+  const handleNotCompleteSession = async (lesson) => {
+    try {
+      const response = await fetch("http://localhost:8081/api/progress/mark-not-completed", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          bookingId: lesson.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to mark session as not completed.");
+      }
+
+      const result = await response.json();
+
+      // ⚠️ WARNING TOAST
+      const toast = document.createElement("div");
+      toast.className = "toast-notification warning";
+      toast.innerHTML = `<span class="toast-icon">⚠️</span> ${result.message || "Session marked as not completed"}`;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = "slideOut 0.3s forwards";
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 3000);
+
+      // Update status in state - ensure it's lowercase for consistency
+      setSchedule(prev =>
+        prev.map(item => item.id === lesson.id ? { ...item, status: "not_completed" } : item)
+      );
+      setFilteredSchedule(prev =>
+        prev.map(item => item.id === lesson.id ? { ...item, status: "not_completed" } : item)
+      );
+    } catch (error) {
+      console.error("Error marking session as not completed:", error);
+
+      // ❌ ERROR TOAST
+      const toast = document.createElement("div");
+      toast.className = "toast-notification error";
+      toast.innerHTML = `<span class="toast-icon">❌</span> ${error.message}`;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = "slideOut 0.3s forwards";
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 3000);
+    }
+  };
 
   // Helper to properly capitalize status for display
   const formatStatus = (status) => {
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
+  const toggleSidebar = () => {
+    setSidebarCollapsed(prev => !prev);
+  };
+
   return (
-    <div className="dashboard-layout">
-      <InstructorSidebar />
-      <main className="schedule-main-content">
-        <div className="schedule-container">
-          <header className="schedule-header">
-            <div className="header-title">
+    <div className={styles['dashboard-layout']}>
+      <InstructorSidebar collapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
+      <main className={`${styles['schedule-main-content']} ${sidebarCollapsed ? styles['collapsed'] : ''}`}>
+        <div className={styles['schedule-container']}>
+          <header className={styles['schedule-header']}>
+            <div className={styles['header-title']}>
               <h1>
-                <span className="title-icon">
+                <span className={styles['title-icon']}>
                   <Calendar size={24} />
                 </span>
                 My Schedule
               </h1>
-              <p className="subtitle">
+              <p className={styles['subtitle']}>
                 {filteredSchedule.length}{" "}
                 {filteredSchedule.length === 1 ? "lesson" : "lessons"} scheduled
               </p>
             </div>
 
-            <div className="search-wrapper">
-              <div className="search-container">
-                <Search className="search-icon" size={18} />
+            <div className={styles['search-wrapper']}>
+              <div className={styles['search-container']}>
+                <Search className={styles['search-icon']} size={18} />
                 <input
                   type="text"
-                  className="search-input"
+                  className={styles['search-input']}
                   placeholder="Search by student..."
                   value={searchQuery}
                   onChange={handleSearchChange}
@@ -207,29 +270,29 @@ const InstructorSchedule = () => {
           </header>
 
           {error ? (
-            <div className="error-container">
+            <div className={styles['error-container']}>
               <AlertCircle size={24} />
               <p>{error}</p>
               <button
-                className="retry-btn"
+                className={styles['retry-btn']}
                 onClick={() => window.location.reload()}
               >
                 Retry
               </button>
             </div>
           ) : loading ? (
-            <div className="loading-container">
-              <div className="loading-spinner"></div>
+            <div className={styles['loading-container']}>
+              <div className={styles['loading-spinner']}></div>
               <p>Loading schedule...</p>
             </div>
           ) : filteredSchedule.length === 0 ? (
-            <div className="empty-schedule">
+            <div className={styles['empty-schedule']}>
               <Calendar size={48} />
               <h3>No Lessons Found</h3>
               <p>Try a different search or check again later.</p>
               {searchQuery && (
                 <button
-                  className="clear-search"
+                  className={styles['clear-search']}
                   onClick={() => setSearchQuery("")}
                 >
                   Clear search
@@ -237,61 +300,73 @@ const InstructorSchedule = () => {
               )}
             </div>
           ) : (
-            <div className="schedule-cards-container">
+            <div className={styles['schedule-cards-container']}>
               {filteredSchedule.map((lesson) => (
                 <div
                   key={lesson.id}
-                  className={`schedule-card status-${lesson.status.toLowerCase()}`}>
-                  <div className="card-header">
-                    <div className="lesson-status">
+                  className={`${styles['schedule-card']} ${styles[`status-${lesson.status.toLowerCase()}`]}`}>
+                  <div className={styles['card-header']}>
+                    <div className={styles['lesson-status']}>
                       <span
-                        className={`status-badge ${lesson.status.toLowerCase()}`}>
+                        className={`${styles['status-badge']} ${styles[lesson.status.toLowerCase()]}`}>
                         {formatStatus(lesson.status)}
                       </span>
                     </div>
                   </div>
 
-                  <div className="card-body">
-                    <div className="lesson-info">
-                      <div className="info-item">
-                        <Calendar size={16} className="info-icon" />
-                        <span className="info-label">Date:</span>
-                        <span className="info-value">{formatDate(lesson.date)}</span>
+                  <div className={styles['card-body']}>
+                    <div className={styles['lesson-info']}>
+                      <div className={styles['info-item']}>
+                        <Calendar size={16} className={styles['info-icon']} />
+                        <span className={styles['info-label']}>Date:</span>
+                        <span className={styles['info-value']}>{formatDate(lesson.date)}</span>
                       </div>
 
-                      <div className="info-item">
-                        <Clock size={16} className="info-icon" />
-                        <span className="info-label">Time:</span>
-                        <span className="info-value">{lesson.timeSlot}</span>
+                      <div className={styles['info-item']}>
+                        <Clock size={16} className={styles['info-icon']} />
+                        <span className={styles['info-label']}>Time:</span>
+                        <span className={styles['info-value']}>{lesson.timeSlot}</span>
                       </div>
 
-                      <div className="info-item">
-                        <User size={16} className="info-icon" />
-                        <span className="info-label">Student:</span>
-                        <span className="info-value">{lesson.studentName}</span>
+                      <div className={styles['info-item']}>
+                        <User size={16} className={styles['info-icon']} />
+                        <span className={styles['info-label']}>Student:</span>
+                        <span className={styles['info-value']}>{lesson.studentName}</span>
                       </div>
 
-                      <div className="info-item">
-                        <Car size={16} className="info-icon" />
-                        <span className="info-label">Vehicle:</span>
-                        <span className="info-value">{lesson.vehicle}</span>
+                      <div className={styles['info-item']}>
+                        <Car size={16} className={styles['info-icon']} />
+                        <span className={styles['info-label']}>Vehicle:</span>
+                        <span className={styles['info-value']}>{lesson.vehicle}</span>
                       </div>
                     </div>
 
-                    <div className="session-actions">
-                      {lesson.status !== "completed" && (
+                    <div className={styles['session-actions']}>
+                      {lesson.status !== "completed" && lesson.status !== "not_completed" ? (
                         <button
                           onClick={() => handleCompleteSession(lesson)}
-                          className="btn-complete"
+                          className={styles['btn-complete']}
                         >
-                          Session Completed
+                          Completed
                         </button>
-                      )}
-                      {lesson.status === "completed" && (
-                        <div className="completed-message">
-                          <span>✅ Session marked as completed</span>
+                      ) : lesson.status === "completed" ? (
+                        <div className={styles['completed-message']}>
+                          <span>✅ Session completed</span>
                         </div>
-                      )}
+                      ) : null}
+
+                      {lesson.status !== "completed" && lesson.status !== "not_completed" ? (
+                        <button
+                          onClick={() => handleNotCompleteSession(lesson)}
+                          className={styles['btn-not-complete']}
+                        >
+                          Not Completed
+                        </button>
+                      ) : lesson.status === "not_completed" ? (
+                        <div className={styles['not-completed-message']}>
+                          <span>⚠️ Session not completed</span>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>

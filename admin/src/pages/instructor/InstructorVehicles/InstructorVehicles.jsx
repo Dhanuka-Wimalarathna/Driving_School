@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import InstructorSidebar from '../../../components/Sidebar/InstructorSidebar';import { 
+import InstructorSidebar from '../../../components/Sidebar/InstructorSidebar';
+import { 
   Search, 
   Eye,
   AlertCircle,
   Car
 } from "lucide-react";
-import "./InstructorVehicles.module.css";
+import styles from "./InstructorVehicles.module.css";
 
 const InstructorVehicles = () => {
   const [vehicles, setVehicles] = useState([]);
@@ -64,29 +65,29 @@ const InstructorVehicles = () => {
   };
 
   return (
-    <div className="dashboard-layout">
+    <div className={styles["dashboard-layout"]}>
       <InstructorSidebar />
-      <main className="vehicles-main-content">
-        <div className="vehicles-container">
-          <header className="vehicles-header">
-            <div className="header-title">
+      <main className={styles["vehicles-main-content"]}>
+        <div className={styles["vehicles-container"]}>
+          <header className={styles["vehicles-header"]}>
+            <div className={styles["header-title"]}>
               <h1>
-                <span className="title-icon">
+                <span className={styles["title-icon"]}>
                   <Car size={24} />
                 </span>
                 Vehicles
               </h1>
-              <p className="subtitle">
+              <p className={styles.subtitle}>
                 {filteredVehicles.length} {filteredVehicles.length === 1 ? "vehicle" : "vehicles"} assigned to you
               </p>
             </div>
             
-            <div className="search-wrapper">
-              <div className="search-container">
-                <Search className="search-icon" size={18} />
+            <div className={styles["search-wrapper"]}>
+              <div className={styles["search-container"]}>
+                <Search className={styles["search-icon"]} size={18} />
                 <input
                   type="text"
-                  className="search-input"
+                  className={styles["search-input"]}
                   placeholder="Search by name, plate, type..."
                   value={searchQuery}
                   onChange={handleSearchChange}
@@ -96,48 +97,48 @@ const InstructorVehicles = () => {
           </header>
 
           {isLoading ? (
-            <div className="loading-container">
-              <div className="loading-spinner"></div>
+            <div className={styles["loading-container"]}>
+              <div className={styles["loading-spinner"]}></div>
               <p>Loading vehicles data...</p>
             </div>
           ) : errorMessage ? (
-            <div className="error-container">
+            <div className={styles["error-container"]}>
               <AlertCircle size={24} />
               <p>{errorMessage}</p>
-              <button className="retry-btn" onClick={fetchVehicles}>Retry</button>
+              <button className={styles["retry-btn"]} onClick={fetchVehicles}>Retry</button>
             </div>
           ) : (
             <>
               {filteredVehicles.length > 0 ? (
-                <div className="vehicle-cards-container">
+                <div className={styles["vehicle-cards-container"]}>
                   {filteredVehicles.map((vehicle) => (
-                    <div key={vehicle.id} className="vehicle-card" onClick={() => handleViewClick(vehicle)}>
-                      <div className="vehicle-image">
+                    <div key={vehicle.id} className={styles["vehicle-card"]} onClick={() => handleViewClick(vehicle)}>
+                      <div className={styles["vehicle-image"]}>
                         {vehicle.image_url ? (
                           <img src={vehicle.image_url} alt={vehicle.name} />
                         ) : (
-                          <div className="vehicle-avatar">
+                          <div className={styles["vehicle-avatar"]}>
                             {vehicle.name.charAt(0)}{vehicle.model?.charAt(0) || 'V'}
                           </div>
                         )}
                       </div>
-                      <div className="vehicle-details">
-                        <h3 className="vehicle-name">{vehicle.name}</h3>
-                        {vehicle.model && <p className="vehicle-model">{vehicle.model}</p>}
-                        <div className="vehicle-info">
-                          <span className="info-label">Plate:</span>
-                          <span className="info-value">{vehicle.plate_number}</span>
+                      <div className={styles["vehicle-details"]}>
+                        <h3 className={styles["vehicle-name"]}>{vehicle.name}</h3>
+                        {vehicle.model && <p className={styles["vehicle-model"]}>{vehicle.model}</p>}
+                        <div className={styles["vehicle-info"]}>
+                          <span className={styles["info-label"]}>Plate:</span>
+                          <span className={styles["info-value"]}>{vehicle.plate_number}</span>
                         </div>
-                        <div className="vehicle-info">
-                          <span className="info-label">Type:</span>
-                          <span className="info-value">{vehicle.type}</span>
+                        <div className={styles["vehicle-info"]}>
+                          <span className={styles["info-label"]}>Type:</span>
+                          <span className={styles["info-value"]}>{vehicle.type}</span>
                         </div>
-                        <div className="vehicle-status">
-                          <span className={`status-badge ${vehicle.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                        <div className={styles["vehicle-status"]}>
+                          <span className={`${styles["status-badge"]} ${styles[vehicle.status.toLowerCase().replace(/\s+/g, '-')]}`}>
                             {vehicle.status}
                           </span>
                         </div>
-                        <button className="view-details-btn">
+                        <button className={styles["view-details-btn"]}>
                           <Eye size={16} />
                           <span>View Details</span>
                         </button>
@@ -146,8 +147,8 @@ const InstructorVehicles = () => {
                   ))}
                 </div>
               ) : (
-                <div className="no-vehicles-container">
-                  <div className="no-data">
+                <div className={styles["no-vehicles-container"]}>
+                  <div className={styles["no-data"]}>
                     <Car size={64} />
                     <h3>No Vehicles Found</h3>
                     <p>
@@ -156,7 +157,7 @@ const InstructorVehicles = () => {
                         : "You don't have any vehicles assigned to you yet"}
                     </p>
                     {searchQuery && (
-                      <button className="clear-search" onClick={() => setSearchQuery("")}>
+                      <button className={styles["clear-search"]} onClick={() => setSearchQuery("")}>
                         Clear search
                       </button>
                     )}
