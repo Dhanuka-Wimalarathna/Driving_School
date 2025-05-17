@@ -267,36 +267,46 @@ const StudentDetails = () => {
           </div>
 
           {showNotificationForm && (
-            <div className={styles['notification-panel-single']}>
-              <div className={styles['notification-header']}>
-                <h3>Send Notification to {student.firstName}</h3>
-                <button 
-                  className={styles['close-btn']}
-                  onClick={() => setShowNotificationForm(false)}
-                >
-                  &times;
-                </button>
-              </div>
-              <textarea
-                className={styles['notification-textarea']}
-                placeholder="Write your notification message here..."
-                value={notificationMessage}
-                onChange={(e) => setNotificationMessage(e.target.value)}
-              />
-              <div className={styles['notification-actions']}>
-                <button
-                  className={styles['cancel-btn']}
-                  onClick={() => setShowNotificationForm(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className={styles['send-notification-btn']}
-                  onClick={handleSendNotification}
-                  disabled={isSending || !notificationMessage.trim()}
-                >
-                  {isSending ? "Sending..." : "Send Notification"}
-                </button>
+            <div className={styles['modal-overlay']} onClick={() => setShowNotificationForm(false)}>
+              <div className={styles['notification-modal']} onClick={(e) => e.stopPropagation()}>
+                <div className={styles['modal-header']}>
+                  <h3>
+                    <Send size={20} />
+                    <span>Send Notification to {student.firstName}</span>
+                  </h3>
+                  <button 
+                    className={styles['close-btn']}
+                    onClick={() => setShowNotificationForm(false)}
+                  >
+                    &times;
+                  </button>
+                </div>
+                <div className={styles['notification-form-container']}>
+                  <p className={styles['notification-description']}>
+                    Send a notification that will be delivered to the student's account.
+                  </p>
+                  <textarea
+                    className={styles['notification-textarea']}
+                    placeholder="Write your notification message here..."
+                    value={notificationMessage}
+                    onChange={(e) => setNotificationMessage(e.target.value)}
+                  />
+                  <div className={styles['notification-actions']}>
+                    <button
+                      className={styles['cancel-btn']}
+                      onClick={() => setShowNotificationForm(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className={styles['send-notification-btn']}
+                      onClick={handleSendNotification}
+                      disabled={isSending || !notificationMessage.trim()}
+                    >
+                      {isSending ? "Sending..." : "Send Notification"}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}

@@ -157,11 +157,15 @@
 .payments-table td {
   padding: 0.6rem 0.8rem;
   font-size: 0.813rem;
+  text-align: center; /* Horizontal centering */
+  vertical-align: middle; /* Vertical centering */
 }
 
 .payments-table th {
   padding: 0.6rem 0.8rem;
   font-size: 0.7rem;
+    text-align: center; /* Horizontal centering */
+  vertical-align: middle; /* Vertical centering */
 }
 
 .payments-table thead {

@@ -261,7 +261,7 @@ const Payments = () => {
                 </p>
               </div>
               
-              <div className={styles['search-wrapper']}>
+              <div className={styles['header-actions']}>
                 <div className={styles['search-container']}>
                   <Search className={styles['search-icon']} size={18} />
                   <input
