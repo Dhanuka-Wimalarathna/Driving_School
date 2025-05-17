@@ -151,7 +151,7 @@ function Dashboard() {
           usePointStyle: true,
           boxWidth: 6,
           font: {
-            family: "'Inter', sans-serif",
+            family: "Poppins, sans-serif",
             size: 12
           }
         }
@@ -163,11 +163,11 @@ function Dashboard() {
         backgroundColor: 'rgba(17, 24, 39, 0.8)',
         padding: 12,
         bodyFont: {
-          family: "'Inter', sans-serif",
+          family: "Poppins, sans-serif",
           size: 13
         },
         titleFont: {
-          family: "'Inter', sans-serif",
+          family: "Poppins, sans-serif",
           size: 14,
           weight: '600'
         }
@@ -182,7 +182,7 @@ function Dashboard() {
         },
         ticks: {
           font: {
-            family: "'Inter', sans-serif",
+            family: "Poppins, sans-serif",
             size: 11
           }
         }
@@ -193,7 +193,7 @@ function Dashboard() {
         },
         ticks: {
           font: {
-            family: "'Inter', sans-serif",
+            family: "Poppins, sans-serif",
             size: 11
           }
         }

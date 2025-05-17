@@ -1,4 +1,3 @@
-
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
@@ -7,23 +6,34 @@
 
 .students-main-content {
   flex: 1;
-  margin-left: 280px; /* Same as sidebar width */
-  width: calc(100% - 280px); /* Subtract sidebar width */
-  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
   transition: margin-left 0.3s ease;
+  margin-left: 250px;
+  /* Center the content horizontally */
+  align-items: center;
+}
+
+.students-main-content.collapsed {
+  margin-left: 80px;
 }
 
 .students-container {
-  padding: 2rem;
-  height: 100%;
+  padding: 1.5rem;
+  flex: 1;
+  max-width: 1600px; /* Match Dashboard's max-width */
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* Header Styles */
 .students-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 1.5rem;
+  padding-top: 2rem;
   padding-bottom: 1.5rem;
   border-bottom: 1px solid #e5e7eb;
 }
@@ -36,8 +46,8 @@
 .header-title h1 {
   display: flex;
   align-items: center;
-  font-size: 1.875rem;
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: 600;
   color: #111827;
   margin: 0;
 }
@@ -548,45 +558,29 @@
   .notification-compose {
     padding-left: 0;
   }
-}
 
-@media (max-width: 768px) {
-  .students-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-  
-  .search-container {
-    width: 100%;
-  }
-  
-  .students-table th:nth-child(4),
-  .students-table td:nth-child(4) {
-    display: none;
-  }
-  
-  .students-table th:nth-child(5),
-  .students-table td:nth-child(5) {
-    display: none;
-  }
-}
-
-@media (max-width: 640px) {
   .students-container {
     padding: 1rem;
   }
-  
-  .view-btn span {
-    display: none;
+}
+
+@media (max-width: 768px) {
+  .students-main-content {
+    margin-left: 0;
   }
   
-  .stat-card {
-    min-width: 80px;
-    padding: 0.5rem;
+  .students-main-content.collapsed {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .students-main-content {
+    margin-left: 80px;
+    width: calc(100% - 80px);
   }
   
-  .notification-stats {
-    justify-content: space-between;
+  .students-container {
+    padding: 1rem;
   }
 }

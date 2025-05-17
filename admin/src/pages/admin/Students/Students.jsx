@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../components/Sidebar/Sidebar";
 import { Search, Send, Eye, CheckSquare, AlertCircle, User 
 } from "lucide-react";
-import "./Students.module.css";
+import styles from './Students.module.css';  // Correct import
 
 const Students = () => {
   const [students, setStudents] = useState([]);
@@ -15,6 +15,7 @@ const Students = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // <-- New state for sidebar
   const navigate = useNavigate();
   const token = localStorage.getItem("authToken");
 
@@ -91,77 +92,80 @@ const Students = () => {
     setSelectAll(!selectAll);
   };
 
-  // In Students.jsx
-const handleSendNotification = async () => {
-  if (selectedStudentIds.length === 0 || !notificationMessage.trim()) {
-    alert("Please select students and enter a message.");
-    return;
-  }
+  const handleSendNotification = async () => {
+    if (selectedStudentIds.length === 0 || !notificationMessage.trim()) {
+      alert("Please select students and enter a message.");
+      return;
+    }
 
-  const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("authToken");
 
-  if (!token) {
-    alert("Authentication token not found. Please log in again.");
-    return;
-  }
+    if (!token) {
+      alert("Authentication token not found. Please log in again.");
+      return;
+    }
 
-  try {
-    // Send only studentIds and message
-    await axios.post("http://localhost:8081/api/notifications/send", {
-      studentIds: selectedStudentIds,
-      message: notificationMessage, // Only message is sent here
-    }, {
-      headers: {
-        Authorization: `Bearer ${token}`, // ✅ Include token here!
-      },
-    });
+    try {
+      // Send only studentIds and message
+      await axios.post("http://localhost:8081/api/notifications/send", {
+        studentIds: selectedStudentIds,
+        message: notificationMessage, // Only message is sent here
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ Include token here!
+        },
+      });
 
-    // Show success toast
-    const toast = document.createElement("div");
-    toast.className = "toast-notification success";
-    toast.innerHTML = `<CheckSquare size={20} /> Notification sent to ${selectedStudentIds.length} students!`;
-    document.body.appendChild(toast);
-    setTimeout(() => document.body.removeChild(toast), 3000);
+      // Show success toast
+      const toast = document.createElement("div");
+      toast.className = "toast-notification success";
+      toast.innerHTML = `<CheckSquare size={20} /> Notification sent to ${selectedStudentIds.length} students!`;
+      document.body.appendChild(toast);
+      setTimeout(() => document.body.removeChild(toast), 3000);
 
-    setNotificationMessage("");
-    setSelectedStudentIds([]);
-    setSelectAll(false);
-  } catch (error) {
-    console.error("Error sending notifications:", error);
-    
-    // Show error toast
-    const toast = document.createElement("div");
-    toast.className = "toast-notification error";
-    toast.innerHTML = `<AlertCircle size={20} /> Failed to send notifications.`;
-    document.body.appendChild(toast);
-    setTimeout(() => document.body.removeChild(toast), 3000);
-  }
-};
+      setNotificationMessage("");
+      setSelectedStudentIds([]);
+      setSelectAll(false);
+    } catch (error) {
+      console.error("Error sending notifications:", error);
+      
+      // Show error toast
+      const toast = document.createElement("div");
+      toast.className = "toast-notification error";
+      toast.innerHTML = `<AlertCircle size={20} /> Failed to send notifications.`;
+      document.body.appendChild(toast);
+      setTimeout(() => document.body.removeChild(toast), 3000);
+    }
+  };
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
 
   return (
-    <div className="dashboard-layout">
-      <Sidebar />
-      <main className="students-main-content">
-        <div className="students-container">
-          <header className="students-header">
-            <div className="header-title">
+    <div className="app-layout">
+      <Sidebar collapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
+      <main className={`${styles['students-main-content']}`}>
+        <div className={styles['students-container']}>
+          <header className={styles['students-header']}>
+            <div className={styles['header-title']}>
               <h1>
-                <span className="title-icon">
+                <span className={styles['title-icon']}>
                   <User size={24} />
                 </span>
                 Students
               </h1>
-              <p className="subtitle">
+              <p className={styles['subtitle']}>
                 {filteredStudents.length} {filteredStudents.length === 1 ? "student" : "students"} in database
               </p>
             </div>
             
-            <div className="search-wrapper">
-              <div className="search-container">
-                <Search className="search-icon" size={18} />
+            <div className={styles['search-wrapper']}>
+              <div className={styles['search-container']}>
+                <Search className={styles['search-icon']} size={18} />
                 <input
                   type="text"
-                  className="search-input"
+                  className={styles['search-input']}
                   placeholder="Search by name, email, ID..."
                   value={searchQuery}
                   onChange={handleSearchChange}
@@ -170,26 +174,26 @@ const handleSendNotification = async () => {
             </div>
           </header>
 
-          <div className="notification-panel">
-            <div className="notification-stats">
-              <div className="stat-card">
-                <span className="count">{selectedStudentIds.length}</span>
-                <span className="label">Selected</span>
+          <div className={styles['notification-panel']}>
+            <div className={styles['notification-stats']}>
+              <div className={styles['stat-card']}>
+                <span className={styles['count']}>{selectedStudentIds.length}</span>
+                <span className={styles['label']}>Selected</span>
               </div>
-              <div className="stat-card total">
-                <span className="count">{filteredStudents.length}</span>
-                <span className="label">Total Students</span>
+              <div className={`${styles['stat-card']} ${styles['total']}`}>
+                <span className={styles['count']}>{filteredStudents.length}</span>
+                <span className={styles['label']}>Total Students</span>
               </div>
             </div>
-            <div className="notification-compose">
+            <div className={styles['notification-compose']}>
               <textarea
-                className="notification-textarea"
+                className={styles['notification-textarea']}
                 placeholder="Write notification message here..."
                 value={notificationMessage}
                 onChange={(e) => setNotificationMessage(e.target.value)}
               />
               <button
-                className="send-notification-btn"
+                className={styles['send-notification-btn']}
                 onClick={handleSendNotification}
                 disabled={selectedStudentIds.length === 0}
               >
@@ -200,30 +204,30 @@ const handleSendNotification = async () => {
           </div>
 
           {isLoading ? (
-            <div className="loading-container">
-              <div className="loading-spinner"></div>
+            <div className={styles['loading-container']}>
+              <div className={styles['loading-spinner']}></div>
               <p>Loading students data...</p>
             </div>
           ) : errorMessage ? (
-            <div className="error-container">
+            <div className={styles['error-container']}>
               <AlertCircle size={24} />
               <p>{errorMessage}</p>
-              <button className="retry-btn" onClick={fetchStudents}>Retry</button>
+              <button className={styles['retry-btn']} onClick={fetchStudents}>Retry</button>
             </div>
           ) : (
-            <div className="students-table-container">
-              <table className="students-table">
+            <div className={styles['students-table-container']}>
+              <table className={styles['students-table']}>
                 <thead>
                   <tr>
                     <th>
-                      <div className="checkbox-wrapper">
+                      <div className={styles['checkbox-wrapper']}>
                         <input
                           type="checkbox"
                           id="select-all"
                           checked={selectAll}
                           onChange={handleSelectAll}
                         />
-                        <label htmlFor="select-all" className="checkbox-label"></label>
+                        <label htmlFor="select-all" className={styles['checkbox-label']}></label>
                       </div>
                     </th>
                     <th>ID</th>
@@ -237,36 +241,40 @@ const handleSendNotification = async () => {
                 <tbody>
                   {filteredStudents.length > 0 ? (
                     filteredStudents.map((student) => (
-                      <tr key={student.id} className={selectedStudentIds.includes(student.id) ? "selected-row" : ""}>
+                      <tr key={student.id} className={selectedStudentIds.includes(student.id) ? styles['selected-row'] : ''}>
                         <td>
-                          <div className="checkbox-wrapper">
+                          <div className={styles['checkbox-wrapper']}>
                             <input
                               type="checkbox"
                               id={`student-${student.id}`}
                               checked={selectedStudentIds.includes(student.id)}
                               onChange={() => handleCheckboxChange(student.id)}
                             />
-                            <label htmlFor={`student-${student.id}`} className="checkbox-label"></label>
+                            <label htmlFor={`student-${student.id}`} className={styles['checkbox-label']}></label>
                           </div>
                         </td>
-                        <td className="student-id">{student.id}</td>
-                        <td className="student-name">
-                          <div className="name-cell">
-                            <div className="avatar">{student.firstName.charAt(0)}{student.lastName.charAt(0)}</div>
-                            <div className="name-text">{student.firstName} {student.lastName}</div>
-                          </div>
-                        </td>
-                        <td className="student-email">{student.email}</td>
-                        <td>{student.phone || "—"}</td>
+                        <td className={styles['student-id']}>{student.id}</td>
                         <td>
-                          <span className={`package-badge ${student.selectedPackage.toLowerCase() === "none" ? "none" : "active"}`}>
+                          <div className={styles['name-cell']}>
+                            <div className={styles['avatar']}>
+                              {student.firstName.charAt(0)}{student.lastName.charAt(0)}
+                            </div>
+                            <div className={styles['name-text']}>
+                              {student.firstName} {student.lastName}
+                            </div>
+                          </div>
+                        </td>
+                        <td className={styles['student-email']}>{student.email}</td>
+                        <td className={styles['student-phone']}>{student.phone || "—"}</td>
+                        <td>
+                          <span className={`${styles['package-badge']} ${styles[student.selectedPackage.toLowerCase() === "none" ? "none" : "active"]}`}>
                             {student.selectedPackage}
                           </span>
                         </td>
                         <td>
-                          <div className="table-actions">
+                          <div className={styles['table-actions']}>
                             <button
-                              className="view-btn"
+                              className={styles['view-btn']}
                               onClick={() => handleViewClick(student)}
                               title="View student details"
                             >
@@ -279,12 +287,12 @@ const handleSendNotification = async () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7" className="no-results">
-                        <div className="no-data">
+                      <td colSpan="7" className={styles['no-results']}>
+                        <div className={styles['no-data']}>
                           <Search size={32} />
                           <p>No students found matching your search</p>
                           {searchQuery && (
-                            <button className="clear-search" onClick={() => setSearchQuery("")}>
+                            <button className={styles['clear-search']} onClick={() => setSearchQuery("")}>
                               Clear search
                             </button>
                           )}

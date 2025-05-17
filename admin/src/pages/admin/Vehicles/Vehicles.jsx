@@ -9,7 +9,7 @@ import {
   AlertCircle,
   Car
 } from "lucide-react";
-import "./Vehicles.module.css";
+import styles from './Vehicles.module.css';
 
 const Vehicles = () => {
   const [vehicles, setVehicles] = useState([]);
@@ -28,6 +28,7 @@ const Vehicles = () => {
     status: "Available"
   });
   const [newStatus, setNewStatus] = useState("Available");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Vehicle types and statuses from database schema
   const vehicleTypes = ['Van', 'Car', 'Three-Wheeler', 'Bike'];
@@ -165,37 +166,41 @@ const Vehicles = () => {
     }
   };
 
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
   return (
-    <div className="dashboard-layout">
-      <Sidebar />
-      <main className="vehicles-main-content">
-        <div className="vehicles-container">
-          <header className="vehicles-header">
-            <div className="header-title">
+    <div className={styles['dashboard-layout']}>
+      <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
+      <main className={styles['vehicles-main-content']}>
+        <div className={styles['vehicles-container']}>
+          <header className={styles['vehicles-header']}>
+            <div className={styles['header-title']}>
               <h1>
-                <span className="title-icon">
+                <span className={styles['title-icon']}>
                   <Car size={24} />
                 </span>
                 Vehicles
               </h1>
-              <p className="subtitle">
+              <p className={styles['subtitle']}>
                 {filteredVehicles.length} {filteredVehicles.length === 1 ? "vehicle" : "vehicles"} in database
               </p>
             </div>
             
-            <div className="search-wrapper">
-              <div className="search-container">
-                <Search className="search-icon" size={18} />
+            <div className={styles['search-wrapper']}>
+              <div className={styles['search-container']}>
+                <Search className={styles['search-icon']} size={18} />
                 <input
                   type="text"
-                  className="search-input"
+                  className={styles['search-input']}
                   placeholder="Search by name, plate, type..."
                   value={searchQuery}
                   onChange={handleSearchChange}
                 />
               </div>
               <button 
-                className="add-vehicle-btn"
+                className={styles['add-vehicle-btn']}
                 onClick={() => setShowModal(true)}
               >
                 <Plus size={16} />
@@ -205,57 +210,60 @@ const Vehicles = () => {
           </header>
 
           {isLoading ? (
-            <div className="loading-container">
-              <div className="loading-spinner"></div>
+            <div className={styles['loading-container']}>
+              <div className={styles['loading-spinner']}></div>
               <p>Loading vehicles data...</p>
             </div>
           ) : errorMessage ? (
-            <div className="error-container">
+            <div className={styles['error-container']}>
               <AlertCircle size={24} />
               <p>{errorMessage}</p>
-              <button className="retry-btn" onClick={fetchVehicles}>Retry</button>
+              <button className={styles['retry-btn']} onClick={fetchVehicles}>Retry</button>
             </div>
           ) : (
             <>
               {filteredVehicles.length > 0 ? (
-                <div className="vehicle-cards-container">
+                <div className={styles['vehicle-cards-container']}>
                   {filteredVehicles.map((vehicle) => (
-                    <div key={vehicle.id} className="vehicle-card">
-                      <div className="vehicle-image">
-                        <div className="vehicle-type-icon">
+                    <div key={vehicle.id} className={styles['vehicle-card']}>
+                      <div className={styles['vehicle-image']}>
+                        <div className={styles['vehicle-type-icon']}>
                           {getVehicleIcon(vehicle.type)}
                         </div>
                       </div>
-                      <div className="vehicle-details">
-                        <h3 className="vehicle-name">{vehicle.name}</h3>
-                        {vehicle.model && <p className="vehicle-model">{vehicle.model}</p>}
-                        <div className="vehicle-info">
-                          <span className="info-label">ID:</span>
-                          <span className="info-value">{vehicle.id}</span>
+                      <div className={styles['vehicle-details']}>
+                        <h3 className={styles['vehicle-name']}>{vehicle.name}</h3>
+                        {vehicle.model && <p className={styles['vehicle-model']}>{vehicle.model}</p>}
+                        <div className={styles['vehicle-info']}>
+                          <span className={styles['info-label']}>ID:</span>
+                          <span className={styles['info-value']}>{vehicle.id}</span>
                         </div>
-                        <div className="vehicle-info">
-                          <span className="info-label">Plate:</span>
-                          <span className="info-value">{vehicle.plate_number}</span>
+                        <div className={styles['vehicle-info']}>
+                          <span className={styles['info-label']}>Plate:</span>
+                          <span className={styles['info-value']}>{vehicle.plate_number}</span>
                         </div>
-                        <div className="vehicle-info">
-                          <span className="info-label">Type:</span>
-                          <span className="info-value">{vehicle.type}</span>
+                        <div className={styles['vehicle-info']}>
+                          <span className={styles['info-label']}>Type:</span>
+                          <span className={styles['info-value']}>{vehicle.type}</span>
                         </div>
-                        <div className="vehicle-status">
-                          <span className={`status-badge ${vehicle.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                        <div className={styles['vehicle-status']}>
+                          <span 
+                            className={`${styles['status-badge']} ${styles[vehicle.status.toLowerCase().replace(/\s+/g, '-')]}`}
+                            title={`Vehicle is currently ${vehicle.status}`}
+                          >
                             {vehicle.status}
                           </span>
                         </div>
-                        <div className="vehicle-card-actions">
+                        <div className={styles['vehicle-card-actions']}>
                           <button 
-                            className="edit-status-btn"
+                            className={styles['edit-status-btn']}
                             onClick={() => handleEditStatusClick(vehicle)}
                           >
                             <Edit size={16} />
                             <span>Edit Status</span>
                           </button>
                           <button 
-                            className="delete-vehicle-btn"
+                            className={styles['delete-vehicle-btn']}
                             onClick={() => deleteVehicle(vehicle.id)}
                           >
                             <Trash2 size={16} />
@@ -267,8 +275,8 @@ const Vehicles = () => {
                   ))}
                 </div>
               ) : (
-                <div className="no-vehicles-container">
-                  <div className="no-data">
+                <div className={styles['no-vehicles-container']}>
+                  <div className={styles['no-data']}>
                     <Car size={64} />
                     <h3>No Vehicles Found</h3>
                     <p>
@@ -277,7 +285,7 @@ const Vehicles = () => {
                         : "No vehicles in the database yet"}
                     </p>
                     {searchQuery && (
-                      <button className="clear-search" onClick={() => setSearchQuery("")}>
+                      <button className={styles['clear-search']} onClick={() => setSearchQuery("")}>
                         Clear search
                       </button>
                     )}
@@ -291,11 +299,11 @@ const Vehicles = () => {
 
       {/* Add Vehicle Modal */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className={styles['modal-overlay']}>
+          <div className={styles['modal-content']}>
             <h2>Add New Vehicle</h2>
             
-            <div className="form-group">
+            <div className={styles['form-group']}>
               <label>Vehicle Name*</label>
               <input 
                 type="text" 
@@ -307,7 +315,7 @@ const Vehicles = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className={styles['form-group']}>
               <label>Vehicle Brand/Model</label>
               <input 
                 type="text" 
@@ -318,7 +326,7 @@ const Vehicles = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className={styles['form-group']}>
               <label>Plate Number*</label>
               <input 
                 type="text" 
@@ -330,7 +338,7 @@ const Vehicles = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className={styles['form-group']}>
               <label>Vehicle Type*</label>
               <select 
                 name="type" 
@@ -345,7 +353,7 @@ const Vehicles = () => {
               </select>
             </div>
 
-            <div className="form-group">
+            <div className={styles['form-group']}>
               <label>Status</label>
               <select 
                 name="status" 
@@ -358,15 +366,15 @@ const Vehicles = () => {
               </select>
             </div>
 
-            <div className="modal-actions">
+            <div className={styles['modal-actions']}>
               <button 
-                className="cancel-btn" 
+                className={styles['cancel-btn']} 
                 onClick={() => setShowModal(false)}
               >
                 Cancel
               </button>
               <button 
-                className="add-btn" 
+                className={styles['add-btn']} 
                 onClick={handleAddVehicle}
               >
                 Add Vehicle
@@ -378,11 +386,11 @@ const Vehicles = () => {
 
       {/* Edit Status Modal */}
       {showStatusModal && currentVehicle && (
-        <div className="modal-overlay" onClick={() => setShowStatusModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className={styles['modal-overlay']} onClick={() => setShowStatusModal(false)}>
+          <div className={styles['modal-content']} onClick={(e) => e.stopPropagation()}>
             <h2>Edit Vehicle Status</h2>
             
-            <div className="form-group">
+            <div className={styles['form-group']}>
               <label>Vehicle</label>
               <input 
                 type="text" 
@@ -391,7 +399,7 @@ const Vehicles = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className={styles['form-group']}>
               <label>Current Status</label>
               <input 
                 type="text" 
@@ -400,7 +408,7 @@ const Vehicles = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className={styles['form-group']}>
               <label>New Status</label>
               <select 
                 value={newStatus}
@@ -412,15 +420,15 @@ const Vehicles = () => {
               </select>
             </div>
 
-            <div className="modal-actions">
+            <div className={styles['modal-actions']}>
               <button 
-                className="cancel-btn" 
+                className={styles['cancel-btn']} 
                 onClick={() => setShowStatusModal(false)}
               >
                 Cancel
               </button>
               <button 
-                className="save-btn" 
+                className={styles['save-btn']} 
                 onClick={handleStatusChange}
               >
                 Update Status

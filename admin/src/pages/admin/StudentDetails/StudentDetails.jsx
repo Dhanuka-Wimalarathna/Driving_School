@@ -17,7 +17,7 @@ import {
   CreditCard,
   AlertCircle
 } from "lucide-react";
-import "./StudentDetails.module.css";
+import styles from './StudentDetails.module.css';
 
 const StudentDetails = () => {
   const location = useLocation();
@@ -31,6 +31,8 @@ const StudentDetails = () => {
   const [showPaymentHistory, setShowPaymentHistory] = useState(false);
   const [isLoadingPayments, setIsLoadingPayments] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
+
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const handleBack = () => {
     navigate("/admin/students");
@@ -50,37 +52,34 @@ const StudentDetails = () => {
       });
 
       // Show success toast
-      const toast = document.createElement("div");
-      toast.className = "toast-notification success";
-      toast.innerHTML = `<div class="toast-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></div>Notification sent successfully!`;
-      document.body.appendChild(toast);
-      setTimeout(() => document.body.removeChild(toast), 3000);
+      showToast('success', 'Notification sent successfully!');
 
       setNotificationMessage("");
       setShowNotificationForm(false);
     } catch (error) {
       console.error("Error sending notification:", error);
-      const toast = document.createElement("div");
-      toast.className = "toast-notification error";
-      toast.innerHTML = `<div class="toast-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>Failed to send notification.`;
-      document.body.appendChild(toast);
-      setTimeout(() => document.body.removeChild(toast), 3000);
+      showToast('error', 'Failed to send notification.');
     } finally {
       setIsSending(false);
     }
   };
 
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  // Fix the error handler
   if (!student) {
     return (
-      <div className="dashboard-layout">
-        <Sidebar />
-        <main className="students-main-content">
-          <div className="student-details-container">
-            <div className="error-container">
+      <div className={styles['dashboard-layout']}>
+        <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
+        <main className={`${styles['students-main-content']} ${sidebarCollapsed ? styles['collapsed'] : ''}`}>
+          <div className={styles['student-details-container']}>
+            <div className={styles['error-container']}>
               <AlertCircle size={32} />
               <h2>Student Not Found</h2>
               <p>The requested student information could not be found.</p>
-              <button className="back-button" onClick={handleBack}>
+              <button className={styles['back-button']} onClick={handleBack}>
                 <ArrowLeft size={16} />
                 <span>Return to Students List</span>
               </button>
@@ -150,101 +149,114 @@ const StudentDetails = () => {
     .filter(payment => payment.status === "paid")
     .reduce((sum, payment) => sum + Number(payment.amount), 0);
 
+  // Create a separate component for toast notifications:
+  const showToast = (type, message) => {
+    const toast = document.createElement("div");
+    toast.className = `${styles['toast-notification']} ${styles[type]}`;
+    
+    const iconHTML = type === 'success' 
+      ? `<div class="${styles['toast-icon']}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></div>`
+      : `<div class="${styles['toast-icon']}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>`;
+    
+    toast.innerHTML = iconHTML + message;
+    document.body.appendChild(toast);
+    setTimeout(() => document.body.removeChild(toast), 3000);
+  };
+
+  // Update the return statement
   return (
-    <div className="dashboard-layout">
-      <Sidebar />
-      <main className="students-main-content">
-        <div className="student-details-container">
-          <header className="student-details-header">
-            <button className="back-button" onClick={handleBack}>
-              <ArrowLeft size={16} />
-              <span>Back to Students</span>
-            </button>
-            <div className="header-title">
+    <div className={styles['dashboard-layout']}>
+      <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
+      <main className={`${styles['students-main-content']} ${sidebarCollapsed ? styles['collapsed'] : ''}`}>
+        <div className={styles['student-details-container']}>
+          <header className={styles['student-details-header']}>
+            <div className={styles['header-title']}>
               <h1>
-                <span className="title-icon">
+                <span className={styles['title-icon']}>
                   <User size={24} />
                 </span>
                 Student Profile
               </h1>
-              <p className="subtitle">ID: {student.id}</p>
+              <p className={styles['subtitle']}>ID: {student.id}</p>
             </div>
+            <button className={styles['back-button']} onClick={handleBack}>
+              <ArrowLeft size={16} />
+              <span>Back to Students</span>
+            </button>
           </header>
 
-          <div className="profile-grid">
-            <div className="profile-card main-info">
-              <div className="profile-header">
-                <div className="student-avatar large">
+          <div className={styles['profile-grid']}>
+            <div className={`${styles['profile-card']} ${styles['main-info']}`}>
+              <div className={styles['profile-header']}>
+                <div className={`${styles['student-avatar']} ${styles['large']}`}>
                   {student.firstName.charAt(0)}{student.lastName.charAt(0)}
                 </div>
-                <div className="student-name-details">
+                <div className={styles['student-name-details']}>
                   <h2>{student.firstName} {student.lastName}</h2>
-                  <span className={`package-badge ${student.selectedPackage.toLowerCase() === "none" ? "none" : "active"}`}>
+                  <span className={`${styles['package-badge']} ${styles[student.selectedPackage.toLowerCase() === "none" ? "none" : "active"]}`}>
                     {student.selectedPackage}
                   </span>
                 </div>
               </div>
-              <div className="info-grid">
-                <div className="info-item">
-                  <Mail size={18} />
+              
+              <div className={styles['info-grid']}>
+                <div className={styles['info-item']}>
+                  <Mail size={18} className={styles['info-icon']} />
                   <div>
-                    <span className="info-label">Email</span>
-                    <span className="info-value">{student.email}</span>
+                    <span className={styles['info-label']}>Email</span>
+                    <span className={styles['info-value']}>{student.email}</span>
                   </div>
                 </div>
-                <div className="info-item">
-                  <Phone size={18} />
+                <div className={styles['info-item']}>
+                  <Phone size={18} className={styles['info-icon']} />
                   <div>
-                    <span className="info-label">Phone</span>
-                    <span className="info-value">{student.phone || "Not provided"}</span>
+                    <span className={styles['info-label']}>Phone</span>
+                    <span className={styles['info-value']}>{student.phone || "Not provided"}</span>
                   </div>
                 </div>
-                <div className="info-item">
-                  <Calendar size={18} />
+                <div className={styles['info-item']}>
+                  <Calendar size={18} className={styles['info-icon']} />
                   <div>
-                    <span className="info-label">Date of Birth</span>
-                    <span className="info-value">{formatDate(student.dateOfBirth)}</span>
+                    <span className={styles['info-label']}>Date of Birth</span>
+                    <span className={styles['info-value']}>{formatDate(student.dateOfBirth)}</span>
                   </div>
                 </div>
-                <div className="info-item">
-                  <MapPin size={18} />
+                <div className={styles['info-item']}>
+                  <MapPin size={18} className={styles['info-icon']} />
                   <div>
-                    <span className="info-label">Address</span>
-                    <span className="info-value">{student.address || "Not provided"}</span>
+                    <span className={styles['info-label']}>Address</span>
+                    <span className={styles['info-value']}>{student.address || "Not provided"}</span>
                   </div>
                 </div>
-                <div className="info-item">
-                  <Package size={18} />
+                <div className={styles['info-item']}>
+                  <Package size={18} className={styles['info-icon']} />
                   <div>
-                    <span className="info-label">Package</span>
-                    <span className="info-value">{student.selectedPackage}</span>
+                    <span className={styles['info-label']}>Package</span>
+                    <span className={styles['info-value']}>{student.selectedPackage}</span>
                   </div>
                 </div>
-                <div className="info-item">
-                  <Clock size={18} />
+                <div className={styles['info-item']}>
+                  <Clock size={18} className={styles['info-icon']} />
                   <div>
-                    <span className="info-label">Joined</span>
-                    <span className="info-value">{formatDate(student.createdAt)}</span>
+                    <span className={styles['info-label']}>Joined</span>
+                    <span className={styles['info-value']}>{formatDate(student.createdAt)}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="profile-card action-card">
+            <div className={`${styles['profile-card']} ${styles['action-card']}`}>
               <h3>Quick Actions</h3>
-              <div className="action-buttons">
-                <button className="action-btn academic"
+              <div className={styles['action-buttons']}>
+                <button 
+                  className={`${styles['action-btn']} ${styles['academic']}`}
                   onClick={handlePaymentHistoryClick}
                 >
                   <FileText size={18} />
                   <span>Payment History</span>
                 </button>
-                <button className="action-btn message">
-                  <MessageSquare size={18} />
-                  <span>Contact Student</span>
-                </button>
                 <button 
-                  className="action-btn notify"
+                  className={`${styles['action-btn']} ${styles['notify']}`}
                   onClick={() => setShowNotificationForm(true)}
                 >
                   <Send size={18} />
@@ -255,31 +267,31 @@ const StudentDetails = () => {
           </div>
 
           {showNotificationForm && (
-            <div className="notification-panel-single">
-              <div className="notification-header">
+            <div className={styles['notification-panel-single']}>
+              <div className={styles['notification-header']}>
                 <h3>Send Notification to {student.firstName}</h3>
                 <button 
-                  className="close-btn"
+                  className={styles['close-btn']}
                   onClick={() => setShowNotificationForm(false)}
                 >
                   &times;
                 </button>
               </div>
               <textarea
-                className="notification-textarea"
+                className={styles['notification-textarea']}
                 placeholder="Write your notification message here..."
                 value={notificationMessage}
                 onChange={(e) => setNotificationMessage(e.target.value)}
               />
-              <div className="notification-actions">
+              <div className={styles['notification-actions']}>
                 <button
-                  className="cancel-btn"
+                  className={styles['cancel-btn']}
                   onClick={() => setShowNotificationForm(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  className="send-notification-btn"
+                  className={styles['send-notification-btn']}
                   onClick={handleSendNotification}
                   disabled={isSending || !notificationMessage.trim()}
                 >
@@ -290,49 +302,49 @@ const StudentDetails = () => {
           )}
 
           {showPaymentHistory && (
-            <div className="modal-overlay">
-              <div className="payment-history-modal">
-                <div className="modal-header">
+            <div className={styles['modal-overlay']}>
+              <div className={styles['payment-history-modal']}>
+                <div className={styles['modal-header']}>
                   <h3>
                     <CreditCard size={20} />
                     <span>Payment History for {student.firstName}</span>
                   </h3>
                   <button 
-                    className="close-btn"
+                    className={styles['close-btn']}
                     onClick={() => setShowPaymentHistory(false)}
                   >
                     &times;
                   </button>
                 </div>
                 {isLoadingPayments ? (
-                  <div className="loading-payments">
-                    <div className="spinner"></div>
+                  <div className={styles['loading-payments']}>
+                    <div className={styles['spinner']}></div>
                     <p>Loading payment history...</p>
                   </div>
                 ) : paymentError ? (
-                  <div className="payment-error">
+                  <div className={styles['payment-error']}>
                     <AlertCircle size={24} />
                     <p>{paymentError}</p>
                     <button 
-                      className="retry-btn"
+                      className={styles['retry-btn']}
                       onClick={fetchPaymentHistory}
                     >
                       Retry
                     </button>
                   </div>
                 ) : paymentHistory.length === 0 ? (
-                  <div className="no-payments">
+                  <div className={styles['no-payments']}>
                     <p>No payment history found for this student.</p>
                   </div>
                 ) : (
-                  <div className="payments-table-container">
+                  <div className={styles['payments-table-container']}>
                     {/* Totals Section */}
-                    <div className="payment-totals">
+                    <div className={styles['payment-totals']}>
                       <div>
                         <strong>Total Paid:</strong> {formatCurrency(paidTotal)}
                       </div>
                     </div>
-                    <table className="payments-table">
+                    <table className={styles['payments-table']}>
                       <thead>
                         <tr>
                           <th>Date</th>
@@ -350,7 +362,7 @@ const StudentDetails = () => {
                             <td>{student.selectedPackage}</td>
                             <td>{formatCurrency(payment.amount)}</td>
                             <td>
-                              <span className={`status-badge ${payment.status}`}>
+                              <span className={`${styles['status-badge']} ${styles[payment.status]}`}>
                                 {payment.status}
                               </span>
                             </td>
