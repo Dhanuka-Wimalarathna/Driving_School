@@ -1,6 +1,6 @@
+/* Remove these styles as they're now in App.css */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-/* Dashboard.module.css */
 * {
   margin: 0;
   padding: 0;
@@ -14,6 +14,7 @@ body {
   font-family: Poppins , sans-serif;
 }
 
+/* Dashboard.module.css */
 /* Base styles */
 .dashboard-layout {
   display: flex;
@@ -41,7 +42,7 @@ body {
 .dashboard-content {
   padding: 1.5rem;
   flex: 1;
-  max-width: 1200px; /* Reduced max-width to center content better */
+  max-width: 1600px; 
   margin: 0 auto;
   width: 100%;
 }
@@ -58,11 +59,11 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
-  padding-top: 1rem;
+  padding-top: 2rem;
 }
 
 .page-header h1 {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 600;
   color: #111827;
 }

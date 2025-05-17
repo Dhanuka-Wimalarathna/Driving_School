@@ -207,30 +207,10 @@ function Dashboard() {
     : 0;
 
   return (
-    <div className={styles['dashboard-layout']}>
-      <Sidebar sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
-      
-      {showReport ? (
-        <div className={styles['report-overlay']}>
-          <div className={styles['report-wrapper']} ref={reportRef}>
-            <Report 
-              stats={stats} 
-              monthlyStats={monthlyStats} 
-              currentMonthRevenue={currentMonthRevenue} 
-            />
-          </div>
-          <div className={styles['report-actions']}>
-            <button onClick={generatePDF} className={styles['download-pdf-btn']}>
-              <Download size={20} />
-              Download PDF
-            </button>
-            <button onClick={() => setShowReport(false)} className={styles['close-report-btn']}>
-              Close
-            </button>
-          </div>
-        </div>
-      ) : (
-        <main className={`${styles['main-content']} ${sidebarCollapsed ? styles.collapsed : ''}`}>
+    <div className="app-layout">
+      <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
+      <main className={`main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        <div className="page-container">
           <div className={styles['dashboard-content']}>
             <div className={styles['page-header']}>
               <h1>Admin Dashboard</h1>
@@ -336,8 +316,8 @@ function Dashboard() {
               )}
             </div>
           </div>
-        </main>
-      )}
+        </div>
+      </main>
     </div>
   );
 }

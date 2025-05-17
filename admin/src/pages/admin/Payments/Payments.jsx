@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Search, CreditCard, AlertCircle, CheckCircle, RefreshCw, XCircle } from 'lucide-react';
 import Sidebar from '../../../components/Sidebar/Sidebar';
-import './Payments.module.css';
+import styles from './Payments.module.css';
 
 const Payments = () => {
   const navigate = useNavigate();
@@ -13,6 +13,7 @@ const Payments = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isApproving, setIsApproving] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     // Verify token exists before making any requests
@@ -204,16 +205,23 @@ const Payments = () => {
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
-      case 'pending': return 'status-badge pending';
-      case 'paid': return 'status-badge paid';
-      case 'failed': return 'status-badge failed';
-      default: return 'status-badge';
+      case 'pending': return `${styles['status-badge']} ${styles['pending']}`;
+      case 'paid': return `${styles['status-badge']} ${styles['paid']}`;
+      case 'failed': return `${styles['status-badge']} ${styles['failed']}`;
+      default: return styles['status-badge'];
     }
   };
   
   const showToast = (message, type = 'success') => {
+    // Import styles in your component
     const toast = document.createElement("div");
-    toast.className = `toast-notification ${type}`;
+    
+    // Apply module styles using a data attribute approach
+    toast.setAttribute('class', 'toast-notification');
+    toast.classList.add(type);
+    
+    // Style this toast with regular CSS in a separate global CSS file
+    // or add global styles for toast in your index.css
     
     // Use icon based on type
     const iconName = type === 'success' ? 'CheckCircle' : 'AlertCircle';
@@ -230,64 +238,70 @@ const Payments = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+  
   return (
-    <div className="dashboard-layout">
-      <Sidebar />
-      <main className="students-main-content">
-        <div className="students-container">
-          <header className="students-header">
-            <div className="header-title">
-              <h1>
-                <span className="title-icon">
-                  <CreditCard size={24} />
-                </span>
-                Payments
-              </h1>
-              <p className="subtitle">
-                {filteredPayments.length} {filteredPayments.length === 1 ? "payment" : "payments"} found
-              </p>
-            </div>
-            
-            <div className="search-wrapper">
-              <div className="search-container">
-                <Search className="search-icon" size={18} />
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Search by receipt number or student name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+    <div className="app-layout">
+      <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
+      <main className={`main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        <div className="page-container">
+          <div className={styles['payments-content']}>
+            <header className={styles['page-header']}>
+              <div className={styles['header-title']}>
+                <h1>
+                  <span className={styles['title-icon']}>
+                    <CreditCard size={24} />
+                  </span>
+                  Payments
+                </h1>
+                <p className={styles['subtitle']}>
+                  {filteredPayments.length} {filteredPayments.length === 1 ? "payment" : "payments"} found
+                </p>
               </div>
-            </div>
-          </header>
+              
+              <div className={styles['search-wrapper']}>
+                <div className={styles['search-container']}>
+                  <Search className={styles['search-icon']} size={18} />
+                  <input
+                    type="text"
+                    className={styles['search-input']}
+                    placeholder="Search by receipt number or student name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+            </header>
 
-          <div className="notification-panel">
-            <div className="notification-stats">
-              <div className={`stat-card ${filterStatus === 'all' ? 'total' : ''}`} 
-                   onClick={() => setFilterStatus('all')}>
-                <span className="count">{payments.length}</span>
-                <span className="label">All</span>
+            <div className={styles['filter-controls']}>
+              <div className={styles['status-stats']}>
+                <div 
+                  className={`${styles['stat-card']} ${filterStatus === 'all' ? styles['active'] : ''}`} 
+                  onClick={() => setFilterStatus('all')}
+                >
+                  <span className={styles['count']}>{payments.length}</span>
+                  <span className={styles['label']}>All</span>
+                </div>
+                <div className={`${styles['stat-card']} ${filterStatus === 'pending' ? styles['active'] : ''}`}
+                     onClick={() => setFilterStatus('pending')}>
+                  <span className={styles['count']}>{payments.filter(p => p.status === 'pending').length}</span>
+                  <span className={styles['label']}>Pending</span>
+                </div>
+                <div className={`${styles['stat-card']} ${filterStatus === 'paid' ? styles['active'] : ''}`}
+                     onClick={() => setFilterStatus('paid')}>
+                  <span className={styles['count']}>{payments.filter(p => p.status === 'paid').length}</span>
+                  <span className={styles['label']}>Paid</span>
+                </div>
+                <div className={`${styles['stat-card']} ${filterStatus === 'failed' ? styles['active'] : ''}`}
+                     onClick={() => setFilterStatus('failed')}>
+                  <span className={styles['count']}>{payments.filter(p => p.status === 'failed').length}</span>
+                  <span className={styles['label']}>Failed</span>
+                </div>
               </div>
-              <div className={`stat-card ${filterStatus === 'pending' ? 'total' : ''}`}
-                   onClick={() => setFilterStatus('pending')}>
-                <span className="count">{payments.filter(p => p.status === 'pending').length}</span>
-                <span className="label">Pending</span>
-              </div>
-              <div className={`stat-card ${filterStatus === 'paid' ? 'total' : ''}`}
-                   onClick={() => setFilterStatus('paid')}>
-                <span className="count">{payments.filter(p => p.status === 'paid').length}</span>
-                <span className="label">Paid</span>
-              </div>
-              <div className={`stat-card ${filterStatus === 'failed' ? 'total' : ''}`}
-                   onClick={() => setFilterStatus('failed')}>
-                <span className="count">{payments.filter(p => p.status === 'failed').length}</span>
-                <span className="label">Failed</span>
-              </div>
-            </div>
-            <div className="notification-compose refresh-container">
               <button 
-                className="send-notification-btn refresh-button"
+                className={styles['refresh-button']}
                 onClick={fetchPayments} 
                 disabled={isLoading}
               >
@@ -295,105 +309,117 @@ const Payments = () => {
                 <span>Refresh Payments</span>
               </button>
             </div>
-          </div>
 
-          {isLoading ? (
-            <div className="loading-container">
-              <div className="loading-spinner"></div>
-              <p>Loading payment data...</p>
-            </div>
-          ) : errorMessage ? (
-            <div className="error-container">
-              <AlertCircle size={24} />
-              <p>{errorMessage}</p>
-              <button className="retry-btn" onClick={fetchPayments}>Retry</button>
-            </div>
-          ) : filteredPayments.length === 0 ? (
-            <div className="no-data">
-              <AlertCircle size={32} />
-              <p>No payments found matching your criteria</p>
-              {(searchQuery || filterStatus !== 'all') && (
-                <button className="clear-search" onClick={() => {
-                  setSearchQuery('');
-                  setFilterStatus('all');
-                }}>
-                  Clear filters
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="students-table-container">
-              <table className="students-table">
-                <thead>
-                  <tr>
-                    <th>Receipt No.</th>
-                    <th>Student</th>
-                    <th>Package</th>
-                    <th>Amount</th>
-                    <th>Method</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPayments.map(payment => (
-                    <tr key={payment.payment_id} className={payment.status === 'pending' ? 'selected-row' : ''}>
-                      <td className="student-id">{payment.receiptNumber}</td>
-                      <td className="student-name">
-                        <div className="name-cell">
-                          <div className="avatar">
-                            {payment.student_name.split(' ').map(name => name.charAt(0)).join('').substring(0, 2)}
-                          </div>
-                          <div className="name-text">{payment.student_name}</div>
-                        </div>
-                      </td>
-                      <td>{payment.packageName || `Package ID: ${payment.package_id}`}</td>
-                      <td className="amount-cell">LKR {payment.amount.toFixed(2)}</td>
-                      <td>
-                        <span className={`package-badge ${payment.payment_method}`}>
-                          {getPaymentMethodDisplay(payment.payment_method)}
-                        </span>
-                      </td>
-                      <td>{payment.transaction_date}</td>
-                      <td>
-                        <span className={`package-badge ${payment.status}`}>
-                          {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="table-actions">
-                          {payment.status === 'pending' ? (
-                            <>
-                              <button 
-                                className="approve-btn" 
-                                onClick={() => approvePayment(payment.payment_id)}
-                                disabled={isApproving}
-                                title="Approve payment"
-                              >
-                                <CheckCircle size={16} />
-                                <span>Approve</span>
-                              </button>
-                              <button 
-                                className="reject-btn" 
-                                onClick={() => rejectPayment(payment.payment_id)}
-                                title="Reject payment"
-                              >
-                                <XCircle size={16} />
-                                <span>Reject</span>
-                              </button>
-                            </>
-                          ) : (
-                            <div className="action-placeholder">—</div>
-                          )}
-                        </div>
-                      </td>
+            {isLoading ? (
+              <div className={styles['loading-container']}>
+                <div className={styles['loading-spinner']}></div>
+                <p>Loading payment data...</p>
+              </div>
+            ) : errorMessage ? (
+              <div className={styles['error-container']}>
+                <AlertCircle size={24} />
+                <p>{errorMessage}</p>
+                <button className={styles['retry-btn']} onClick={fetchPayments}>Retry</button>
+              </div>
+            ) : filteredPayments.length === 0 ? (
+              <div className={styles['no-data']}>
+                <AlertCircle size={32} />
+                <p>No payments found matching your criteria</p>
+                {(searchQuery || filterStatus !== 'all') && (
+                  <button className={styles['clear-search']} onClick={() => {
+                    setSearchQuery('');
+                    setFilterStatus('all');
+                  }}>
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className={styles['payments-table-container']}>
+                <table className={styles['payments-table']}>
+                  <thead>
+                    <tr>
+                      <th>Receipt No.</th>
+                      <th>Student</th>
+                      <th>Package</th>
+                      <th>Amount</th>
+                      <th>Method</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {filteredPayments.map(payment => (
+                      <tr key={payment.payment_id} className={payment.status === 'pending' ? styles['pending-row'] : ''}>
+                        <td className={styles['receipt-number']}>{payment.receiptNumber}</td>
+                        <td className={styles['student-name']}>
+                          <div className={styles['name-cell']}>
+                            <div className={styles['avatar']}>
+                              {payment.student_name.split(' ').map(name => name.charAt(0)).join('').substring(0, 2)}
+                            </div>
+                            <div className={styles['name-text']} title={payment.student_name}>
+                              {payment.student_name.length > 20 
+                                ? payment.student_name.substring(0, 18) + "..." 
+                                : payment.student_name}
+                            </div>
+                          </div>
+                        </td>
+                        <td title={payment.packageName || `Package ID: ${payment.package_id}`}>
+                          {payment.packageName 
+                            ? (payment.packageName.length > 15 
+                              ? payment.packageName.substring(0, 13) + "..." 
+                              : payment.packageName)
+                            : `Pkg ID: ${payment.package_id}`}
+                        </td>
+                        <td className={styles['amount-cell']}>
+                          LKR {payment.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        </td>
+                        <td>
+                          <span className={`${styles['method-badge']} ${styles[payment.payment_method]}`}>
+                            {getPaymentMethodDisplay(payment.payment_method)}
+                          </span>
+                        </td>
+                        <td>{payment.transaction_date}</td>
+                        <td>
+                          <span className={`${styles['status-badge']} ${styles[payment.status]}`}>
+                            {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                          </span>
+                        </td>
+                        <td>
+                          <div className={styles['table-actions']}>
+                            {payment.status === 'pending' ? (
+                              <>
+                                <button 
+                                  className={styles['approve-btn']} 
+                                  onClick={() => approvePayment(payment.payment_id)}
+                                  disabled={isApproving}
+                                  title="Approve payment"
+                                >
+                                  <CheckCircle size={16} />
+                                  <span>Approve</span>
+                                </button>
+                                <button 
+                                  className={styles['reject-btn']} 
+                                  onClick={() => rejectPayment(payment.payment_id)}
+                                  title="Reject payment"
+                                >
+                                  <XCircle size={16} />
+                                  <span>Reject</span>
+                                </button>
+                              </>
+                            ) : (
+                              <div className={styles['action-placeholder']}>—</div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>

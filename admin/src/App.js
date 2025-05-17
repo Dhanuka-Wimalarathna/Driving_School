@@ -22,8 +22,6 @@ import InstructorStudents from './pages/instructor/InstructorStudents/Instructor
 import InstructorSchedule from './pages/instructor/InstructorSchedule/InstructorSchedule';      
 import MarkProgress from './pages/instructor/MarkProgress/MarkProgress';
 
-
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
