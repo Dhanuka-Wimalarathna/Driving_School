@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Plus, AlertCircle, Search } from 'lucide-react';
-import './TrialExamStudents.module.css'; 
+import styles from './TrialExamStudents.module.css';
 import Sidebar from '../../../components/Sidebar/Sidebar';
 
 const TrialExamStudents = () => {
@@ -97,16 +97,16 @@ const TrialExamStudents = () => {
       
       // Show success toast
       const toast = document.createElement("div");
-      toast.className = "toast-notification success";
+      toast.className = `${styles['toast-notification']} ${styles['success']}`;
       toast.innerHTML = `<div>Trial exam added successfully!</div>`;
       document.body.appendChild(toast);
       setTimeout(() => document.body.removeChild(toast), 3000);
     } catch (error) {
       console.error("Error adding trial exam:", error);
       
-      // Show error toast
+      // Show error toast (fix the class name to use styles object)
       const toast = document.createElement("div");
-      toast.className = "toast-notification error";
+      toast.className = `${styles['toast-notification']} ${styles['error']}`;
       toast.innerHTML = `<div>Failed to add trial exam.</div>`;
       document.body.appendChild(toast);
       setTimeout(() => document.body.removeChild(toast), 3000);
@@ -148,7 +148,7 @@ const TrialExamStudents = () => {
       
       // Show success toast
       const toast = document.createElement("div");
-      toast.className = "toast-notification success";
+      toast.className = `${styles['toast-notification']} ${styles['success']}`;
       toast.innerHTML = `<div>Trial exam updated successfully!</div>`;
       document.body.appendChild(toast);
       setTimeout(() => document.body.removeChild(toast), 3000);
@@ -157,7 +157,7 @@ const TrialExamStudents = () => {
       
       // Show error toast
       const toast = document.createElement("div");
-      toast.className = "toast-notification error";
+      toast.className = `${styles['toast-notification']} ${styles['error']}`;
       toast.innerHTML = `<div>Failed to update trial exam.</div>`;
       document.body.appendChild(toast);
       setTimeout(() => document.body.removeChild(toast), 3000);
@@ -178,42 +178,42 @@ const TrialExamStudents = () => {
   });
 
   return (
-    <div className="dashboard-layout">
+    <div className={styles['dashboard-layout']}>
       <Sidebar sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
       
-      <main className="trial-exam-main-content">
-        <div className="trial-exam-container">
-          <header className="header-section">
-            <div className="header-title">
+      <main className={`${styles['trial-exam-main-content']} ${sidebarCollapsed ? styles['sidebar-collapsed'] : ''}`}>
+        <div className={styles['trial-exam-container']}>
+          <header className={styles['header-section']}>
+            <div className={styles['header-title']}>
               <h1>
-                <span className="title-icon">
+                <span className={styles['title-icon']}>
                   <Calendar size={24} />
                 </span>
                 Trial Exam Students
               </h1>
-              <p className="subtitle">
+              <p className={styles['subtitle']}>
                 Manage students approved for trial examinations
               </p>
             </div>
-            <div className="search-container">
+            <div className={styles['search-container']}>
               <input
                 type="date"
                 value={searchFilters.date}
                 onChange={(e) => setSearchFilters({...searchFilters, date: e.target.value})}
                 placeholder="Filter by date"
-                className="search-input"
+                className={styles['search-input']}
               />
               <input
                 type="time"
                 value={searchFilters.time}
                 onChange={(e) => setSearchFilters({...searchFilters, time: e.target.value})}
                 placeholder="Filter by time"
-                className="search-input"
+                className={styles['search-input']}
               />
               <select
                 value={searchFilters.status}
                 onChange={(e) => setSearchFilters({...searchFilters, status: e.target.value})}
-                className="search-input"
+                className={styles['search-input']}
               >
                 <option value="">All Status</option>
                 <option value="Pending">Pending</option>
@@ -225,19 +225,19 @@ const TrialExamStudents = () => {
           </header>
 
           {loading ? (
-            <div className="loading-spinner">
-              <div className="spinner"></div>
+            <div className={styles['loading-spinner']}>
+              <div className={styles['spinner']}></div>
               <p>Loading trial exam students...</p>
             </div>
           ) : errorMessage ? (
-            <div className="no-data">
+            <div className={styles['no-data']}>
               <AlertCircle size={32} />
               <p>{errorMessage}</p>
-              <button className="retry-btn" onClick={fetchTrialStudents}>Retry</button>
+              <button className={styles['retry-btn']} onClick={fetchTrialStudents}>Retry</button>
             </div>
           ) : students.length > 0 ? (
-            <div className="students-table-container">
-              <table className="students-table">
+            <div className={styles['students-table-container']}>
+              <table className={styles['students-table']}>
                 <thead>
                   <tr>
                     <th>Student Name</th>
@@ -254,9 +254,9 @@ const TrialExamStudents = () => {
                     <tr key={`${student.id}-${student.examDate}`}>
                       <td>{student.name}</td>
                       <td>
-                        <div className="badges-container">
+                        <div className={styles['badges-container']}>
                           {student.vehicles.map((vehicle, index) => (
-                            <span key={index} className="vehicle-badge">
+                            <span key={index} className={styles['vehicle-badge']}>
                               {vehicle}
                             </span>
                           ))}
@@ -265,19 +265,25 @@ const TrialExamStudents = () => {
                       <td>{student.examDate ? new Date(student.examDate).toLocaleDateString() : "Not scheduled"}</td>
                       <td>{student.examTime || "Not scheduled"}</td>
                       <td>
-                        <span className={`status-badge status-${student.status?.toLowerCase() || 'pending'}`}>
+                        <span className={`${styles['status-badge']} ${styles[`status-${student.status?.toLowerCase() || 'pending'}`]}`}>
                           {student.status || "Pending"}
                         </span>
                       </td>
                       <td>
-                        <span className={`result-badge result-${student.result?.toLowerCase() || 'not-taken'}`}>
+                        <span 
+                          className={`${styles['result-badge']} ${
+                            (student.result === "Not Taken" || !student.result) 
+                              ? styles['result-not-taken'] 
+                              : styles[`result-${student.result?.toLowerCase().replace(/\s+/g, '-')}`]
+                          }`}
+                        >
                           {student.result || "Not Taken"}
                         </span>
                       </td>
                       <td>
-                        <div className="table-actions">
+                        <div className={styles['table-actions']}>
                           <button 
-                            className="update-button"
+                            className={styles['update-button']}
                             onClick={() => handleUpdateClick(student)}
                           >
                             Update
@@ -290,7 +296,7 @@ const TrialExamStudents = () => {
               </table>
             </div>
           ) : (
-            <div className="no-data">
+            <div className={styles['no-data']}>
               <Calendar size={32} />
               <p>No approved trial students found</p>
             </div>
@@ -299,11 +305,11 @@ const TrialExamStudents = () => {
       </main>
 
       {showAddModal && (
-        <div className="modal-overlay">
-          <div className="add-modal">
+        <div className={styles['modal-overlay']}>
+          <div className={styles['add-modal']}>
             <h3>Add New Trial Exam</h3>
             <form onSubmit={handleAddTrial}>
-              <div className="form-group">
+              <div className={styles['form-group']}>
                 <label>Student ID:</label>
                 <input
                   type="number"
@@ -312,7 +318,7 @@ const TrialExamStudents = () => {
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className={styles['form-group']}>
                 <label>Vehicle Types:</label>
                 <select
                   multiple
@@ -329,7 +335,7 @@ const TrialExamStudents = () => {
                   <option value="Van">Van</option>
                 </select>
               </div>
-              <div className="form-group">
+              <div className={styles['form-group']}>
                 <label>Exam Date:</label>
                 <input
                   type="date"
@@ -338,7 +344,7 @@ const TrialExamStudents = () => {
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className={styles['form-group']}>
                 <label>Exam Time:</label>
                 <input
                   type="time"
@@ -347,11 +353,20 @@ const TrialExamStudents = () => {
                   required
                 />
               </div>
-              <div className="modal-actions">
-                <button type="button" onClick={() => setShowAddModal(false)}>
+              <div className={styles['modal-actions']}>
+                <button 
+                  type="button" 
+                  className={styles['cancel-button']}
+                  onClick={() => setShowAddModal(false)}
+                >
                   Cancel
                 </button>
-                <button type="submit">Add Trial</button>
+                <button 
+                  type="submit"
+                  className={styles['submit-button']}
+                >
+                  Add Trial
+                </button>
               </div>
             </form>
           </div>
@@ -360,22 +375,22 @@ const TrialExamStudents = () => {
 
       {/* Update Modal */}
       {showUpdateModal && selectedStudent && (
-        <div className="modal-overlay">
-          <div className="update-modal">
+        <div className={styles['modal-overlay']}>
+          <div className={styles['update-modal']}>
             <h3>Update Trial Exam</h3>
-            <p className="update-student-info">Student: {selectedStudent.name}</p>
-            <div className="vehicle-list">
+            <p className={styles['update-student-info']}>Student: {selectedStudent.name}</p>
+            <div className={styles['vehicle-list']}>
               <span>Vehicles:</span>
-              <div className="badges-container">
+              <div className={styles['badges-container']}>
                 {selectedStudent.vehicles.map((vehicle, index) => (
-                  <span key={index} className="vehicle-badge">
+                  <span key={index} className={styles['vehicle-badge']}>
                     {vehicle}
                   </span>
                 ))}
               </div>
             </div>
             <form onSubmit={handleUpdateTrial}>
-              <div className="form-group">
+              <div className={styles['form-group']}>
                 <label>Exam Date:</label>
                 <input
                   type="date"
@@ -384,7 +399,7 @@ const TrialExamStudents = () => {
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className={styles['form-group']}>
                 <label>Exam Time:</label>
                 <input
                   type="time"
@@ -393,7 +408,7 @@ const TrialExamStudents = () => {
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className={styles['form-group']}>
                 <label>Status:</label>
                 <select
                   value={updateData.status}
@@ -406,7 +421,7 @@ const TrialExamStudents = () => {
                   <option value="Rejected">Rejected</option>
                 </select>
               </div>
-              <div className="form-group">
+              <div className={styles['form-group']}>
                 <label>Result:</label>
                 <select
                   value={updateData.result}
@@ -419,21 +434,23 @@ const TrialExamStudents = () => {
                   <option value="Absent">Absent</option>
                 </select>
               </div>
-              <div className="modal-actions">
+              <div className={styles['modal-actions']}>
                 <button 
                   type="button" 
                   onClick={() => setShowUpdateModal(false)}
                   disabled={loading}
+                  className={styles['cancel-button']}
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
                   disabled={loading}
+                  className={styles['submit-button']}
                 >
                   {loading ? (
                     <>
-                      <div className="button-spinner"></div>
+                      <div className={styles['button-spinner']}></div>
                       <span>Updating...</span>
                     </>
                   ) : "Update Trial"}

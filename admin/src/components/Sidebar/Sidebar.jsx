@@ -1,8 +1,32 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 
 const Sidebar = () => {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  
+  const handleLogout = () => {
+    // Add your logout logic here
+    localStorage.removeItem('adminToken'); // Adjust based on your auth implementation
+    navigate('/admin/sign-in');
+  };
+
   return (
     <nav className="sidebar">
       <div className="sidebar-content">
@@ -83,9 +107,13 @@ const Sidebar = () => {
           </NavLink>
         </div>
         
-        {/* Bottom section */}
-        <div className="sidebar-footer">
-          <div className="user-profile">
+        {/* Bottom section with dropdown */}
+        <div className="sidebar-footer" ref={dropdownRef}>
+          <div 
+            className="user-profile"
+            onClick={() => setShowDropdown(!showDropdown)}
+            style={{ cursor: 'pointer' }}
+          >
             <div className="avatar">
               <i className="bi bi-person-circle"></i>
             </div>
@@ -93,6 +121,15 @@ const Sidebar = () => {
               <h6>Admin</h6>
             </div>
           </div>
+          
+          {showDropdown && (
+            <div className="profile-dropdown single-option">
+              <button className="dropdown-item" onClick={handleLogout}>
+                <i className="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>

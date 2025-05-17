@@ -31,8 +31,8 @@ const Vehicles = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Vehicle types and statuses from database schema
-  const vehicleTypes = ['Van', 'Car', 'Three-Wheeler', 'Bike'];
-  const vehicleStatuses = ['Available', 'Unavailable', 'In Service'];
+  const vehicleTypes = ['Van', 'Three-Wheeler', 'Bike'];
+  const vehicleStatuses = ['Available', 'Unavailable', 'In Service', 'In use'];
 
   useEffect(() => {
     fetchVehicles();

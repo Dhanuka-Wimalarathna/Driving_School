@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import InstructorSidebar from '../../../components/Sidebar/InstructorSidebar';
 import { 
   Search, 
-  Eye,
   AlertCircle,
   Car
 } from "lucide-react";
@@ -17,7 +16,7 @@ const InstructorVehicles = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
-
+  
   useEffect(() => {
     fetchVehicles();
   }, []);
@@ -134,14 +133,10 @@ const InstructorVehicles = () => {
                           <span className={styles["info-value"]}>{vehicle.type}</span>
                         </div>
                         <div className={styles["vehicle-status"]}>
-                          <span className={`${styles["status-badge"]} ${styles[vehicle.status.toLowerCase().replace(/\s+/g, '-')]}`}>
-                            {vehicle.status}
+                          <span className={`${styles["status-badge"]} ${styles[vehicle.status === 'In_use' ? 'in-use' : vehicle.status.toLowerCase().replace(/\s+/g, '-')]}`}>
+                            {vehicle.status === 'In_use' ? 'In use' : vehicle.status}
                           </span>
                         </div>
-                        <button className={styles["view-details-btn"]}>
-                          <Eye size={16} />
-                          <span>View Details</span>
-                        </button>
                       </div>
                     </div>
                   ))}

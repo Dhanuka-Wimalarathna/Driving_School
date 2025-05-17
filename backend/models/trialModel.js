@@ -31,20 +31,24 @@ export const createTrialExam = (studentId, vehicleType, callback) => {
 };
 
 export const getTrialExamsByStudent = (studentId, callback) => {
+  // Simplified query that doesn't rely on joins that might be causing issues
   const sql = `
-    SELECT te.*, 
-      s.FIRST_NAME as student_first_name, 
-      s.LAST_NAME as student_last_name,
-      i.firstName as instructor_first_name,
-      i.lastName as instructor_last_name
-    FROM trial_exams te
-    JOIN student s ON te.stu_id = s.STU_ID
-    JOIN instructors i ON te.ins_id = i.ins_id
-    WHERE te.stu_id = ?
+    SELECT 
+      exam_id, 
+      vehicle_type,
+      exam_date,
+      exam_time,
+      status,
+      result
+    FROM trial_exams
+    WHERE stu_id = ?
   `;
 
   sqldb.query(sql, [studentId], (err, results) => {
-    if (err) return callback(err);
+    if (err) {
+      console.error("SQL Error in getTrialExamsByStudent:", err);
+      return callback(err);
+    }
     callback(null, results);
   });
 };

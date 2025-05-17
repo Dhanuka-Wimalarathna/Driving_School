@@ -16,9 +16,9 @@ const Booking = () => {
   const vehicles = ['Bike', 'Tricycle', 'Van'];
 
   const vehicleToGrade = {
-    Bike: 'A',
-    Tricycle: 'B',
-    Van: 'C'
+    Bike: 'motorbikes',
+    Tricycle: 'threeWheelers',
+    Van: 'van'
   };
 
   useEffect(() => {
@@ -26,13 +26,18 @@ const Booking = () => {
     fetch('http://localhost:8081/api/instructors')
       .then(res => res.json())
       .then(data => {
+        console.log("Raw instructor data:", data);
+        console.log("Sample instructor fields:", data.length > 0 ? Object.keys(data[0]) : "No instructors");
         const instructorsMap = {};
         data.forEach(instructor => {
-          if (!instructorsMap[instructor.grade]) {
-            instructorsMap[instructor.grade] = [];
+          // Use vehicleCategory instead of grade
+          const category = instructor.vehicleCategory;
+          if (!instructorsMap[category]) {
+            instructorsMap[category] = [];
           }
-          instructorsMap[instructor.grade].push(instructor);
+          instructorsMap[category].push(instructor);
         });
+        console.log("Processed instructor map:", instructorsMap); // Debug the processed map
         setInstructors(instructorsMap);
         setLoading(false);
       })

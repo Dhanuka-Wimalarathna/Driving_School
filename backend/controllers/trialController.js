@@ -1,3 +1,5 @@
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 import {
   createTrialExam as createTrialExamModel,
   getTrialExamsByStudent,
@@ -6,6 +8,8 @@ import {
   getAllTrialStudents,
   updateTrialExam as updateTrialExamModel
 } from '../models/trialModel.js';
+
+dotenv.config();
 
 export const createTrialExam = (req, res) => {
   const { studentId, vehicleType } = req.body;
@@ -164,4 +168,42 @@ export const updateTrialExam = (req, res) => {
       data: result
     });
   });
+};
+
+export const getStudentTrialExams = (req, res) => {
+  try {
+    let studentId = req.query.id || req.userId;
+    
+    console.log("Auth middleware provided userId:", req.userId);
+    console.log("Query parameter id:", req.query.id);
+    console.log("Using studentId:", studentId);
+    
+    if (!studentId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Student ID is required'
+      });
+    }
+
+    getTrialExamsByStudent(studentId, (err, results) => {
+      if (err) {
+        console.error('Error fetching student trial exams:', err);
+        return res.status(500).json({
+          success: false,
+          error: err.message || 'Failed to fetch trial exams'
+        });
+      }
+      
+      res.status(200).json({
+        success: true,
+        data: results || []
+      });
+    });
+  } catch (error) {
+    console.error('Exception in getStudentTrialExams:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Server error'
+    });
+  }
 };

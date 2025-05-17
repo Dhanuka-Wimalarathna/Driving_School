@@ -14,7 +14,7 @@ const Instructor = {
       
       const query = `
         INSERT INTO instructors 
-        (firstName, lastName, email, nic, licenseNo, birthday, address, phone, password, grade) 
+        (firstName, lastName, email, nic, licenseNo, birthday, address, phone, password, vehicleCategory) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
       
@@ -28,7 +28,7 @@ const Instructor = {
         instructorData.address,
         instructorData.phone,
         hashedPassword,
-        instructorData.grade
+        instructorData.vehicleCategory  // Changed from grade
       ];
       
       sqldb.query(query, values, callback);

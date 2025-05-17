@@ -18,7 +18,7 @@ const InstructorSignUp = () => {
     phone: '',
     password: '',
     confirmPassword: '',
-    grade: ''
+    vehicleCategory: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -26,18 +26,42 @@ const InstructorSignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Vehicle categories
+  const vehicleCategories = [
+    { id: 'van', name: 'Van'},
+    { id: 'threeWheelers', name: 'Three Wheelers'},
+    { id: 'motorbikes', name: 'Motorbikes'}
+  ];
+
   const handleChange = (e) => {
-    console.log(`Changing ${e.target.name} to ${e.target.value}`);
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value
     });
+    
     // Clear error when user types
     if (errors[name]) {
       setErrors({
         ...errors,
         [name]: ''
+      });
+    }
+  };
+
+  const handleCategoryChange = (e) => {
+    const categoryId = e.target.value;
+    
+    setFormData({
+      ...formData,
+      vehicleCategory: categoryId
+    });
+    
+    // Clear related errors
+    if (errors.vehicleCategory) {
+      setErrors({
+        ...errors,
+        vehicleCategory: ''
       });
     }
   };
@@ -57,7 +81,7 @@ const InstructorSignUp = () => {
     if (!formData.password) newErrors.password = 'Password is required';
     else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-    if (!formData.grade) newErrors.grade = 'Grade is required';
+    if (!formData.vehicleCategory) newErrors.vehicleCategory = 'Vehicle category is required';
 
     return newErrors;
   };
@@ -71,25 +95,10 @@ const InstructorSignUp = () => {
       return;
     }
 
-    console.log('Sending data:', formData); 
-
     setLoading(true);
     
     try {
-      // const response = await axios.post('http://localhost:8081/api/instructors/register', {
-      //   firstName: formData.firstName,
-      //   lastName: formData.lastName,
-      //   email: formData.email,
-      //   nic: formData.nic,
-      //   licenseNo: formData.licenseNo,
-      //   birthday: formData.birthday,
-      //   address: formData.address,
-      //   phone: formData.phone,
-      //   password: formData.password
-      // });
-
       const response = await axios.post('http://localhost:8081/api/instructors/register', formData);
-
       console.log('Registration successful:', response.data);
       navigate('/instructor/sign-in');
     } catch (err) {
@@ -194,23 +203,28 @@ const InstructorSignUp = () => {
                     {errors.licenseNo && <div className="invalid-feedback">{errors.licenseNo}</div>}
                   </div>
                   
-                  {/* Grade */}
-                  <div className="compact-mb-2">
-                    <label className="form-label fw-medium d-block mb-2">Grade</label>
-                    <div className="d-flex gap-2">
-                      {['A', 'B', 'C'].map((gradeOption) => (
-                        <button
-                          type="button"
-                          key={gradeOption}
-                          className={`btn btn-sm ${formData.grade === gradeOption ? 'btn-primary' : 'btn-outline-primary'}`}
-                          onClick={() => handleChange({ target: { name: 'grade', value: gradeOption } })}
-                        >
-                          {gradeOption}
-                        </button>
-                      ))}
+                  {/* Vehicle Category Selection */}
+                  <div className="compact-mb-3">
+                    <label className="form-label fw-medium">Vehicle Specification</label>
+                    
+                    {/* Categories Dropdown */}
+                    <div className="dropdown-group">
+                      <select
+                        className={`form-select form-select-sm ${errors.vehicleCategory ? 'is-invalid' : ''}`}
+                        name="vehicleCategory"
+                        value={formData.vehicleCategory}
+                        onChange={handleCategoryChange}
+                      >
+                        <option value="">Select Vehicle Category</option>
+                        {vehicleCategories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.vehicleCategory && <div className="invalid-feedback">{errors.vehicleCategory}</div>}
                     </div>
-                    {errors.grade && <div className="invalid-feedback d-block mt-1">{errors.grade}</div>}
-                  </div>  
+                  </div>
 
                   {/* Birthday */}
                   <div className="compact-mb-2">
@@ -297,7 +311,7 @@ const InstructorSignUp = () => {
                       </button>
                       {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
                     </div>
-                  </div>       
+                  </div>      
 
                   {/* Submit Button */}
                   <div className="d-grid gap-2 compact-mb-2">

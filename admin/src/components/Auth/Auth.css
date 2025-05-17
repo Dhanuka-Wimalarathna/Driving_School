@@ -9,7 +9,7 @@
 
 /* Card styling */
 .auth-card {
-  max-width: 400px;
+  max-width: 500px; /* Increased from 400px to 500px */
   border: none;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
@@ -172,11 +172,59 @@ a:hover {
   text-decoration: underline;
 }
 
+/* Vehicle specification dropdown styling */
+.vehicle-types-dropdown .dropdown-menu {
+  padding: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dropdown-item-checkbox {
+  padding: 0.25rem 0.5rem;
+}
+
+.dropdown-item-checkbox:hover {
+  background-color: #f8f9fa;
+}
+
+.dropdown-item-checkbox .form-check {
+  padding-left: 0;
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-item-checkbox .form-check-input {
+  margin-right: 0.5rem;
+  position: static;
+  margin-left: 0;
+}
+
+.dropdown-item-checkbox .form-check-label {
+  cursor: pointer;
+  padding: 0.25rem 0;
+  margin-bottom: 0;
+}
+
+.dropdown-group .form-select {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.dropdown-group .form-select:focus {
+  border-color: #4361ee;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+  background-color: #fff;
+}
+
 /* Responsive adjustments */
 @media (max-width: 576px) {
   .auth-card {
-    max-width: 100%;
-    margin: 0 10px;
+    max-width: 95%; /* Changed from 100% to 95% to add small margins */
+    margin: 0 auto; /* Centered the card */
   }
 
   .compact-spacing {
@@ -186,10 +234,5 @@ a:hover {
   .row .col {
     padding-right: 0;
     padding-left: 0;
-  }
-  
-  .row {
-    margin-left: 0;
-    margin-right: 0;
   }
 }

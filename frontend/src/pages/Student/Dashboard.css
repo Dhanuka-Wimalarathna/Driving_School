@@ -38,7 +38,7 @@
   background-color: #f5f7fa;
 }
 
-/* Dashboard Header - UPDATED */
+/* Dashboard Header */
 .dashboard-header {
   margin-bottom: 2rem;
   background: linear-gradient(180deg, #2c3e50 0%, #1a2533 100%);
@@ -105,26 +105,482 @@
   z-index: 1;
 }
 
-.header-button {
-  background-color: rgba(255, 255, 255, 0.15);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  padding: 0.8rem 1.5rem;
-  border-radius: 12px;
+/* Dashboard Cards */
+.dashboard-card {
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  gap: 0.7rem;
+}
+
+.card-title i {
+  color: #4cc9f0;
+  font-size: 1.2rem;
+}
+
+.card-body {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Action Buttons */
+.action-button {
+  background-color: #f8f9fa;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #2c3e50;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.header-button:hover {
-  background-color: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
+.action-button:hover {
+  background-color: #e9ecef;
 }
 
-/* Notification Bell Styles */
+.refresh-button i {
+  transition: all 0.5s ease;
+}
+
+.rotating {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.view-button {
+  background-color: rgba(76, 201, 240, 0.1);
+  color: #4cc9f0;
+}
+
+.view-button:hover {
+  background-color: rgba(76, 201, 240, 0.2);
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+/* Style for the container in the right column to hold two stacked cards */
+.right-column-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: auto;
+}
+
+/* Card specific styles */
+.payments-overview-card {
+  grid-row: span 2; /* Make the payment card span two rows to match the height */
+}
+
+.lessons-card, .exams-overview-card {
+  width: 100%;
+}
+
+/* Payment Overview Card */
+.vertical-payment-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 100%;
+  height: 100%;
+}
+
+.chart-container {
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+  padding-bottom: 1rem;
+}
+
+.payment-stats {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.total-payments {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4cc9f0;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.recent-payments-container {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.recent-payments-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.recent-payments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.recent-payment-item {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.payment-amount {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.payment-date {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.payment-status-badge {
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.payment-status-badge.paid {
+  background-color: rgba(25, 135, 84, 0.1);
+  color: #198754;
+}
+
+.payment-status-badge.pending {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+}
+
+.payment-status-badge.failed {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.payment-status-badge.refunded {
+  background-color: rgba(108, 117, 125, 0.1);
+  color: #6c757d;
+}
+
+/* Lessons Card */
+.lessons-card {
+  min-height: 490px !important; /* Increase height for better visibility */
+  display: flex;
+  flex-direction: column;
+}
+
+.lessons-card .card-body {
+  overflow-y: auto;
+  max-height: 520px; /* Adjusted to fit 3 lessons comfortably */
+  padding-right: 0.75rem;
+  flex: 1;
+}
+
+.lessons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Increase spacing between lessons */
+  padding-right: 0.5rem;
+}
+
+.lesson-item {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 1rem 1.25rem; /* Increase padding for better spacing */
+  display: flex;
+  flex-direction: column; /* Stack content vertically */
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border-left: 3px solid #4cc9f0;
+}
+
+.lesson-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.lesson-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.6rem;
+}
+
+.lesson-details {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.lesson-details i {
+  color: #4cc9f0;
+  font-size: 1rem;
+  margin-right: 0.4rem;
+}
+
+.view-all-lessons {
+  margin-top: 1.25rem;
+  text-align: center;
+}
+
+.secondary-link {
+  background: none;
+  border: none;
+  color: #4cc9f0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondary-link:hover {
+  background-color: rgba(76, 201, 240, 0.1);
+  transform: translateX(3px);
+}
+
+.secondary-link i {
+  transition: transform 0.2s ease;
+}
+
+.secondary-link:hover i {
+  transform: translateX(3px);
+}
+
+/* Enhanced styles for Exams Overview Card */
+.exams-overview-card {
+  min-height: 400px !important; /* Match height with lessons card */
+  display: flex;
+  flex-direction: column;
+}
+
+.exams-overview-card .card-body {
+  overflow-y: auto;
+  max-height: 320px; /* Match with lessons card */
+  padding-right: 0.75rem;
+  flex: 1;
+}
+
+.exams-overview-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.recent-exams-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.recent-exams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Increase spacing between exam items */
+}
+
+.recent-exam-item {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border-left: 3px solid #7209b7; /* Different color from lessons */
+}
+
+.recent-exam-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.exam-type {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #2c3e50;
+}
+
+.exam-type i {
+  color: #7209b7;
+  font-size: 1.1rem;
+}
+
+.exam-date-time {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.not-scheduled {
+  color: #dc3545;
+  font-style: italic;
+}
+
+.time-pill {
+  background-color: rgba(76, 201, 240, 0.1);
+  color: #4cc9f0;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.exam-status-pill {
+  align-self: flex-start;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-pending {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+}
+
+.status-approved {
+  background-color: rgba(25, 135, 84, 0.1);
+  color: #198754;
+}
+
+.status-completed {
+  background-color: rgba(13, 110, 253, 0.1);
+  color: #0d6efd;
+}
+
+.status-rejected {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.view-all-exams {
+  margin-top: 1.25rem;
+  text-align: center;
+}
+
+.no-upcoming-exams {
+  text-align: center;
+  padding: 1.5rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Common empty state styling improvements */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+  padding: 2rem;
+}
+
+.empty-icon {
+  font-size: 2.5rem;
+  color: #dee2e6;
+  margin-bottom: 1rem;
+}
+
+.empty-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+}
+
+.empty-subtitle {
+  font-size: 0.95rem;
+  color: #adb5bd;
+}
+
+/* Notification Bell and Popup Styles */
+
+/* Notification Bell Button */
 .notification-bell {
   position: relative;
   background: none;
@@ -137,13 +593,19 @@
   align-items: center;
   justify-content: center;
   color: rgba(255, 255, 255, 0.85);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   cursor: pointer;
+  z-index: 1060; /* Ensure it's above the overlay */
 }
 
 .notification-bell:hover {
   background-color: rgba(255, 255, 255, 0.15);
   transform: scale(1.1);
+}
+
+.notification-bell:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
 }
 
 .notification-badge {
@@ -161,39 +623,10 @@
   justify-content: center;
   padding: 2px;
   font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-/* Notifications Dropdown - Updated for center position with larger width */
-.notifications-dropdown {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 600px; /* Increased from 450px */
-  max-width: 95vw;
-  max-height: 80vh;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  z-index: 1050;
-  animation: dropdownFade 0.3s ease-out;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Updated animation for centered dropdown */
-@keyframes dropdownFade {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -48%);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
-}
-
-/* Add overlay background */
+/* Notification Overlay */
 .notification-overlay {
   position: fixed;
   top: 0;
@@ -201,40 +634,62 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1040;
-  animation: overlayFade 0.3s ease-out;
+  z-index: 1050;
+  animation: fadeIn 0.3s ease;
 }
 
-@keyframes overlayFade {
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Notifications Dropdown */
+.notifications-dropdown {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  max-width: 90vw;
+  max-height: 80vh;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  z-index: 1055;
+  animation: popupAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes popupAppear {
   from {
+    transform: translate(-50%, -55%) scale(0.95);
     opacity: 0;
   }
   to {
+    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
 }
 
-/* Update notifications list to handle max-height in new modal format */
-.notifications-dropdown .notifications-list {
-  max-height: calc(80vh - 120px); /* Account for header and footer */
-  overflow-y: auto;
-  padding: 0.5rem 1rem;
-  flex: 1;
-}
-
-/* Fix for dropdown header layout - updated to remove close button */
 .dropdown-header {
   display: flex;
   align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  position: relative;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
 }
 
 .dropdown-header h4 {
   margin: 0;
-  font-size: 1.1rem;
-  flex: 1;
+  font-size: 1.2rem;
+  color: #2c3e50;
+  font-weight: 600;
 }
 
 .mark-all-read {
@@ -243,290 +698,23 @@
   color: #4cc9f0;
   font-size: 0.9rem;
   cursor: pointer;
-  padding: 0.25rem 0.5rem;
+  padding: 0.35rem 0.7rem;
   border-radius: 6px;
   white-space: nowrap;
-}
-
-/* We can remove or comment out the close button styles since it's no longer used */
-/*
-.dropdown-close {
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  color: #6c757d;
-  cursor: pointer;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
   transition: all 0.2s ease;
-}
-
-.dropdown-close:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  color: #343a40;
-}
-*/
-
-.notifications-dropdown .notifications-list {
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 0.5rem;
-}
-
-.notifications-dropdown .notification-item {
-  padding: 0.75rem;
-  margin: 0.25rem 0;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.notifications-dropdown .notification-item.unread {
-  background-color: rgba(76, 201, 240, 0.05);
-}
-
-.notifications-dropdown .notification-icon {
-  width: 30px;
-  height: 30px;
-  font-size: 1rem;
-}
-
-.notifications-dropdown .notification-title {
-  font-size: 0.95rem;
-}
-
-.notifications-dropdown .notification-message {
-  font-size: 0.85rem;
-  line-height: 1.4;
-}
-
-.notifications-dropdown .notification-meta {
-  font-size: 0.75rem;
-}
-
-.empty-notifications {
-  padding: 1.5rem;
-  text-align: center;
-  color: #6c757d;
-}
-
-.empty-notifications i {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  display: block;
-}
-
-.dropdown-footer {
-  padding: 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  text-align: center;
-}
-
-.dropdown-footer button {
-  background: none;
-  border: none;
-  color: #4cc9f0;
-  cursor: pointer;
   font-weight: 500;
 }
 
-/* Dashboard Grid - Updated layout since notifications card is removed */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+.mark-all-read:hover {
+  background-color: rgba(76, 201, 240, 0.1);
+  text-decoration: underline;
 }
 
-/* Remove the notifications-card selector */
-/* .notifications-card {
-  grid-column: 1 / -1;
-} */
-
-/* Modify the dropdown-footer to handle the removed notifications-card */
-.dropdown-footer button {
-  background: none;
-  border: none;
-  color: #4cc9f0;
-  cursor: pointer;
-  font-weight: 500;
-  /* Remove the scrollIntoView functionality since the card doesn't exist anymore */
-}
-
-/* Dashboard Card */
-.dashboard-card {
-  background-color: #fff;
-  border-radius: 16px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-  border: none;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  height: 100%;
-}
-
-.dashboard-card:hover {
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  background-color: transparent;
-}
-
-.card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.card-title i {
-  color: #4cc9f0;
-}
-
-.card-body {
-  padding: 1.5rem;
-}
-
-/* Action Button */
-.action-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background-color: rgba(25, 96, 117, 0.1);
-  color: #1e4f5e;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.action-button:hover {
-  background-color: rgba(76, 201, 240, 0.2);
-}
-
-/* Profile Grid */
-.profile-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.profile-item {
-  background-color: #f8f9fa;
-  border-radius: 10px;
-  padding: 1rem;
-  transition: all 0.2s ease;
-}
-
-.profile-item:hover {
-  background-color: #f0f3f5;
-}
-
-.profile-item.full-width {
-  grid-column: span 2;
-}
-
-.item-label {
-  font-size: 0.85rem;
-  color: #6c757d;
-  margin-bottom: 0.3rem;
-}
-
-.item-value {
-  font-weight: 500;
-  color: #2c3e50;
-  font-size: 1rem;
-}
-
-/* Empty Lessons State */
-.empty-lessons {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-  text-align: center;
-  height: 100%;
-}
-
-.empty-icon {
-  font-size: 3rem;
-  color: #adb5bd;
-  margin-bottom: 1rem;
-}
-
-.empty-title {
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-  font-size: 1.2rem;
-}
-
-.empty-subtitle {
-  color: #6c757d;
-  margin-bottom: 1.5rem;
-}
-
-/* Confirm Button (Reusing from Booking page) */
-.confirm-button {
-  padding: 0.9rem 1.5rem;
-  border-radius: 12px;
-  border: none;
-  font-weight: 600;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.confirm-button.active {
-  background: linear-gradient(135deg, #4cc9f0 0%, #3a86ff 100%);
-  color: white;
-  box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
-}
-
-.confirm-button.active:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(76, 201, 240, 0.4);
-}
-
-/* Empty State */
-.empty-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  color: #6c757d;
-  font-style: italic;
-}
-
-/* Notifications Styles */
 .notifications-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-height: 350px;
+  padding: 0.5rem 1rem;
+  flex: 1;
   overflow-y: auto;
+  max-height: 60vh;
 }
 
 .notification-item {
@@ -536,23 +724,26 @@
   border-radius: 10px;
   background-color: #f8f9fa;
   transition: all 0.2s ease;
-  position: relative;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  border-left: 3px solid transparent;
 }
 
 .notification-item:hover {
   background-color: #f0f3f5;
+  transform: translateX(3px);
 }
 
 .notification-item.unread {
-  background-color: rgba(76, 201, 240, 0.1);
+  background-color: rgba(76, 201, 240, 0.08);
   border-left: 3px solid #4cc9f0;
 }
 
 .notification-icon {
   min-width: 40px;
   height: 40px;
-  background-color: rgba(76, 201, 240, 0.2);
-  color: #3a86ff;
+  background-color: rgba(76, 201, 240, 0.15);
+  color: #4cc9f0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -576,6 +767,7 @@
   color: #6c757d;
   margin: 0 0 0.5rem 0;
   font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .notification-meta {
@@ -589,444 +781,217 @@
   gap: 0.3rem;
 }
 
-.notification-action {
-  background: none;
-  border: none;
-  color: #3a86ff;
-  padding: 0.5rem;
-  cursor: pointer;
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.notification-item:hover .notification-action {
-  opacity: 1;
-}
-
-.notification-action:hover {
-  color: #4cc9f0;
-}
-
-/* Empty Notifications */
 .empty-notifications {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: 3rem 1rem;
   text-align: center;
-  height: 100%;
-}
-
-/* Lesson List Styling - NEW SECTION */
-.lessons-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  max-height: 350px;
-  overflow-y: auto;
-  padding: 0.5rem 0;
-}
-
-.lesson-item {
-  background-color: #f8f9fa;
-  border-radius: 10px;
-  padding: 1.2rem;
-  transition: all 0.3s ease;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-}
-
-.lesson-item:hover {
-  background-color: #f0f3f5;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.lesson-info {
-  flex: 1;
-}
-
-.lesson-title {
-  font-weight: 600;
-  color: #2c3e50;
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.lesson-title::before {
-  content: '\F4BE'; /* Bootstrap icon code for vehicle */
-  font-family: "bootstrap-icons";
-  color: #4cc9f0;
-  font-size: 1.2rem;
-}
-
-.lesson-date {
-  color: #495057;
-  margin: 0 0 0.4rem 0;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.lesson-date::before {
-  content: '\F4CD'; /* Bootstrap icon code for calendar */
-  font-family: "bootstrap-icons";
   color: #6c757d;
-  font-size: 0.9rem;
 }
 
-.lesson-instructor {
-  color: #6c757d;
-  margin: 0;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.lesson-instructor::before {
-  content: '\F4E3'; /* Bootstrap icon code for person */
-  font-family: "bootstrap-icons";
-  color: #6c757d;
-  font-size: 0.9rem;
-}
-
-.lesson-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.lesson-action-button {
-  background: none;
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #6c757d;
-  opacity: 0;
-}
-
-.lesson-item:hover .lesson-action-button {
-  opacity: 1;
-}
-
-.lesson-action-button:hover {
-  background-color: rgba(76, 201, 240, 0.1);
-  color: #4cc9f0;
-}
-
-.lesson-action-button.cancel {
-  color: #dc3545;
-}
-
-.lesson-action-button.cancel:hover {
-  background-color: rgba(220, 53, 69, 0.1);
-}
-
-.lesson-status {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.lesson-status.confirmed {
-  background-color: rgba(25, 135, 84, 0.1);
-  color: #198754;
-}
-
-.lesson-status.pending {
-  background-color: rgba(255, 193, 7, 0.1);
-  color: #ffc107;
-}
-
-/* Chart and Recent Payments Layout */
-.chart-and-payments-wrapper {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.5rem;
+.empty-notifications i {
+  font-size: 2rem;
   margin-bottom: 1rem;
-  width: 100%;
+  color: #adb5bd;
 }
 
-.reduced-chart {
-  flex: 0 0 40%;
-  max-width: 200px;
-}
-
-.recent-payments-container {
-  flex: 1;
-  background-color: #f8f9fa;
-  border-radius: 12px;
-  padding: 1rem;
-  min-width: 0; /* Prevents overflow issues */
-}
-
-.recent-payments-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  padding-bottom: 0.5rem;
-}
-
-.recent-payments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.recent-payment-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem;
-  border-radius: 8px;
-  background-color: white;
-  transition: all 0.2s ease;
-}
-
-.recent-payment-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transform: translateY(-2px);
-}
-
-.payment-amount {
-  font-weight: 600;
-  color: #2c3e50;
+.empty-notifications p {
+  margin: 0;
   font-size: 1rem;
 }
 
-.payment-date {
-  font-size: 0.8rem;
-  color: #6c757d;
+.dropdown-footer {
+  padding: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  text-align: center;
+  background: white;
 }
 
-.payment-status-badge {
-  padding: 0.25rem 0.5rem;
+.dropdown-footer button {
+  background: #f8f9fa;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  color: #2c3e50;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropdown-footer button:hover {
+  background: #e9ecef;
+}
+
+/* Modal styles for lessons popup */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  animation: fadeIn 0.3s ease;
+}
+
+.lessons-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  width: 700px;
+  max-width: 90vw;
+  max-height: 85vh;
+  z-index: 1055;
+  animation: modalAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.modal-header h2 {
+  font-size: 1.3rem;
+  margin: 0;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal-header h2 i {
+  color: #4cc9f0;
+  font-size: 1.25rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #6c757d;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #2c3e50;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  max-height: calc(85vh - 140px);
+}
+
+.all-lessons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Add more specific styling for lessons in the modal */
+.all-lessons-list .lesson-item {
+  border-left: 3px solid #4cc9f0;
+}
+
+.all-lessons-list .lesson-status {
+  margin-top: 0.5rem;
+}
+
+.status-badge {
+  background-color: rgba(76, 201, 240, 0.1);
+  color: #4cc9f0;
+  padding: 0.3rem 0.7rem;
   border-radius: 6px;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: capitalize;
 }
 
-.payment-status-badge.completed,
-.payment-status-badge.paid {
-  background-color: rgba(25, 135, 84, 0.1);
-  color: #198754;
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.payment-status-badge.pending {
-  background-color: rgba(255, 193, 7, 0.1);
-  color: #ffc107;
+.modal-footer .action-button {
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 500;
 }
 
-.payment-status-badge.failed,
-.payment-status-badge.canceled {
-  background-color: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
+.modal-footer .action-button.primary {
+  background-color: #4cc9f0;
+  color: white;
 }
 
-/* Make payments-overview-card match other cards width */
-.payments-overview-card {
-  width: 100%;
-  grid-column: 1 / -1; /* Make it span the full width like notifications-card */
+.modal-footer .action-button.primary:hover {
+  background-color: #3db9e0;
 }
 
-/* Responsive adjustments for the payment section */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .chart-and-payments-wrapper {
-    flex-direction: column;
-  }
-  
-  .reduced-chart {
-    max-width: 180px;
-    margin-bottom: 1rem;
-  }
-  
-  .recent-payments-container {
-    width: 100%;
-  }
-}
-
-/* Responsive Adjustments */
-@media (max-width: 992px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .notifications-card {
-    grid-column: auto;
-  }
-
-  .payments-overview-card {
-    grid-column: auto;
-    width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-content {
-    margin-left: 80px;
-    padding: 1.5rem;
-  }
-  
-  .profile-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .profile-item.full-width {
-    grid-column: span 1;
-  }
-  
-  .dashboard-header {
-    flex-direction: column;
-    gap: 1.5rem;
-    align-items: flex-start;
-  }
-  
-  .header-button {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .lesson-status {
-    position: static;
-    margin-top: 0.5rem;
-  }
-
-  .notifications-dropdown {
-    width: 95vw; /* Make it use most of the screen on mobile */
-    max-width: 500px;
-  }
-  
-  .notification-bell {
-    width: 40px;
-    height: 40px;
-    padding: 0.6rem;
+  .lessons-modal {
+    width: 95vw;
   }
 }
 
 @media (max-width: 576px) {
-  .dashboard-content {
-    padding: 1rem;
-    margin-left: 0;
+  .lessons-modal {
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: none;
+    border-radius: 0;
+    animation: slideUp 0.3s ease;
   }
   
-  .card-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
   }
   
-  .action-button {
-    width: 100%;
-    justify-content: center;
+  .modal-body {
+    max-height: calc(100vh - 140px);
   }
-  
-  .page-title {
-    font-size: 1.75rem;
-  }
-  
-  .header-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-  
-  .lesson-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-  
-  .lesson-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-  
-  .lesson-action-button {
-    opacity: 1;
-  }
-}
-
-/* Add refresh button animation */
-.refresh-button .bi-arrow-clockwise {
-  transition: transform 0.3s ease;
-}
-
-.refresh-button:active .bi-arrow-clockwise {
-  transform: rotate(180deg);
-}
-
-/* Improved refresh button animation */
-.refresh-button .bi-arrow-clockwise {
-  transition: transform 0.5s ease;
-}
-
-.rotating {
-  animation: rotate-animation 0.8s linear;
-}
-
-@keyframes rotate-animation {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* Enhanced refresh button styles */
-.refresh-button {
-  position: relative;
-  overflow: hidden;
-}
-
-.refresh-button:disabled {
-  opacity: 0.8;
-  cursor: wait;
-}
-
-/* Animation for the refresh icon */
-.rotating {
-  animation: rotate-animation 1s linear infinite;
-}
-
-@keyframes rotate-animation {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* Empty payment message */
-.empty-payment-message {
-  text-align: center;
-  color: #6c757d;
-  padding: 1rem;
-  font-style: italic;
 }

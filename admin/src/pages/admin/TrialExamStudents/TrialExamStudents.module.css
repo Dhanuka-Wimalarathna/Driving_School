@@ -441,12 +441,127 @@ select.search-input {
   color: #9B1C1C;
 }
 
+/* Enhanced styling for not-taken */
 .result-badge.result-not-taken {
-  background-color: #E5E7EB;
-  color: #374151;
+  background-color: #96a5c4;
+  color: #4c5b79;
 }
 
 .result-badge.result-absent {
   background-color: #FDF6B2;
   color: #723B13;
+}
+
+/* Status badge styles */
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-pending {
+  background-color: #FEF3C7;
+  color: #92400E;
+}
+
+.status-approved {
+  background-color: #D1FAE5;
+  color: #065F46;
+}
+
+.status-completed {
+  background-color: #DBEAFE;
+  color: #1E40AF;
+}
+
+.status-rejected {
+  background-color: #FEE2E2;
+  color: #B91C1C;
+}
+
+/* Toast notification styles */
+.toast-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 4px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  max-width: 300px;
+  z-index: 1060;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+}
+
+.toast-notification.success {
+  background-color: #10B981;
+}
+
+.toast-notification.error {
+  background-color: #EF4444;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Retry button */
+.retry-btn {
+  background-color: #6366F1;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: background-color 0.2s;
+}
+
+.retry-btn:hover {
+  background-color: #4F46E5;
+}
+
+/* Collapsed sidebar adjustments */
+.trial-exam-main-content.sidebar-collapsed {
+  margin-left: 80px; /* Adjust to match your collapsed sidebar width */
+  width: calc(100% - 80px);
+}
+
+/* Modal button styles */
+.cancel-button {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.cancel-button:hover {
+  background-color: #e5e7eb;
+}
+
+.submit-button {
+  background-color: #6366f1;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-button:hover {
+  background-color: #4f46e5;
+}
+
+.submit-button:disabled, 
+.cancel-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
