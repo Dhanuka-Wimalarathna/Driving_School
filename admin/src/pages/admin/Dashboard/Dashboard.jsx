@@ -13,7 +13,6 @@ import {
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../../components/Sidebar/Sidebar';
 import { BookOpen, Users, Calendar, DollarSign, LogOut, Settings, Download } from 'lucide-react';
-import Report from '../../../components/Report/Report';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import styles from './Dashboard.module.css';
@@ -50,14 +49,8 @@ function Dashboard() {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userRole');
-    navigate('/admin/sign-in');
-  };
-
-  const handleSettings = async () => {
-    setShowReport(true);
+  const handleSettings = () => {
+    navigate('/admin/financial-reports');
   };
 
   const generatePDF = async () => {
@@ -221,11 +214,7 @@ function Dashboard() {
                 </button>
                 <button onClick={handleSettings} className={styles['download-btn']}>
                   <Download size={20} className={styles['download-icon']} />
-                  Report
-                </button>
-                <button onClick={handleLogout} className={styles['logout-btn']}>
-                  <LogOut size={20} className={styles['logout-icon']} />
-                  Logout
+                  Financial Report
                 </button>
               </div>
             </div>

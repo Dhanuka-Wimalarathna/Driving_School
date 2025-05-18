@@ -1,12 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
 import AdminSignIn from './components/Auth/AdminSignIn';
 import AdminSignUp from './components/Auth/AdminSignUp';
 import InstructorSignIn from './components/Auth/InstrutorSignIn';
 import InstructorSignUp from './components/Auth/InstructorSignUp';
 import FirstPage from './components/Auth/FirstPage';
-
 import Dashboard from './pages/admin/Dashboard/Dashboard';
 import Packages from './pages/admin/Packages/Packages';
 import Vehicles from './pages/admin/Vehicles/Vehicles';
@@ -15,6 +13,7 @@ import Students from './pages/admin/Students/Students';
 import StudentDetails from './pages/admin/StudentDetails/StudentDetails';
 import TrialExamStudents from './pages/admin/TrialExamStudents/TrialExamStudents';
 import Payments from './pages/admin/Payments/Payments';
+import FinancialReport from './components/FinancialReport/FinancialReport';
 
 import InstructorDashboard from './pages/instructor/InstructorDashboard/InstructorDashboard';
 import InstructorVehicles from './pages/instructor/InstructorVehicles/InstructorVehicles';
@@ -46,6 +45,7 @@ function App() {
         <Route path='/admin/students/:id' element={<StudentDetails />} />
         <Route path="/admin/payments" element={<Payments />} />
         <Route path="/trial-exam-students" element={<TrialExamStudents />} />
+        <Route path="/admin/financial-reports" element={<FinancialReport />} />
 
         {/* Instructor Pages */}
         <Route path="/instructor/dashboard" element={<InstructorDashboard />} />

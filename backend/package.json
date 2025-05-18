@@ -26,6 +26,7 @@
     "mysql2": "^3.12.0",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.0",
+    "pdfkit": "^0.17.1",
     "sequelize": "^6.37.5"
   },
   "devDependencies": {

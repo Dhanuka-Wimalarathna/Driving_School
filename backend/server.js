@@ -22,6 +22,7 @@ import paymentRoutes from './routes/paymentRoutes.js'; // Assuming payment route
 import instructorDashboardRoutes from './routes/instructorDashboardRoutes.js';
 import studentDashboardRoutes from './routes/studentDashboardRoutes.js'; // Assuming student routes are in studentRoutes
 import trialRoutes from './routes/trialRoutes.js'; // Assuming trial routes are in trialRoutes
+import financialReportRoutes from './routes/financialReportRoutes.js';
 
 dotenv.config(); // Load environment variables
 
@@ -65,6 +66,7 @@ app.use('/api', paymentRoutes);
 app.use('/api/instructorDashboard', instructorDashboardRoutes);
 app.use('/api/studentDashboard', studentDashboardRoutes); // Assuming student routes are in studentRoutes
 app.use('/api/trial-exams', trialRoutes); // Assuming trial routes are in trialRoutes
+app.use('/api/financial-reports', financialReportRoutes);
 
 // In your server.js, right before the 404 handler:
 app.use((req, res, next) => {

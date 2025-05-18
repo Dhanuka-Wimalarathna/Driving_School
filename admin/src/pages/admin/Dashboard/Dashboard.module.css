@@ -70,8 +70,7 @@ body {
 
 /* Button styles */
 .trial-exam-btn,
-.download-btn,
-.logout-btn {
+.download-btn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -89,17 +88,12 @@ body {
 }
 
 .trial-exam-icon,
-.download-icon,
-.logout-icon {
+.download-icon {
   flex-shrink: 0;
 }
 
 .download-btn {
   background-color: #388e3c;
-}
-
-.logout-btn {
-  background-color: #ef4444;
 }
 
 .trial-exam-btn:hover {
@@ -108,10 +102,6 @@ body {
 
 .download-btn:hover {
   background-color: #296b2d;
-}
-
-.logout-btn:hover {
-  background-color: #dc2626;
 }
 
 /* Stats grid styles */
@@ -357,8 +347,7 @@ body {
   }
   
   .trial-exam-btn,
-  .download-btn,
-  .logout-btn {
+  .download-btn {
     font-size: 0.875rem;
     padding: 8px 12px;
   }
