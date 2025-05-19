@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../../components/Sidebar';
+import InvoiceGenerator from '../../components/InvoiceGenerator';
+import { formatCurrency, formatDate } from '../../utils/formatters';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Payments.css';
 import '../../components/Sidebar.css';
 import { useNavigate } from 'react-router-dom';
 
-
 const Payments = () => {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,6 +21,25 @@ const Payments = () => {
   const [paymentMethod, setPaymentMethod] = useState('card'); // Default payment method
   const navigate = useNavigate();
   
+  // Check for user data in localStorage if it's not in the AuthContext
+  useEffect(() => {
+    if (!user) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          login(parsedUser);
+          console.log('User data loaded from localStorage');
+        } catch (error) {
+          console.error('Error parsing user data from localStorage:', error);
+        }
+      } else {
+        console.warn('No user data found in localStorage');
+        navigate('/login');
+      }
+    }
+  }, [user, login, navigate]);
+
   const fetchData = () => {
     setIsLoading(true);
     
@@ -309,6 +329,7 @@ const Payments = () => {
                       <th>Amount</th>
                       <th>Method</th>
                       <th>Status</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -343,11 +364,30 @@ const Payments = () => {
                               {payment.status.charAt(0).toUpperCase() + payment.status.slice(1).toLowerCase()}
                             </span>
                           </td>
+                          <td>
+                            {payment.status.toLowerCase() === 'paid' && user && selectedPackage ? (
+                              <InvoiceGenerator 
+                                payment={payment} 
+                                student={user} 
+                                packageDetails={selectedPackage}
+                                allPayments={paymentHistory}
+                              />
+                            ) : payment.status.toLowerCase() === 'paid' ? (
+                              <button 
+                                className="invoice-btn"
+                                disabled={true}
+                                title="Loading user data..."
+                              >
+                                <i className="bi bi-file-earmark-pdf"></i>
+                                <span>Invoice</span>
+                              </button>
+                            ) : null}
+                          </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="4" style={{ textAlign: 'center' }}>No payment records found.</td>
+                        <td colSpan="5" style={{ textAlign: 'center' }}>No payment records found.</td>
                       </tr>
                     )}
                   </tbody>
