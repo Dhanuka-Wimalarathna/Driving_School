@@ -1,6 +1,6 @@
 import sqldb from "../config/sqldb.js";
 
-export const createTrialExam = (studentId, vehicleType, callback) => {
+export const createTrialExam = (studentId, vehicleType, examDate, examTime, callback) => {
   const checkSql = `
     SELECT * FROM trial_exams 
     WHERE stu_id = ? AND vehicle_type = ? 
@@ -16,11 +16,11 @@ export const createTrialExam = (studentId, vehicleType, callback) => {
 
     const insertSql = `
       INSERT INTO trial_exams 
-      (stu_id, vehicle_type, status) 
-      VALUES (?, ?, 'Pending')
+      (stu_id, vehicle_type, exam_date, exam_time, status) 
+      VALUES (?, ?, ?, ?, 'Pending')
     `;
     
-    sqldb.query(insertSql, [studentId, vehicleType], (err, result) => {
+    sqldb.query(insertSql, [studentId, vehicleType, examDate, examTime], (err, result) => {
       if (err) return callback(err);
       callback(null, {
         examId: result.insertId,

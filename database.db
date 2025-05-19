@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS student (
     STU_ID INT AUTO_INCREMENT PRIMARY KEY,
     FIRST_NAME VARCHAR(50) NOT NULL,
     LAST_NAME VARCHAR(50) NOT NULL,
-    ADDRESS TEXT NOT NULL,
-    EMAIL VARCHAR(100) NOT NULL UNIQUE,
+   ADDRESS TEXT NOT NULL,
+       EMAIL VARCHAR(100) NOT NULL UNIQUE,
     PASSWORD VARCHAR(255) NOT NULL,
     NIC VARCHAR(20) NOT NULL UNIQUE,
     PHONE VARCHAR(15) NOT NULL,
@@ -49,8 +49,8 @@ CREATE TABLE vehicles (
     name VARCHAR(255) NOT NULL,
     model VARCHAR(255) NOT NULL,
     plate_number VARCHAR(255) NOT NULL,
-    type ENUM('Van', 'Car', 'Three-Wheeler', 'Bike') NOT NULL,
-    status ENUM('Available', 'Unavailable', 'In Service') NOT NULL DEFAULT 'Available',
+    type ENUM('Van', 'Three-Wheeler', 'Bike') NOT NULL,
+    status ENUM('Available', 'Unavailable', 'In Service', 'In use') NOT NULL DEFAULT 'Available',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 drop table vehicles;
@@ -84,7 +84,7 @@ CREATE TABLE instructors (
     birthday DATE NOT NULL,
     address VARCHAR(255) NOT NULL,
     phone VARCHAR(15) NOT NULL UNIQUE,
-    grade ENUM('A', 'B', 'C') NOT NULL,
+    vehicleCategory ENUM('van', 'tricycle', 'bike') NOT NULL,
     password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -137,16 +137,16 @@ CREATE TABLE IF NOT EXISTS progress (
 );
 drop table progress;
 
-CREATE TABLE student_progress (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  student_id INT NOT NULL,
-  vehicle_type ENUM('Bike', 'Three-Wheeler', 'Van') NOT NULL,
-  completed_sessions INT DEFAULT 0,
-  total_sessions INT NOT NULL,
-  last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (student_id) REFERENCES student(STU_ID) ON DELETE CASCADE
-);
-drop table student_progress;
+-- CREATE TABLE student_progress (
+--   id INT AUTO_INCREMENT PRIMARY KEY,
+--   student_id INT NOT NULL,
+--   vehicle_type ENUM('Bike', 'Three-Wheeler', 'Van') NOT NULL,
+--   completed_sessions INT DEFAULT 0,
+--   total_sessions INT NOT NULL,
+--   last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--   FOREIGN KEY (student_id) REFERENCES student(STU_ID) ON DELETE CASCADE
+-- );
+-- drop table student_progress;
 
 CREATE TABLE completed_sessions (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -165,9 +165,26 @@ CREATE TABLE IF NOT EXISTS payments (
     package_id INT NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
     status ENUM('pending', 'paid', 'failed') DEFAULT 'pending',
+    payment_method ENUM('card', 'cash', 'bank') NOT NULL,
     transaction_id VARCHAR(255),
     transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES student(STU_ID),
     FOREIGN KEY (package_id) REFERENCES packages(package_id)
 );
 drop table payments;
+
+CREATE TABLE IF NOT EXISTS trial_exams (
+    exam_id INT AUTO_INCREMENT PRIMARY KEY,
+    stu_id INT NOT NULL,
+    vehicle_type ENUM('Bike', 'Three-Wheeler', 'Van') NOT NULL,
+    exam_date DATE,
+    exam_time TIME,
+    status ENUM('Pending', 'Approved', 'Completed', 'Rejected') DEFAULT 'Pending',
+    result ENUM('Pass', 'Fail', 'Not Taken', 'Absent') DEFAULT 'Not Taken',
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (stu_id) REFERENCES student(STU_ID) ON DELETE CASCADE,
+    CONSTRAINT unique_student_vehicle UNIQUE (stu_id, vehicle_type)
+);
+drop table trial_exams;

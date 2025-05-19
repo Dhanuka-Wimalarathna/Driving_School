@@ -8,6 +8,7 @@ import Sidebar from '../../../components/Sidebar/Sidebar';
 const TrialExamStudents = () => {
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
+  const [groupedStudents, setGroupedStudents] = useState({});
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newTrial, setNewTrial] = useState({
@@ -24,7 +25,7 @@ const TrialExamStudents = () => {
     examDate: '',
     examTime: '',
     status: '',
-    result: 'Not Taken' // Add this line
+    result: 'Not Taken'
   });
   const [searchFilters, setSearchFilters] = useState({
     date: '',
@@ -36,42 +37,144 @@ const TrialExamStudents = () => {
     fetchTrialStudents();
   }, []);
 
+  // Group students data by student ID
+  useEffect(() => {
+    const grouped = {};
+    students.forEach(student => {
+      if (!grouped[student.stu_id]) {
+        grouped[student.stu_id] = {
+          studentInfo: {
+            stu_id: student.stu_id,
+            first_name: student.first_name,
+            last_name: student.last_name,
+            email: student.email,
+            phone_number: student.phone_number
+          },
+          trials: []
+        };
+      }
+      
+      grouped[student.stu_id].trials.push({
+        exam_id: student.exam_id,
+        vehicle_type: student.vehicle_type,
+        exam_date: student.exam_date,
+        exam_time: student.exam_time,
+        status: student.status,
+        result: student.result || 'Not Taken'
+      });
+    });
+    
+    setGroupedStudents(grouped);
+  }, [students]);
+
   const fetchTrialStudents = async () => {
     setLoading(true);
     setErrorMessage('');
+    
     try {
-      const response = await axios.get("http://localhost:8081/api/trial-exams/students-details");
+      // Use the endpoint that returns all trial students
+      const response = await axios.get("http://localhost:8081/api/trial-exams/all-students");
       
-      if (response.data && response.data.success && Array.isArray(response.data.data)) {
-        const studentMap = response.data.data.reduce((acc, curr) => {
-          const key = `${curr.stu_id}-${curr.exam_date}-${curr.exam_time}`;
-          if (!acc[key]) {
-            acc[key] = {
-              id: curr.stu_id,
-              name: `${curr.student_first_name} ${curr.student_last_name}`,
-              vehicles: [],
-              examDate: curr.exam_date,
-              examTime: curr.exam_time,
-              status: curr.status,
-              result: curr.result || 'Not Taken'  // Add this line
-            };
-          }
-          acc[key].vehicles.push(curr.vehicle_type);
-          return acc;
-        }, {});
-        
-        setStudents(Object.values(studentMap));
-      } else {
-        console.error("Unexpected API response format:", response.data);
-        setStudents([]);
-      }
+      // Process the response data which already includes student information
+      const trialExams = response.data?.data || [];
+      
+      // Map the data to the format expected by the component
+      const formattedData = trialExams.map(exam => ({
+        exam_id: exam.exam_id,
+        stu_id: exam.stu_id,
+        vehicle_type: exam.vehicle_type,
+        exam_date: exam.exam_date,
+        exam_time: exam.exam_time,
+        status: exam.status,
+        result: exam.result || 'Not Taken',
+        first_name: exam.student_first_name,
+        last_name: exam.student_last_name,
+        // Add placeholder values for fields that might be missing
+        email: '',
+        phone_number: ''
+      }));
+      
+      setStudents(formattedData);
     } catch (error) {
-      console.error("Error fetching trial exam students:", error);
-      setErrorMessage('Failed to load trial exam students. Please try again.');
-      setStudents([]);
+      console.error("Error fetching trial students:", error);
+      setErrorMessage('Failed to load trial students. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyFilters = () => {
+    // Use the original students data to re-apply filters
+    if (!students.length) return;
+    
+    let filtered = [...students];
+    
+    // Apply filters
+    if (searchFilters.date) {
+      filtered = filtered.filter(student => 
+        student.exam_date === searchFilters.date
+      );
+    }
+    
+    if (searchFilters.time) {
+      filtered = filtered.filter(student => 
+        student.exam_time === searchFilters.time
+      );
+    }
+    
+    if (searchFilters.status) {
+      filtered = filtered.filter(student => 
+        student.status === searchFilters.status
+      );
+    }
+    
+    // Re-group the filtered students
+    const grouped = {};
+    filtered.forEach(student => {
+      if (!grouped[student.stu_id]) {
+        grouped[student.stu_id] = {
+          studentInfo: {
+            stu_id: student.stu_id,
+            first_name: student.first_name,
+            last_name: student.last_name,
+            email: student.email,
+            phone_number: student.phone_number
+          },
+          trials: []
+        };
+      }
+      
+      grouped[student.stu_id].trials.push({
+        exam_id: student.exam_id,
+        vehicle_type: student.vehicle_type,
+        exam_date: student.exam_date,
+        exam_time: student.exam_time,
+        status: student.status,
+        result: student.result || 'Not Taken'
+      });
+    });
+    
+    setGroupedStudents(grouped);
+  };
+
+  useEffect(() => {
+    applyFilters();
+  }, [searchFilters]);
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setSearchFilters(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const resetFilters = () => {
+    setSearchFilters({
+      date: '',
+      time: '',
+      status: ''
+    });
   };
 
   const handleAddTrial = async (e) => {
@@ -104,7 +207,7 @@ const TrialExamStudents = () => {
     } catch (error) {
       console.error("Error adding trial exam:", error);
       
-      // Show error toast (fix the class name to use styles object)
+      // Show error toast
       const toast = document.createElement("div");
       toast.className = `${styles['toast-notification']} ${styles['error']}`;
       toast.innerHTML = `<div>Failed to add trial exam.</div>`;
@@ -113,38 +216,37 @@ const TrialExamStudents = () => {
     }
   };
 
-  // Add this function to handle opening the update modal
-  const handleUpdateClick = (student) => {
-    setSelectedStudent(student);
-    setUpdateData({
-      examDate: student.examDate || '',
-      examTime: student.examTime || '',
-      status: student.status || 'Pending',
-      result: student.result || 'Not Taken' // Add this line
+  const handleUpdateClick = (student, trial) => {
+    setSelectedStudent({
+      ...student,
+      ...trial
     });
+    
+    setUpdateData({
+      examDate: trial.exam_date || '',
+      examTime: trial.exam_time || '',
+      status: trial.status || 'Pending',
+      result: trial.result || 'Not Taken'
+    });
+    
     setShowUpdateModal(true);
   };
 
-  // Add function to handle the update submission
   const handleUpdateTrial = async (e) => {
     e.preventDefault();
-    setLoading(true);
     
     try {
-      // Include result in the update request
-      await Promise.all(selectedStudent.vehicles.map(vehicleType => 
-        axios.put(`http://localhost:8081/api/trial-exams/update`, {
-          studentId: selectedStudent.id,
-          vehicleType: vehicleType,
-          examDate: updateData.examDate,
-          examTime: updateData.examTime,
-          status: updateData.status,
-          result: updateData.result  // Add this line
-        })
-      ));
+      await axios.put(`http://localhost:8081/api/trial-exams/${selectedStudent.exam_id}`, {
+        studentId: selectedStudent.stu_id,
+        vehicleType: selectedStudent.vehicle_type,
+        examDate: updateData.examDate,
+        examTime: updateData.examTime,
+        status: updateData.status,
+        result: updateData.result
+      });
       
       setShowUpdateModal(false);
-      fetchTrialStudents(); // Refresh data
+      fetchTrialStudents();
       
       // Show success toast
       const toast = document.createElement("div");
@@ -161,8 +263,6 @@ const TrialExamStudents = () => {
       toast.innerHTML = `<div>Failed to update trial exam.</div>`;
       document.body.appendChild(toast);
       setTimeout(() => document.body.removeChild(toast), 3000);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -170,140 +270,161 @@ const TrialExamStudents = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
-  const filteredStudents = students.filter(student => {
-    const dateMatch = !searchFilters.date || student.examDate === searchFilters.date;
-    const timeMatch = !searchFilters.time || student.examTime === searchFilters.time;
-    const statusMatch = !searchFilters.status || student.status === searchFilters.status;
-    return dateMatch && timeMatch && statusMatch;
-  });
-
   return (
-    <div className={styles['dashboard-layout']}>
-      <Sidebar sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
+    <div className={styles['trial-students-page']}>
+      <Sidebar collapsed={sidebarCollapsed} />
       
-      <main className={`${styles['trial-exam-main-content']} ${sidebarCollapsed ? styles['sidebar-collapsed'] : ''}`}>
-        <div className={styles['trial-exam-container']}>
-          <header className={styles['header-section']}>
-            <div className={styles['header-title']}>
-              <h1>
-                <span className={styles['title-icon']}>
-                  <Calendar size={24} />
-                </span>
-                Trial Exam Students
-              </h1>
-              <p className={styles['subtitle']}>
-                Manage students approved for trial examinations
-              </p>
-            </div>
-            <div className={styles['search-container']}>
-              <input
-                type="date"
+      <div className={styles['trial-students-content']}>
+        <div className={styles['page-header']}>
+          <h2>Trial Examination Students</h2>
+        </div>
+        
+        <div className={styles['filter-section']}>
+          <div className={styles['filter-inputs']}>
+            <div className={styles['filter-group']}>
+              <label>Exam Date</label>
+              <input 
+                type="date" 
+                name="date"
                 value={searchFilters.date}
-                onChange={(e) => setSearchFilters({...searchFilters, date: e.target.value})}
-                placeholder="Filter by date"
-                className={styles['search-input']}
+                onChange={handleFilterChange}
               />
-              <input
-                type="time"
+            </div>
+            
+            <div className={styles['filter-group']}>
+              <label>Exam Time</label>
+              <input 
+                type="time" 
+                name="time"
                 value={searchFilters.time}
-                onChange={(e) => setSearchFilters({...searchFilters, time: e.target.value})}
-                placeholder="Filter by time"
-                className={styles['search-input']}
+                onChange={handleFilterChange}
               />
-              <select
+            </div>
+            
+            <div className={styles['filter-group']}>
+              <label>Status</label>
+              <select 
+                name="status"
                 value={searchFilters.status}
-                onChange={(e) => setSearchFilters({...searchFilters, status: e.target.value})}
-                className={styles['search-input']}
+                onChange={handleFilterChange}
               >
-                <option value="">All Status</option>
+                <option value="">All</option>
                 <option value="Pending">Pending</option>
                 <option value="Approved">Approved</option>
                 <option value="Completed">Completed</option>
                 <option value="Rejected">Rejected</option>
               </select>
             </div>
-          </header>
-
-          {loading ? (
-            <div className={styles['loading-spinner']}>
-              <div className={styles['spinner']}></div>
-              <p>Loading trial exam students...</p>
-            </div>
-          ) : errorMessage ? (
-            <div className={styles['no-data']}>
-              <AlertCircle size={32} />
-              <p>{errorMessage}</p>
-              <button className={styles['retry-btn']} onClick={fetchTrialStudents}>Retry</button>
-            </div>
-          ) : students.length > 0 ? (
-            <div className={styles['students-table-container']}>
-              <table className={styles['students-table']}>
-                <thead>
-                  <tr>
-                    <th>Student Name</th>
-                    <th>Vehicle Categories</th>
-                    <th>Exam Date</th>
-                    <th>Exam Time</th>
-                    <th>Status</th>
-                    <th>Result</th> {/* Add this line */}
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredStudents.map((student) => (
-                    <tr key={`${student.id}-${student.examDate}`}>
-                      <td>{student.name}</td>
-                      <td>
-                        <div className={styles['badges-container']}>
-                          {student.vehicles.map((vehicle, index) => (
-                            <span key={index} className={styles['vehicle-badge']}>
-                              {vehicle}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td>{student.examDate ? new Date(student.examDate).toLocaleDateString() : "Not scheduled"}</td>
-                      <td>{student.examTime || "Not scheduled"}</td>
-                      <td>
-                        <span className={`${styles['status-badge']} ${styles[`status-${student.status?.toLowerCase() || 'pending'}`]}`}>
-                          {student.status || "Pending"}
-                        </span>
-                      </td>
-                      <td>
-                        <span 
-                          className={`${styles['result-badge']} ${
-                            (student.result === "Not Taken" || !student.result) 
-                              ? styles['result-not-taken'] 
-                              : styles[`result-${student.result?.toLowerCase().replace(/\s+/g, '-')}`]
-                          }`}
-                        >
-                          {student.result || "Not Taken"}
-                        </span>
-                      </td>
-                      <td>
-                        <div className={styles['table-actions']}>
-                          <button 
-                            className={styles['update-button']}
-                            onClick={() => handleUpdateClick(student)}
-                          >
-                            Update
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className={styles['no-data']}>
-              <Calendar size={32} />
-              <p>No approved trial students found</p>
-            </div>
-          )}
+          </div>
+          
+          <button 
+            className={styles['reset-filters-btn']}
+            onClick={resetFilters}
+          >
+            Reset Filters
+          </button>
         </div>
-      </main>
-
+        
+        {loading ? (
+          <div className={styles['loading-spinner']}>
+            <div className={styles['spinner']}></div>
+            <p>Loading trial students...</p>
+          </div>
+        ) : errorMessage ? (
+          <div className={styles['error-message']}>
+            <AlertCircle size={20} />
+            <p>{errorMessage}</p>
+            <button onClick={fetchTrialStudents}>Try Again</button>
+          </div>
+        ) : Object.keys(groupedStudents).length === 0 ? (
+          <div className={styles['no-data']}>
+            <Calendar size={48} />
+            <h3>No Trial Students</h3>
+            <p>There are no students scheduled for trial examinations.</p>
+            <button 
+              className={styles['add-student-btn']}
+              onClick={() => setShowAddModal(true)}
+            >
+              <Plus size={16} />
+              <span>Add New Trial</span>
+            </button>
+          </div>
+        ) : (
+          <div className={styles['students-list']}>
+            {Object.values(groupedStudents).map((groupedStudent) => (
+              <div 
+                key={groupedStudent.studentInfo.stu_id} 
+                className={styles['student-card']}
+              >
+                <div className={styles['student-info']}>
+                  <h3>
+                    {groupedStudent.studentInfo.first_name} {groupedStudent.studentInfo.last_name}
+                  </h3>
+                  <div className={styles['student-details']}>
+                    <div className={styles['student-id']}>
+                      ID: {groupedStudent.studentInfo.stu_id}
+                    </div>
+                    <div className={styles['student-contact']}>
+                      {groupedStudent.studentInfo.email} • {groupedStudent.studentInfo.phone_number}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className={styles['student-trials']}>
+                  <h4>Trial Examinations</h4>
+                  <div className={styles['trials-table-container']}>
+                    <table className={styles['trials-table']}>
+                      <thead>
+                        <tr>
+                          <th>Vehicle Type</th>
+                          <th>Exam Date</th>
+                          <th>Exam Time</th>
+                          <th>Status</th>
+                          <th>Result</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {groupedStudent.trials.map(trial => (
+                          <tr key={trial.exam_id}>
+                            <td>
+                              <div className={`${styles['vehicle-badge']}`}>
+                                {trial.vehicle_type}
+                              </div>
+                            </td>
+                            <td>{trial.exam_date ? new Date(trial.exam_date).toLocaleDateString() : 'Not Set'}</td>
+                            <td>{trial.exam_time || 'Not Set'}</td>
+                            <td>
+                              <div className={`${styles['status-badge']} ${styles[trial.status.toLowerCase()]}`}>
+                                {trial.status}
+                              </div>
+                            </td>
+                            <td>
+                              <div className={`${styles['result-badge']} ${styles[trial.result.toLowerCase().replace(' ', '-')]}`}>
+                                {trial.result}
+                              </div>
+                            </td>
+                            <td>
+                              <button 
+                                className={styles['edit-btn']}
+                                onClick={() => handleUpdateClick(groupedStudent.studentInfo, trial)}
+                              >
+                                Update
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* Add New Trial Modal */}
       {showAddModal && (
         <div className={styles['modal-overlay']}>
           <div className={styles['add-modal']}>
@@ -356,38 +477,26 @@ const TrialExamStudents = () => {
               <div className={styles['modal-actions']}>
                 <button 
                   type="button" 
-                  className={styles['cancel-button']}
                   onClick={() => setShowAddModal(false)}
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit"
-                  className={styles['submit-button']}
-                >
-                  Add Trial
-                </button>
+                <button type="submit">Add Trial</button>
               </div>
             </form>
           </div>
         </div>
       )}
-
-      {/* Update Modal */}
+      
+      {/* Update Trial Modal */}
       {showUpdateModal && selectedStudent && (
         <div className={styles['modal-overlay']}>
-          <div className={styles['update-modal']}>
+          <div className={styles['add-modal']}>
             <h3>Update Trial Exam</h3>
-            <p className={styles['update-student-info']}>Student: {selectedStudent.name}</p>
-            <div className={styles['vehicle-list']}>
-              <span>Vehicles:</span>
-              <div className={styles['badges-container']}>
-                {selectedStudent.vehicles.map((vehicle, index) => (
-                  <span key={index} className={styles['vehicle-badge']}>
-                    {vehicle}
-                  </span>
-                ))}
-              </div>
+            <div className={styles['student-info-modal']}>
+              <p>
+                <strong>{selectedStudent.first_name} {selectedStudent.last_name}</strong> - {selectedStudent.vehicle_type}
+              </p>
             </div>
             <form onSubmit={handleUpdateTrial}>
               <div className={styles['form-group']}>
@@ -438,23 +547,10 @@ const TrialExamStudents = () => {
                 <button 
                   type="button" 
                   onClick={() => setShowUpdateModal(false)}
-                  disabled={loading}
-                  className={styles['cancel-button']}
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit"
-                  disabled={loading}
-                  className={styles['submit-button']}
-                >
-                  {loading ? (
-                    <>
-                      <div className={styles['button-spinner']}></div>
-                      <span>Updating...</span>
-                    </>
-                  ) : "Update Trial"}
-                </button>
+                <button type="submit">Update Trial</button>
               </div>
             </form>
           </div>

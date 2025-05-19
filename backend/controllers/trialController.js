@@ -12,16 +12,16 @@ import {
 dotenv.config();
 
 export const createTrialExam = (req, res) => {
-  const { studentId, vehicleType } = req.body;
+  const { studentId, vehicleType, examDate, examTime } = req.body;
 
-  if (!studentId || !vehicleType) {
+  if (!studentId || !vehicleType || !examDate || !examTime) {
     return res.status(400).json({
       success: false,
-      error: 'Student ID and vehicle type are required'
+      error: 'Student ID, vehicle type, exam date and exam time are required'
     });
   }
 
-  createTrialExamModel(studentId, vehicleType, (err, result) => {
+  createTrialExamModel(studentId, vehicleType, examDate, examTime, (err, result) => {
     if (err) {
       console.error('Error creating trial exam:', err);
       return res.status(400).json({
@@ -206,4 +206,21 @@ export const getStudentTrialExams = (req, res) => {
       error: error.message || 'Server error'
     });
   }
+};
+
+export const fetchAllTrialStudents = (req, res) => {
+  getAllTrialStudents((err, results) => {
+    if (err) {
+      console.error('Error fetching all trial students:', err);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch all trial students'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: results
+    });
+  });
 };

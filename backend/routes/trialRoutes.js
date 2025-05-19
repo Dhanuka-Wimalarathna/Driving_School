@@ -1,13 +1,5 @@
 import express from 'express';
-import {
-  createTrialExam,
-  getTrialExams,
-  updateTrialExamStatus,
-  deleteTrialExam,
-  getTrialStudentsDetails,
-  updateTrialExam,
-  getStudentTrialExams  // Add this import
-} from '../controllers/trialController.js';
+import {  createTrialExam,  getTrialExams,  updateTrialExamStatus,  deleteTrialExam,  getTrialStudentsDetails,  updateTrialExam,  getStudentTrialExams,  fetchAllTrialStudents} from '../controllers/trialController.js';
 import authMiddleware from '../middleware/authMiddleware.js';  // Import auth middleware
 
 const router = express.Router();
@@ -22,5 +14,7 @@ router.put('/:id/status', updateTrialExamStatus);
 router.delete('/:id', deleteTrialExam);
 router.get('/students-details', getTrialStudentsDetails);
 router.put('/update', updateTrialExam);
+router.get('/student/:studentId', getStudentTrialExams);
+router.get('/all-students', fetchAllTrialStudents);
 
 export default router;

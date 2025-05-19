@@ -137,12 +137,6 @@ function InstructorDashboard() {
           <div className={styles['dashboard-content']}>
             <div className={styles['page-header']}>
               <h1>Instructor Dashboard</h1>
-              <div className={styles['header-actions']}>
-                <button onClick={handleLogout} className={styles['logout-btn']}>
-                  <LogOut size={20} className={styles['logout-icon']} />
-                  Logout
-                </button>
-              </div>
             </div>
 
             {/* Stats Cards */}

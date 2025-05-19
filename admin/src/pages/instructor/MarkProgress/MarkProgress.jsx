@@ -15,10 +15,42 @@ const MarkProgress = () => {
   const [isMarkingProgress, setIsMarkingProgress] = useState(false);
   const [isAcceptingTrial, setIsAcceptingTrial] = useState(false);
   const [selectedVehicleType, setSelectedVehicleType] = useState('');
+  
+  // Add new states for modal
+  const [showTrialModal, setShowTrialModal] = useState(false);
+  const [trialFormData, setTrialFormData] = useState({
+    examDate: '',
+    examTime: '',
+    vehicleType: ''
+  });
+
+  const [existingTrials, setExistingTrials] = useState({});
 
   // Fetch progress summary data with cache busting
   useEffect(() => {
     fetchProgress();
+  }, [id]);
+
+  // Fetch existing trial exams for this student
+  useEffect(() => {
+    if (id) {
+      axios.get(`http://localhost:8081/api/trial-exams?studentId=${id}`)
+        .then(res => {
+          if (res.data.success) {
+            // Transform the array into an object with vehicle_type as key
+            const trialsByVehicleType = {};
+            res.data.data.forEach(trial => {
+              trialsByVehicleType[trial.vehicle_type] = trial;
+            });
+            setExistingTrials(trialsByVehicleType);
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching existing trials:", err);
+          // Don't show an error message to the user, just silently handle it
+          setExistingTrials({});
+        });
+    }
   }, [id]);
 
   const fetchProgress = () => {
@@ -76,32 +108,135 @@ const MarkProgress = () => {
     });
   };
 
-  // Accept student for trial examination
-  const acceptTrialExam = (vehicleType) => {
-    setIsAcceptingTrial(vehicleType);
+  // Open trial modal when "Accept for Trial Exam" is clicked
+  const openTrialModal = (vehicleType = '') => {
+    // Set a default date (7 days from today)
+    const defaultDate = getMinimumDate(7);
+    
+    setTrialFormData({
+      examDate: defaultDate,
+      examTime: '08:00', // Default time
+      vehicleType: vehicleType
+    });
+    
+    // Reset error messages when opening modal
     setErrorMessage('');
     setSuccessMessage('');
     
-    axios.post('http://localhost:8081/api/trial-exams/accept-trial', {
-      studentId: id,
-      vehicleType: vehicleType
-    })
-    .then(res => {
-      if (res.data.success) {
-        setSuccessMessage(res.data.message || `${student.firstName} has been accepted for ${vehicleType} trial examination!`);
+    setShowTrialModal(true);
+  };
+
+  // Handle trial form input changes
+  const handleTrialFormChange = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === "examDate") {
+      const minDate = getMinimumDate(7);
+      if (value < minDate) {
+        setErrorMessage("Exam date must be at least 7 days from today.");
+        return;
+      } else {
+        setErrorMessage('');
+      }
+    }
+    
+    setTrialFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Submit trial exam request
+  const submitTrialExam = (e) => {
+    e.preventDefault();
+    
+    // Add extra validation to ensure we have completed vehicle types
+    if (completedVehicleTypes.length === 0) {
+      setErrorMessage("No completed vehicle types found to schedule trials for.");
+      return;
+    }
+    
+    // Validate date again for safety
+    const minDate = getMinimumDate(7);
+    if (trialFormData.examDate < minDate) {
+      setErrorMessage("Exam date must be at least 7 days from today.");
+      return;
+    }
+    
+    // Return if already processing
+    if (isAcceptingTrial) return;
+    
+    setIsAcceptingTrial(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+    
+    // For debugging
+    console.log("Submitting trial exam with data:", trialFormData);
+    console.log("Completed vehicle types:", completedVehicleTypes);
+    
+    // Create promises for each completed vehicle type
+    const trialPromises = completedVehicleTypes.map(item => {
+      return axios.post('http://localhost:8081/api/trial-exams/accept-trial', {
+        studentId: id,
+        vehicleType: item.vehicle_type,
+        examDate: trialFormData.examDate,
+        examTime: trialFormData.examTime
+      }).catch(err => {
+        // Return the error along with the vehicle type
+        return { error: err, vehicleType: item.vehicle_type };
+      });
+    });
+    
+    // Execute all promises
+    Promise.all(trialPromises)
+      .then(responses => {
+        // Check if any requests resulted in errors
+        const errors = responses.filter(res => res.error);
+        
+        if (errors.length > 0) {
+          // Some vehicle types failed to schedule
+          const errorTypes = errors.map(e => e.vehicleType).join(', ');
+          throw new Error(`Failed to schedule trials for: ${errorTypes}`);
+        }
+        
+        console.log("All trial exams scheduled successfully:", responses);
+        
+        // Update existing trials for all vehicle types
+        const newTrials = {};
+        completedVehicleTypes.forEach(item => {
+          newTrials[item.vehicle_type] = {
+            vehicle_type: item.vehicle_type,
+            exam_date: trialFormData.examDate,
+            exam_time: trialFormData.examTime,
+            status: 'Pending'
+          };
+        });
+        
+        // Update existing trials state
+        setExistingTrials(prev => ({
+          ...prev,
+          ...newTrials
+        }));
+        
+        // Create success message with vehicle types
+        const vehicleTypes = completedVehicleTypes.map(item => item.vehicle_type).join(', ');
+        setSuccessMessage(`${student.firstName} has been accepted for trial examination for the following vehicle categories: ${vehicleTypes}`);
+        
+        // Close modal
+        setShowTrialModal(false);
         
         // Auto-dismiss success message after 5 seconds
         setTimeout(() => {
           setSuccessMessage('');
         }, 5000);
-      }
-      setIsAcceptingTrial(false);
-    })
-    .catch(err => {
-      console.error("Error accepting for trial exam:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to accept for trial. Please try again.");
-      setIsAcceptingTrial(false);
-    });
+      })
+      .catch(err => {
+        console.error("Error accepting for trial exam:", err);
+        setErrorMessage(err.message || "Failed to accept for trial. Please try again.");
+      })
+      .finally(() => {
+        setIsAcceptingTrial(false);
+      });
   };
 
   // Check if any vehicle type has all sessions completed
@@ -109,6 +244,16 @@ const MarkProgress = () => {
 
   // Find all completed vehicle types
   const completedVehicleTypes = summary.filter(item => item.completedSessions >= item.totalSessions);
+
+  // Function to get minimum date (today + specified days)
+  const getMinimumDate = (daysAhead = 0) => {
+    const today = new Date();
+    today.setDate(today.getDate() + daysAhead);
+    return today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+  };
+
+  // Add this where you're calculating other derived values
+  const hasAnyExistingTrial = Object.keys(existingTrials).length > 0;
 
   if (loading) return (
     <div className={styles["loading-container"]}>
@@ -241,12 +386,52 @@ const MarkProgress = () => {
                   </table>
                 </div>
 
-                {/* Separate Trial Examination Table */}
-                {completedVehicleTypes.length > 0 && (
+                {/* Add a section for trial exam button that only appears when all sessions are completed */}
+                {hasCompletedVehicleTypes && completedVehicleTypes.length === summary.length && !hasAnyExistingTrial && (
+                  <div className={styles["trial-eligibility-section"]}>
+                    <div className={styles["eligibility-message"]}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                      </svg>
+                      <p>Congratulations! {student.firstName} has completed all required sessions for all vehicle types and is eligible for trial examination.</p>
+                    </div>
+                    <div className={styles["trial-action"]}>
+                      <button 
+                        onClick={() => {
+                          // Just open the modal, no need to set specific vehicle type
+                          openTrialModal(); 
+                        }}
+                        className={`${styles["trial-cta-button"]}`}
+                        disabled={isAcceptingTrial}
+                      >
+                        {isAcceptingTrial ? (
+                          <>
+                            <div className={styles["button-spinner"]}></div>
+                            <span>Processing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                              <circle cx="8.5" cy="7" r="4"></circle>
+                              <path d="M20 8v6"></path>
+                              <path d="M23 11h-6"></path>
+                            </svg>
+                            <span>Schedule Trial Examination</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Separate Trial Examination Table - Only show if there are existing trials */}
+                {hasAnyExistingTrial && (
                   <div className={styles["trial-section"]}>
                     <div className={styles["trial-header"]}>
-                      <h3>Trial Examination Eligibility</h3>
-                      <p>The student has completed all required sessions for the following vehicle types:</p>
+                      <h3>Trial Examination Status</h3>
+                      <p>The student's current trial examination status:</p>
                     </div>
                     <div className={styles["table-responsive"]}>
                       <table className={`${styles["summary-table"]} ${styles["trial-table"]}`}>
@@ -255,53 +440,49 @@ const MarkProgress = () => {
                             <th>Vehicle Type</th>
                             <th>Sessions Completed</th>
                             <th>Status</th>
-                            <th>Action</th>
+                            <th>Scheduled Date/Time</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {completedVehicleTypes.map((item, index) => {
-                            const isTrialProcessing = isAcceptingTrial === item.vehicle_type;
+                          {Object.values(existingTrials).map((trial, index) => {
+                            // Find the corresponding summary item
+                            const summaryItem = summary.find(item => item.vehicle_type === trial.vehicle_type);
                             
                             return (
                               <tr key={index}>
                                 <td className={styles["vehicle-type"]}>
                                   <div className={styles["vehicle-tag"]}>
-                                    {item.vehicle_type}
+                                    {trial.vehicle_type}
                                   </div>
                                 </td>
                                 <td className={styles.completed}>
-                                  <span className={styles.value}>{item.completedSessions}/{item.totalSessions}</span>
+                                  <span className={styles.value}>
+                                    {summaryItem ? `${summaryItem.completedSessions}/${summaryItem.totalSessions}` : "N/A"}
+                                  </span>
                                 </td>
                                 <td className={styles.status}>
-                                  <div className={`${styles["status-badge"]} ${styles.completed}`}>
+                                  <div className={`${styles["status-badge"]} ${styles[trial.status.toLowerCase()]}`}>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                       <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                       <polyline points="22 4 12 14.01 9 11.01"></polyline>
                                     </svg>
-                                    <span>Ready for Trial</span>
+                                    <span>
+                                      {trial.status === 'Pending' && 'Trial Scheduled'}
+                                      {trial.status === 'Approved' && 'Trial Approved'}
+                                      {trial.status === 'Completed' && 'Trial Completed'}
+                                      {trial.status === 'Rejected' && 'Trial Rejected'}
+                                    </span>
                                   </div>
                                 </td>
                                 <td>
-                                  <button 
-                                    onClick={() => acceptTrialExam(item.vehicle_type)}
-                                    className={`${styles["action-button"]} ${styles["trial-button"]}`}
-                                    disabled={isTrialProcessing}
-                                  >
-                                    {isTrialProcessing ? (
-                                      <>
-                                        <div className={styles["button-spinner"]}></div>
-                                        <span>Processing...</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                        </svg>
-                                        <span>Accept for Trial Exam</span>
-                                      </>
-                                    )}
-                                  </button>
+                                  <div className={styles["trial-info"]}>
+                                    <div className={styles["trial-date"]}>
+                                      {new Date(trial.exam_date).toLocaleDateString()}
+                                    </div>
+                                    <div className={styles["trial-time"]}>
+                                      {trial.exam_time}
+                                    </div>
+                                  </div>
                                 </td>
                               </tr>
                             );
@@ -325,6 +506,93 @@ const MarkProgress = () => {
           </div>
         </div>
       </div>
+
+      {/* Trial Modal */}
+      {showTrialModal && (
+        <div className={styles["modal-overlay"]} onClick={() => setShowTrialModal(false)}>
+          <div className={styles["modal-content"]} onClick={(e) => e.stopPropagation()}>
+            <div className={styles["modal-header"]}>
+              <h3>Schedule Trial Examination for All Vehicle Categories</h3>
+              <button className={styles["close-modal-btn"]} onClick={() => setShowTrialModal(false)}>
+                &times;
+              </button>
+            </div>
+            <div className={styles["modal-body"]}>
+              <form onSubmit={submitTrialExam}>
+                {errorMessage && (
+                  <div className={styles["modal-error-message"]}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>{errorMessage}</span>
+                  </div>
+                )}
+                <div className={styles["categories-list"]}>
+                  <label>Vehicle Categories to Schedule:</label>
+                  <div className={styles["vehicle-categories"]}>
+                    {completedVehicleTypes.map((item, index) => (
+                      <div key={index} className={styles["vehicle-category-badge"]}>
+                        {item.vehicle_type}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className={styles["form-group"]}>
+                  <label htmlFor="examDate">Exam Date</label>
+                  <input
+                    type="date"
+                    id="examDate"
+                    name="examDate"
+                    value={trialFormData.examDate}
+                    onChange={handleTrialFormChange}
+                    className={styles["form-control"]}
+                    required
+                  />
+                </div>
+                <div className={styles["form-group"]}>
+                  <label htmlFor="examTime">Exam Time</label>
+                  <input
+                    type="time"
+                    id="examTime"
+                    name="examTime"
+                    value={trialFormData.examTime}
+                    onChange={handleTrialFormChange}
+                    className={styles["form-control"]}
+                    required
+                  />
+                </div>
+                <div className={styles["modal-actions"]}>
+                  <button 
+                    type="button" 
+                    className={styles["cancel-button"]}
+                    onClick={() => setShowTrialModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className={styles["confirm-button"]}
+                    disabled={isAcceptingTrial}
+                  >
+                    {isAcceptingTrial ? (
+                      <>
+                        <div className={styles["button-spinner"]}></div>
+                        <span>Processing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Schedule Trial</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

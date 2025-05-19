@@ -116,27 +116,30 @@ export const calculateProfitMetrics = (startDate, endDate) => {
       if (err) return reject(err);
       
       const totalRevenue = revenueResults[0].total_revenue || 0;
-
-      const fixedCosts = 25000; 
-
-      const variableCosts = totalRevenue * 0.4;
-
-      const totalCosts = fixedCosts + variableCosts;
-
-      const grossProfit = totalRevenue - variableCosts;
-      const netProfit = totalRevenue - totalCosts;
-
-      const grossProfitMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
+      
+      // Monthly fixed costs (rent, utilities, admin, etc.)
+      const fixedCosts = 25000;
+      
+      // Calculate monthly profits directly without variable costs
+      // This assumes monthly profit is simply revenue minus fixed costs
+      const monthlyProfit = totalRevenue - fixedCosts;
+      
+      // Net profit is the same as monthly profit in this model
+      const netProfit = monthlyProfit;
+      
+      // Calculate profit margin
       const netProfitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
       
       resolve({
         totalRevenue,
         fixedCosts,
-        variableCosts,
-        totalCosts,
-        grossProfit,
+        // Remove variableCosts from the response or set to zero
+        variableCosts: 0, // Set to zero instead of removing to prevent the error
+        totalCosts: fixedCosts, // Total costs are just fixed costs now
+        // Set gross profit to same as net profit since we're not using variable costs
+        grossProfit: netProfit,
         netProfit,
-        grossProfitMargin,
+        grossProfitMargin: netProfitMargin, // Same as net profit margin in this model
         netProfitMargin
       });
     });
