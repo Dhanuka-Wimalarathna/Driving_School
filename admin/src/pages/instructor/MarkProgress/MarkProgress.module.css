@@ -42,6 +42,55 @@
   margin-top: 0.25rem;
 }
 
+/* ====== TOAST NOTIFICATION STYLES ====== */
+.toast-notification {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 1000;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+  font-weight: 500;
+}
+
+.toast-notification.success {
+  background-color: #ecfdf5;
+  color: #10b981;
+  border-left: 4px solid #10b981;
+}
+
+.toast-notification.error {
+  background-color: #fef2f2;
+  color: #ef4444;
+  border-left: 4px solid #ef4444;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
 /* ====== ALERTS ====== */
 .alert {
   display: flex;
@@ -412,6 +461,12 @@ td.total .value {
   .progress-content {
     padding: 1.5rem;
   }
+  
+  .toast-notification {
+    right: 1rem;
+    left: 1rem;
+    width: calc(100% - 2rem);
+  }
 }
 
 @media (max-width: 768px) {
@@ -474,6 +529,13 @@ td.total .value {
   }
   
   .alert {
+    padding: 0.75rem 1rem;
+  }
+  
+  .toast-notification {
+    right: 1rem;
+    left: 1rem;
+    width: calc(100% - 2rem);
     padding: 0.75rem 1rem;
   }
   

@@ -10,7 +10,6 @@ const MarkProgress = () => {
   const student = location.state?.student || {};
   const [summary, setSummary] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isMarkingProgress, setIsMarkingProgress] = useState(false);
   const [isAcceptingTrial, setIsAcceptingTrial] = useState(false);
@@ -62,16 +61,27 @@ const MarkProgress = () => {
       })
       .catch(err => {
         console.error("Error fetching progress:", err);
-        setErrorMessage(err.response?.data?.error || "Failed to load progress data. Please try again.");
+        showToast(err.response?.data?.error || "Failed to load progress data. Please try again.", 'error');
         setLoading(false);
       });
+  };
+
+  // Toast notification function
+  const showToast = (message, type) => {
+    const toast = document.createElement("div");
+    toast.className = `${styles["toast-notification"]} ${styles[type]}`;
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      if (document.body.contains(toast)) {
+        document.body.removeChild(toast);
+      }
+    }, 3000);
   };
 
   // Mark a session as completed
   const markSessionCompleted = (vehicleType) => {
     setIsMarkingProgress(true);
-    setErrorMessage('');
-    setSuccessMessage('');
     
     axios.post('http://localhost:8081/api/session/mark-completed', {
       studentId: id,
@@ -80,7 +90,6 @@ const MarkProgress = () => {
     .then(res => {
       if (res.data.success) {
         setSummary(res.data.summary);
-        setSuccessMessage(res.data.message || "Session marked as completed successfully!");
         
         // Find the updated vehicle progress
         const updatedVehicle = res.data.summary.find(
@@ -89,21 +98,16 @@ const MarkProgress = () => {
         
         if (updatedVehicle && 
             updatedVehicle.completedSessions >= updatedVehicle.totalSessions) {
-          setSuccessMessage(
-            `All ${updatedVehicle.totalSessions} sessions completed for ${updatedVehicle.vehicle_type}!`
-          );
+          showToast(`All ${updatedVehicle.totalSessions} sessions completed for ${updatedVehicle.vehicle_type}!`, 'success');
+        } else {
+          showToast(res.data.message || "Session marked as completed successfully!", 'success');
         }
-
-        // Auto-dismiss success message after 5 seconds
-        setTimeout(() => {
-          setSuccessMessage('');
-        }, 5000);
       }
       setIsMarkingProgress(false);
     })
     .catch(err => {
       console.error("Error marking progress:", err);
-      setErrorMessage(err.response?.data?.error || "Failed to update progress. Please try again.");
+      showToast(err.response?.data?.error || "Failed to update progress. Please try again.", 'error');
       setIsMarkingProgress(false);
     });
   };
@@ -119,10 +123,6 @@ const MarkProgress = () => {
       vehicleType: vehicleType
     });
     
-    // Reset error messages when opening modal
-    setErrorMessage('');
-    setSuccessMessage('');
-    
     setShowTrialModal(true);
   };
 
@@ -133,10 +133,8 @@ const MarkProgress = () => {
     if (name === "examDate") {
       const minDate = getMinimumDate(7);
       if (value < minDate) {
-        setErrorMessage("Exam date must be at least 7 days from today.");
+        showToast("Exam date must be at least 7 days from today.", 'error');
         return;
-      } else {
-        setErrorMessage('');
       }
     }
     
@@ -152,14 +150,14 @@ const MarkProgress = () => {
     
     // Add extra validation to ensure we have completed vehicle types
     if (completedVehicleTypes.length === 0) {
-      setErrorMessage("No completed vehicle types found to schedule trials for.");
+      showToast("No completed vehicle types found to schedule trials for.", 'error');
       return;
     }
     
     // Validate date again for safety
     const minDate = getMinimumDate(7);
     if (trialFormData.examDate < minDate) {
-      setErrorMessage("Exam date must be at least 7 days from today.");
+      showToast("Exam date must be at least 7 days from today.", 'error');
       return;
     }
     
@@ -167,8 +165,6 @@ const MarkProgress = () => {
     if (isAcceptingTrial) return;
     
     setIsAcceptingTrial(true);
-    setErrorMessage('');
-    setSuccessMessage('');
     
     // For debugging
     console.log("Submitting trial exam with data:", trialFormData);
@@ -220,19 +216,14 @@ const MarkProgress = () => {
         
         // Create success message with vehicle types
         const vehicleTypes = completedVehicleTypes.map(item => item.vehicle_type).join(', ');
-        setSuccessMessage(`${student.firstName} has been accepted for trial examination for the following vehicle categories: ${vehicleTypes}`);
+        showToast(`${student.firstName} has been accepted for trial examination for the following vehicle categories: ${vehicleTypes}`, 'success');
         
         // Close modal
         setShowTrialModal(false);
-        
-        // Auto-dismiss success message after 5 seconds
-        setTimeout(() => {
-          setSuccessMessage('');
-        }, 5000);
       })
       .catch(err => {
         console.error("Error accepting for trial exam:", err);
-        setErrorMessage(err.message || "Failed to accept for trial. Please try again.");
+        showToast(err.message || "Failed to accept for trial. Please try again.", 'error');
       })
       .finally(() => {
         setIsAcceptingTrial(false);
@@ -273,32 +264,6 @@ const MarkProgress = () => {
             <h2 className={styles["student-name"]}>{student.firstName} {student.lastName}'s Progress</h2>
             <p className={styles.subtitle}>Track and update training sessions</p>
           </div>
-          
-          {/* Success and error messages */}
-          {successMessage && (
-            <div className={`${styles.alert} ${styles["alert-success"]}`}>
-              <div className={styles["alert-icon"]}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-              </div>
-              <div className={styles["alert-content"]}>{successMessage}</div>
-            </div>
-          )}
-          
-          {errorMessage && (
-            <div className={`${styles.alert} ${styles["alert-error"]}`}>
-              <div className={styles["alert-icon"]}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-              </div>
-              <div className={styles["alert-content"]}>{errorMessage}</div>
-            </div>
-          )}
           
           <div className={styles["summary-section"]}>
             <div className={styles["summary-header"]}>
@@ -519,16 +484,6 @@ const MarkProgress = () => {
             </div>
             <div className={styles["modal-body"]}>
               <form onSubmit={submitTrialExam}>
-                {errorMessage && (
-                  <div className={styles["modal-error-message"]}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="12" y1="8" x2="12" y2="12"></line>
-                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    <span>{errorMessage}</span>
-                  </div>
-                )}
                 <div className={styles["categories-list"]}>
                   <label>Vehicle Categories to Schedule:</label>
                   <div className={styles["vehicle-categories"]}>

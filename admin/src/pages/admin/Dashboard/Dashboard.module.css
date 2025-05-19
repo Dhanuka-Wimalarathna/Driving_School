@@ -1,4 +1,3 @@
-/* Remove these styles as they're now in App.css */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 * {
@@ -20,7 +19,7 @@ body {
   display: flex;
   min-height: 100vh;
   background-color: #f9fafb;
-  position: relative; /* Add position relative */
+  position: relative;
 }
 
 /* Main content styles */
@@ -31,7 +30,6 @@ body {
   overflow-x: hidden;
   transition: margin-left 0.3s ease;
   margin-left: 250px;
-  /* Center the content horizontally */
   align-items: center;
 }
 

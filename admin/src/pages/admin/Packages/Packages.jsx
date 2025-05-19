@@ -58,6 +58,19 @@ const Packages = () => {
     }
   }, [searchQuery, packages]);
 
+  // Toast notification function
+  const showToast = (message, type) => {
+    const toast = document.createElement("div");
+    toast.className = `${styles["toast-notification"]} ${styles[type]}`;
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      if (document.body.contains(toast)) {
+        document.body.removeChild(toast);
+      }
+    }, 3000);
+  };
+
   const fetchPackages = async () => {
     setIsLoading(true);
     setErrorMessage("");
@@ -68,6 +81,7 @@ const Packages = () => {
     } catch (error) {
       console.error("Error fetching packages:", error);
       setErrorMessage("Failed to load packages. Please try again later.");
+      showToast("Failed to load packages. Please try again later.", "error");
       setPackages([]);
       setFilteredPackages([]);
     } finally {
@@ -114,7 +128,7 @@ const Packages = () => {
 
   const handleSavePackage = async () => {
     if (!validateForm()) {
-      alert("Please correct the errors in the form before submitting.");
+      showToast("Please correct the errors in the form before submitting.", "error");
       return;
     }
 
@@ -130,8 +144,10 @@ const Packages = () => {
 
       if (editingPackage) {
         await axios.put(`http://localhost:8081/api/packages/${editingPackage.id}`, formattedData);
+        showToast(`Package "${formattedData.title}" was updated successfully!`, "success");
       } else {
         await axios.post("http://localhost:8081/api/packages/addPackage", formattedData);
+        showToast(`Package "${formattedData.title}" was created successfully!`, "success");
       }
 
       setShowModal(false);
@@ -154,6 +170,7 @@ const Packages = () => {
       fetchPackages();
     } catch (error) {
       console.error("Error saving package:", error);
+      showToast(`Failed to ${editingPackage ? 'update' : 'create'} package. Please try again.`, "error");
     }
   };
 
@@ -162,9 +179,11 @@ const Packages = () => {
     
     try {
       await axios.delete(`http://localhost:8081/api/packages/${id}`);
+      showToast("Package was deleted successfully!", "success");
       fetchPackages();
     } catch (error) {
       console.error("Error deleting package:", error);
+      showToast("Failed to delete package. Please try again.", "error");
     }
   };
 

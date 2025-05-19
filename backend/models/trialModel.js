@@ -144,3 +144,48 @@ export const updateTrialExam = (studentId, vehicleType, updateData, callback) =>
     });
   });
 };
+
+// New function to update only status and result by exam ID
+export const updateTrialExamStatusResult = (examId, updateData, callback) => {
+  // Validate result value if it's being updated
+  if (updateData.result && !['Pass', 'Fail', 'Not Taken', 'Absent'].includes(updateData.result)) {
+    return callback(new Error('Invalid result value'));
+  }
+
+  // First check if the exam exists
+  const findSql = `SELECT * FROM trial_exams WHERE exam_id = ?`;
+  
+  sqldb.query(findSql, [examId], (err, exams) => {
+    if (err) return callback(err);
+    
+    if (exams.length === 0) {
+      return callback(new Error('Trial exam not found'));
+    }
+    
+    // Build the update query dynamically, but only allow status and result to be updated
+    const allowedFields = {};
+    if ('status' in updateData) allowedFields.status = updateData.status;
+    if ('result' in updateData) allowedFields.result = updateData.result;
+    
+    const updateFields = Object.keys(allowedFields).map(key => `${key} = ?`).join(', ');
+    const updateValues = Object.values(allowedFields);
+    
+    if (updateFields.length === 0) {
+      return callback(new Error('No valid fields to update'));
+    }
+    
+    const updateSql = `
+      UPDATE trial_exams 
+      SET ${updateFields}
+      WHERE exam_id = ?
+    `;
+    
+    sqldb.query(updateSql, [...updateValues, examId], (err, result) => {
+      if (err) return callback(err);
+      callback(null, { 
+        affected: result.affectedRows,
+        exam_id: examId
+      });
+    });
+  });
+};

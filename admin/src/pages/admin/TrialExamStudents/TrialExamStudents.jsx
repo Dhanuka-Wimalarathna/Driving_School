@@ -22,8 +22,6 @@ const TrialExamStudents = () => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [updateData, setUpdateData] = useState({
-    examDate: '',
-    examTime: '',
     status: '',
     result: 'Not Taken'
   });
@@ -223,8 +221,6 @@ const TrialExamStudents = () => {
     });
     
     setUpdateData({
-      examDate: trial.exam_date || '',
-      examTime: trial.exam_time || '',
       status: trial.status || 'Pending',
       result: trial.result || 'Not Taken'
     });
@@ -236,11 +232,8 @@ const TrialExamStudents = () => {
     e.preventDefault();
     
     try {
-      await axios.put(`http://localhost:8081/api/trial-exams/${selectedStudent.exam_id}`, {
-        studentId: selectedStudent.stu_id,
-        vehicleType: selectedStudent.vehicle_type,
-        examDate: updateData.examDate,
-        examTime: updateData.examTime,
+      // Use the new endpoint that only updates status and result
+      await axios.put(`http://localhost:8081/api/trial-exams/${selectedStudent.exam_id}/status-result`, {
         status: updateData.status,
         result: updateData.result
       });
@@ -497,26 +490,14 @@ const TrialExamStudents = () => {
               <p>
                 <strong>{selectedStudent.first_name} {selectedStudent.last_name}</strong> - {selectedStudent.vehicle_type}
               </p>
+              <p>
+                <strong>Exam Date:</strong> {selectedStudent.exam_date ? new Date(selectedStudent.exam_date).toLocaleDateString() : 'Not Set'}
+              </p>
+              <p>
+                <strong>Exam Time:</strong> {selectedStudent.exam_time || 'Not Set'}
+              </p>
             </div>
             <form onSubmit={handleUpdateTrial}>
-              <div className={styles['form-group']}>
-                <label>Exam Date:</label>
-                <input
-                  type="date"
-                  value={updateData.examDate}
-                  onChange={(e) => setUpdateData({...updateData, examDate: e.target.value})}
-                  required
-                />
-              </div>
-              <div className={styles['form-group']}>
-                <label>Exam Time:</label>
-                <input
-                  type="time"
-                  value={updateData.examTime}
-                  onChange={(e) => setUpdateData({...updateData, examTime: e.target.value})}
-                  required
-                />
-              </div>
               <div className={styles['form-group']}>
                 <label>Status:</label>
                 <select
