@@ -329,23 +329,14 @@ export const sendOTP = async (req, res) => {
                 return res.status(500).json({ message: "Failed to generate OTP" });
               }
               
-              // In development mode, log the OTP instead of sending an email
-              console.log(`==== DEVELOPMENT MODE ====`);
-              console.log(`OTP for ${email} (instructor ID: ${instructor.ins_id}): ${otp}`);
-              console.log(`==== USE THIS OTP TO RESET PASSWORD ====`);
+              // DEVELOPMENT MODE - Skip email sending and just display OTP
+              console.log(`\n==== DEVELOPMENT MODE - OTP FOR PASSWORD RESET ====`);
+              console.log(`Email: ${email}`);
+              console.log(`OTP: ${otp}`);
+              console.log(`========================================\n`);
               
-              // In production, you would send an actual email here
-              // const emailSent = await sendOTPEmail(email, otp);
-              const emailSent = true; // For development
-              
-              if (!emailSent) {
-                return res.status(500).json({ message: "Failed to send OTP email. Please try again." });
-              }
-              
+              // Always return success in development mode
               return res.status(200).json({ 
-                message: "OTP sent successfully. Please check your email.",
-                // Remove in production
-                otp: otp 
               });
             }
           );

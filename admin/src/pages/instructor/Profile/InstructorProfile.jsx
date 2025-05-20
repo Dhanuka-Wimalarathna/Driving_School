@@ -82,8 +82,6 @@ const InstructorProfile = () => {
       // First, fetch all instructors
       const response = await axios.get("http://localhost:8081/api/instructors");
       
-      // Find the currently logged-in instructor by email if available
-      // If email is not available, use the first instructor for demonstration
       let currentInstructor;
       if (email) {
         currentInstructor = response.data.find(inst => inst.email === email);

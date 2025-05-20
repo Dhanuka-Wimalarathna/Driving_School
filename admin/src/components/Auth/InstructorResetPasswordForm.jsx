@@ -29,13 +29,19 @@ const InstructorResetPasswordForm = () => {
       // Store email in sessionStorage for the next steps
       sessionStorage.setItem('instructorResetEmail', email);
       
-      // Show success message briefly before navigation
-      setSuccess('OTP sent successfully! Redirecting...');
+      // In development mode, if the API returns the OTP directly, save it to show to the user
+      if (response.data.otp) {
+        // For development only - display the OTP
+        setSuccess(`Development mode: Your OTP is ${response.data.otp}. Redirecting...`);
+      } else {
+        // Normal message for production
+        setSuccess('OTP sent successfully! Redirecting...');
+      }
       
       // Navigate after a short delay to show the success message
       setTimeout(() => {
         navigate('/instructor/reset-password/otp-verification');
-      }, 1500);
+      }, 2000); // Extended to 2 seconds to give more time to see the OTP
     } catch (error) {
       if (error.response && error.response.data) {
         setError(error.response.data.message);

@@ -16,7 +16,13 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.APP_PASSWORD
-  }
+  },
+  tls: {
+    rejectUnauthorized: false
+  },
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,   // 10 seconds
+  socketTimeout: 15000      // 15 seconds
 });
 
 // Test the connection
@@ -40,7 +46,8 @@ export const sendOTPEmail = async (email, otp) => {
       return false;
     }
 
-    const mailOptions = {
+    // Try to send email
+    const info = await transporter.sendMail({
       from: `"Madhushani Driving School" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: 'Password Reset OTP - Madhushani Driving School',
@@ -67,10 +74,9 @@ export const sendOTPEmail = async (email, otp) => {
           </div>
         </div>
       `
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent:', info.response);
+    });
+    
+    console.log('Email sent: %s', info.messageId);
     return true;
   } catch (error) {
     console.error('Error sending email:', error);

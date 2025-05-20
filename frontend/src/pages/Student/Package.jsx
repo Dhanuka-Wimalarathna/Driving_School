@@ -193,7 +193,7 @@ const Package = () => {
                         <div className="sessions-grid">
                           <div className="session-card bike-session">
                             <div className="session-icon">
-                              <i className="bi bi-bicycle"></i>
+                              {/* <i className="bi bi-bicycle"></i> */}
                             </div>
                             <div className="session-info">
                               <div className="session-name">Bike Sessions</div>
@@ -205,7 +205,7 @@ const Package = () => {
 
                           <div className="session-card tricycle-session">
                             <div className="session-icon">
-                              <i className="bi bi-tricycle"></i>
+                              {/* <i className="bi bi-tricycle"></i> */}
                             </div>
                             <div className="session-info">
                               <div className="session-name">Tricycle Sessions</div>
@@ -217,7 +217,7 @@ const Package = () => {
 
                           <div className="session-card van-session">
                             <div className="session-icon">
-                              <i className="bi bi-truck"></i>
+                              {/* <i className="bi bi-truck"></i> */}
                             </div>
                             <div className="session-info">
                               <div className="session-name">Van Sessions</div>
