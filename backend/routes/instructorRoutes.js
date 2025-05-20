@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, getProfile, updateProfile, getAllInstructors, deleteInstructor, updateInstructorById } from '../controllers/instructorController.js';
+import { register, login, getProfile, updateProfile, getAllInstructors, deleteInstructor, updateInstructorById, sendOTP, verifyOTP, resetPassword } from '../controllers/instructorController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -16,5 +16,10 @@ router.put('/update', authMiddleware, updateProfile);
 router.get('/', getAllInstructors);
 router.delete('/:id', deleteInstructor);
 router.put('/:id', updateInstructorById);
+
+// Password reset routes
+router.post('/send-otp', sendOTP);
+router.post('/verify-otp', verifyOTP);
+router.post('/reset-password', resetPassword);
 
 export default router;

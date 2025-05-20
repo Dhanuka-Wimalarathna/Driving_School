@@ -103,6 +103,12 @@ const InstructorSignIn = () => {
           <div className="col-12">
             <div className="card shadow auth-card mx-auto">
               <div className="card-body compact-spacing">
+                {errors.server && (
+                  <div className="alert alert-danger alert-compact d-flex align-items-center" role="alert">
+                    <i className="bi bi-exclamation-triangle-fill me-1" style={{ fontSize: '0.75rem' }}></i>
+                    <div>{errors.server}</div>
+                  </div>
+                )}
                 <div className="text-center compact-mb-2">
                   <div className="brand-logo">
                     <i className="bi bi-person-badge me-1"></i>
@@ -160,7 +166,7 @@ const InstructorSignIn = () => {
                         Remember me
                       </label>
                     </div>
-                    <Link to="/instructor/forgot-password" className="compact-text text-decoration-none">
+                    <Link to="/instructor/reset-password" className="compact-text text-decoration-none">
                       Forgot Password?
                     </Link>
                   </div>

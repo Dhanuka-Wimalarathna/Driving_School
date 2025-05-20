@@ -24,6 +24,10 @@ import MarkProgress from './pages/instructor/MarkProgress/MarkProgress';
 import InstructorProfile from './pages/instructor/Profile/InstructorProfile';
 import DailyReport from './pages/instructor/DailyReport/DailyReport';
 
+import InstructorResetPasswordForm from './components/Auth/InstructorResetPasswordForm';
+import InstructorOTPVerificationForm from './components/Auth/InstructorOTPVerificationForm';
+import InstructorNewPasswordForm from './components/Auth/InstructorNewPasswordForm';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -59,6 +63,11 @@ function App() {
         <Route path="/instructor/students/:id" element={<MarkProgress />} />
         <Route path="/instructor/profile" element={<InstructorProfile />} />
         <Route path="/instructor/daily-report" element={<DailyReport />} />
+
+        {/* Instructor Password Reset Routes */}
+        <Route path="/instructor/reset-password" element={<InstructorResetPasswordForm />} />
+        <Route path="/instructor/reset-password/otp-verification" element={<InstructorOTPVerificationForm />} />
+        <Route path="/instructor/reset-password/new-password" element={<InstructorNewPasswordForm />} />
       </Routes>
     </Router>
   );

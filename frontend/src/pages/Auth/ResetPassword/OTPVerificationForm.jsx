@@ -1,18 +1,31 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Import axios
-import './OTPVerificationForm.css'; // Import the CSS file
+import axios from 'axios';
+import './OTPVerificationForm.css';
 
 const OTPVerificationForm = () => {
-  const [otp, setOtp] = useState(['', '', '', '', '', '']); // Array to store each OTP digit
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const inputRefs = useRef([]); // Refs for each input field
+  const inputRefs = useRef([]);
+
+  // Get email from session storage on component mount
+  useEffect(() => {
+    const storedEmail = sessionStorage.getItem('resetEmail');
+    if (!storedEmail) {
+      // If no email is found, redirect back to reset password page
+      navigate('/reset-password');
+    } else {
+      setEmail(storedEmail);
+    }
+  }, [navigate]);
 
   // Handle OTP input change
   const handleChange = (index, value) => {
-    if (/^\d*$/.test(value) && value.length <= 1) { // Allow only digits and max length of 1
+    if (/^\d*$/.test(value) && value.length <= 1) {
       const newOtp = [...otp];
       newOtp[index] = value;
       setOtp(newOtp);
@@ -24,25 +37,75 @@ const OTPVerificationForm = () => {
     }
   };
 
+  // Handle backspace key to go to previous input
+  const handleKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      // If current field is empty and backspace is pressed, focus previous field
+      inputRefs.current[index - 1].focus();
+    }
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
+    const otpCode = otp.join(''); // Combine the OTP digits
+
+    // Validate OTP
+    if (otpCode.length !== 6) {
+      setError('Please enter all 6 digits of the OTP');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const otpCode = otp.join(''); // Combine the OTP digits into a single string
-      const response = await axios.post('http://localhost:8081/api/auth/verify-otp', { otp: otpCode });
-      console.log('OTP verified:', response.data);
-      navigate('/reset-password/new-password'); // Navigate to New Password page
+      const response = await axios.post('http://localhost:8081/api/auth/verify-otp', { 
+        otp: otpCode,
+        email: email 
+      });
+      
+      // Store the reset token and email for the next step
+      sessionStorage.setItem('resetToken', response.data.resetToken);
+      
+      // Show success message
+      setSuccess('OTP verified successfully! Redirecting...');
+      
+      // Navigate to new password page after a brief delay
+      setTimeout(() => {
+        navigate('/reset-password/new-password');
+      }, 1500);
+      
     } catch (error) {
       if (error.response && error.response.data) {
         setError(error.response.data.message);
+      } else if (error.request) {
+        setError('No response from server. Please check your connection.');
       } else {
         setError('An error occurred. Please try again later.');
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle OTP resend
+  const handleResendOTP = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    
+    try {
+      await axios.post('http://localhost:8081/api/auth/send-otp', { email });
+      setSuccess('A new OTP has been sent to your email.');
+    } catch (error) {
+      if (error.response && error.response.data) {
+        setError(error.response.data.message);
+      } else {
+        setError('Failed to resend OTP. Please try again.');
+      }
     }
   };
 
@@ -57,6 +120,9 @@ const OTPVerificationForm = () => {
               Madhushani Driving School
             </div>
             <h3 className="fs-6 fw-bold text-dark mb-0">OTP Verification</h3>
+            <p className="small text-muted mb-0">
+              Enter the 6-digit code sent to {email}
+            </p>
           </div>
 
           {/* Error Alert */}
@@ -64,6 +130,14 @@ const OTPVerificationForm = () => {
             <div className="alert alert-danger alert-compact d-flex align-items-center" role="alert">
               <i className="bi bi-exclamation-triangle-fill me-1" style={{ fontSize: '0.75rem' }}></i>
               <div>{error}</div>
+            </div>
+          )}
+
+          {/* Success Alert */}
+          {success && (
+            <div className="alert alert-success alert-compact d-flex align-items-center" role="alert">
+              <i className="bi bi-check-circle-fill me-1" style={{ fontSize: '0.75rem' }}></i>
+              <div>{success}</div>
             </div>
           )}
 
@@ -77,9 +151,10 @@ const OTPVerificationForm = () => {
                   className="form-control form-control-sm text-center otp-input"
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
                   maxLength={1}
-                  ref={(el) => (inputRefs.current[index] = el)} // Assign ref to each input
-                  autoFocus={index === 0} // Auto-focus the first input
+                  ref={(el) => (inputRefs.current[index] = el)}
+                  autoFocus={index === 0}
                 />
               ))}
             </div>
@@ -114,11 +189,7 @@ const OTPVerificationForm = () => {
               <a
                 href="#"
                 className="text-decoration-none"
-                onClick={(e) => {
-                  e.preventDefault();
-                  // Add logic to resend OTP
-                  console.log('Resending OTP...');
-                }}
+                onClick={handleResendOTP}
               >
                 Resend OTP
               </a>

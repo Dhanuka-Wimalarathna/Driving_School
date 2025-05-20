@@ -13,6 +13,7 @@ import OTPVerificationForm from './pages/Auth/ResetPassword/OTPVerificationForm'
 import Package from './pages/Student/Package';
 import ProfilePage from './pages/Student/ProfilePage';
 import StudyMaterials from './pages/Student/StudyMaterials';
+import NewPasswordForm from './pages/Auth/ResetPassword/NewPasswordForm';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path='/reset-password' element={<ResetPasswordForm />} />
           <Route path='/reset-password/otp-verification' element={<OTPVerificationForm />} />
+          <Route path="/reset-password/new-password" element={<NewPasswordForm />} />
 
           {/* Student Routes */}
           <Route path="/student" element={<Dashboard />} />

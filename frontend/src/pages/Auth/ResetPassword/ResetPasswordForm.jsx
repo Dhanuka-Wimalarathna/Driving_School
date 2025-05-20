@@ -6,19 +6,29 @@ import './ResetPasswordForm.css'; // Import the CSS file
 const ResetPasswordForm = () => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
-      // Simulate sending OTP
       const response = await axios.post('http://localhost:8081/api/auth/send-otp', { email });
-      console.log('OTP sent to:', email);
-      navigate('/reset-password/otp-verification'); // Navigate to OTP verification page
+      
+      // Store email in sessionStorage
+      sessionStorage.setItem('resetEmail', email);
+      
+      // Show success message briefly before navigation
+      setSuccess('OTP sent successfully! Redirecting...');
+      
+      // Navigate after a short delay to show the success message
+      setTimeout(() => {
+        navigate('/reset-password/otp-verification');
+      }, 1000);
     } catch (error) {
       if (error.response && error.response.data) {
         setError(error.response.data.message);
@@ -48,6 +58,14 @@ const ResetPasswordForm = () => {
             <div className="alert alert-danger alert-compact d-flex align-items-center" role="alert">
               <i className="bi bi-exclamation-triangle-fill me-1" style={{ fontSize: '0.75rem' }}></i>
               <div>{error}</div>
+            </div>
+          )}
+
+          {/* Success Alert */}
+          {success && (
+            <div className="alert alert-success alert-compact d-flex align-items-center" role="alert">
+              <i className="bi bi-check-circle-fill me-1" style={{ fontSize: '0.75rem' }}></i>
+              <div>{success}</div>
             </div>
           )}
 

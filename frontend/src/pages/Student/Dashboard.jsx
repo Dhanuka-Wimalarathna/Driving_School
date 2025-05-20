@@ -212,10 +212,10 @@ const Dashboard = () => {
       labels: Object.keys(statusCounts),
       datasets: [{
         data: Object.values(statusCounts),
-        backgroundColor: ['#4CC9F0', '#F72585', '#7209B7', '#3A86FF'],
+        backgroundColor: ['#4285F4', '#34A853', '#FBBC05', '#EA4335'],
         borderColor: 'rgba(255, 255, 255, 0.8)',
         borderWidth: 2,
-        hoverBackgroundColor: ['#3DB9E0', '#E71575', '#6208A7', '#2A76EF'],
+        hoverBackgroundColor: ['#3367D6', '#2D9246', '#F9AB00', '#D33426'],
         hoverBorderColor: 'white',
         hoverBorderWidth: 3,
         hoverOffset: 6

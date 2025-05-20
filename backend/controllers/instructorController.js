@@ -279,3 +279,236 @@ export const deleteInstructor = (req, res) => {
     res.status(200).json({ message: "Instructor deleted successfully" });
   });
 };
+
+// Send OTP for instructor password reset
+export const sendOTP = async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+  
+  try {
+    // Check if the instructor exists in the database
+    Instructor.findByEmail(email, async (err, results) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ message: "Server error" });
+      }
+      
+      if (results.length === 0) {
+        return res.status(404).json({ message: "Email not found. Please check your email address." });
+      }
+      
+      const instructor = results[0];
+      
+      // Generate a random 6-digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Store OTP in the database with expiration time (15 minutes)
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+      
+      // First, delete any existing OTPs for this instructor
+      sqldb.query(
+        'DELETE FROM instructor_otp_verifications WHERE INS_ID = ?',
+        [instructor.ins_id],
+        async (delErr) => {
+          if (delErr) {
+            console.error("Error clearing old OTPs:", delErr);
+            // Continue anyway
+          }
+          
+          // Insert new OTP
+          sqldb.query(
+            'INSERT INTO instructor_otp_verifications (INS_ID, OTP_CODE, EXPIRES_AT) VALUES (?, ?, ?)',
+            [instructor.ins_id, otp, expiresAt],
+            async (insertErr) => {
+              if (insertErr) {
+                console.error("Error storing OTP:", insertErr);
+                return res.status(500).json({ message: "Failed to generate OTP" });
+              }
+              
+              // In development mode, log the OTP instead of sending an email
+              console.log(`==== DEVELOPMENT MODE ====`);
+              console.log(`OTP for ${email} (instructor ID: ${instructor.ins_id}): ${otp}`);
+              console.log(`==== USE THIS OTP TO RESET PASSWORD ====`);
+              
+              // In production, you would send an actual email here
+              // const emailSent = await sendOTPEmail(email, otp);
+              const emailSent = true; // For development
+              
+              if (!emailSent) {
+                return res.status(500).json({ message: "Failed to send OTP email. Please try again." });
+              }
+              
+              return res.status(200).json({ 
+                message: "OTP sent successfully. Please check your email.",
+                // Remove in production
+                otp: otp 
+              });
+            }
+          );
+        }
+      );
+    });
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Verify OTP for instructor password reset
+export const verifyOTP = async (req, res) => {
+  const { otp, email } = req.body;
+  
+  if (!otp) {
+    return res.status(400).json({ message: "OTP is required" });
+  }
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+  
+  try {
+    // Find the instructor by email
+    Instructor.findByEmail(email, (err, instructorResults) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ message: "Server error" });
+      }
+      
+      if (instructorResults.length === 0) {
+        return res.status(404).json({ message: "Email not found" });
+      }
+      
+      const instructor = instructorResults[0];
+      
+      // Now find the OTP record for this instructor
+      sqldb.query(
+        'SELECT * FROM instructor_otp_verifications WHERE INS_ID = ? AND OTP_CODE = ?',
+        [instructor.ins_id, otp],
+        (otpErr, otpResults) => {
+          if (otpErr) {
+            console.error("Database error:", otpErr);
+            return res.status(500).json({ message: "Server error" });
+          }
+          
+          if (otpResults.length === 0) {
+            return res.status(400).json({ message: "Invalid OTP" });
+          }
+          
+          const otpRecord = otpResults[0];
+          
+          // Check if OTP has expired
+          const now = new Date();
+          const expiresAt = new Date(otpRecord.EXPIRES_AT);
+          
+          if (now > expiresAt) {
+            return res.status(400).json({ message: "OTP has expired. Please request a new one." });
+          }
+          
+          // Generate a reset token
+          const resetToken = Math.random().toString(36).substring(2, 15) + 
+                            Math.random().toString(36).substring(2, 15);
+          
+          return res.status(200).json({ 
+            message: "OTP verified successfully",
+            resetToken: resetToken,
+            email: email,
+            instructorId: instructor.ins_id
+          });
+        }
+      );
+    });
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Reset instructor password after OTP verification
+export const resetPassword = async (req, res) => {
+  const { email, password, token } = req.body;
+  
+  if (!email || !password || !token) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+  
+  try {
+    // Find the instructor by email
+    Instructor.findByEmail(email, async (err, instructorResults) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ message: "Server error" });
+      }
+      
+      if (instructorResults.length === 0) {
+        return res.status(404).json({ message: "Instructor not found" });
+      }
+      
+      const instructor = instructorResults[0];
+      
+      // Check if there's a valid OTP record for this instructor
+      sqldb.query(
+        'SELECT * FROM instructor_otp_verifications WHERE INS_ID = ?',
+        [instructor.ins_id],
+        async (otpErr, otpResults) => {
+          if (otpErr) {
+            console.error("Database error:", otpErr);
+            return res.status(500).json({ message: "Server error" });
+          }
+          
+          if (otpResults.length === 0) {
+            return res.status(400).json({ message: "No active reset request found. Please request a new OTP." });
+          }
+          
+          const otpRecord = otpResults[0];
+          
+          // Check if OTP has expired
+          const now = new Date();
+          const expiresAt = new Date(otpRecord.EXPIRES_AT);
+          
+          if (now > expiresAt) {
+            return res.status(400).json({ message: "Reset session has expired. Please request a new OTP." });
+          }
+          
+          try {
+            // Hash the new password
+            const hashedPassword = await bcrypt.hash(password, 10);
+            
+            // Update the password
+            sqldb.query(
+              'UPDATE instructors SET password = ? WHERE ins_id = ?',
+              [hashedPassword, instructor.ins_id],
+              (updateErr, updateResult) => {
+                if (updateErr) {
+                  console.error("Error updating password:", updateErr);
+                  return res.status(500).json({ message: "Failed to update password" });
+                }
+                
+                if (updateResult.affectedRows === 0) {
+                  return res.status(500).json({ message: "Failed to update password" });
+                }
+                
+                // Delete the OTP record as it's no longer needed
+                sqldb.query(
+                  'DELETE FROM instructor_otp_verifications WHERE INS_ID = ?',
+                  [instructor.ins_id]
+                );
+                
+                return res.status(200).json({ message: "Password has been reset successfully" });
+              }
+            );
+          } catch (hashError) {
+            console.error("Password hashing error:", hashError);
+            return res.status(500).json({ message: "Server error" });
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};

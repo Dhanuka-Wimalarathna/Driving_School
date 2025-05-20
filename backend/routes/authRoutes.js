@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerUser, loginUser, getUserDetails, updateProfile, deleteUser } from '../controllers/authControllers.js';
+import { registerUser, loginUser, getUserDetails, updateProfile, deleteUser, sendOTP, verifyOTP, resetPassword } from '../controllers/authControllers.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -18,5 +18,14 @@ router.put('/update', authMiddleware, updateProfile);
 
 // Delete user account (Protected route)
 router.delete('/user/delete', authMiddleware, deleteUser);
+
+// Send OTP for password reset
+router.post('/send-otp', sendOTP);
+
+// Verify OTP for password reset
+router.post('/verify-otp', verifyOTP);
+
+// Reset password after verification
+router.post('/reset-password', resetPassword);
 
 export default router;
