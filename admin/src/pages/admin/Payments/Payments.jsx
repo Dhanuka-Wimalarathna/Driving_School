@@ -14,6 +14,7 @@ const Payments = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [isApproving, setIsApproving] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
 
   useEffect(() => {
     // Verify token exists before making any requests
@@ -25,6 +26,16 @@ const Payments = () => {
     
     fetchPayments();
   }, [navigate]);
+
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (toast.visible) {
+      const timer = setTimeout(() => {
+        setToast({ ...toast, visible: false });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const fetchPayments = async () => {
     setIsLoading(true);
@@ -55,7 +66,6 @@ const Payments = () => {
       const formattedPayments = allPaymentsResponse.data.map(payment => ({
         ...payment,
         amount: parseFloat(payment.amount), // Convert to number here
-        receiptNumber: `PAY-${payment.payment_id.toString().padStart(6, '0')}`,
         transaction_date: new Date(payment.transaction_date).toLocaleDateString(),
         student_name: payment.student_name || `Student ID: ${payment.student_id}`
       }));
@@ -66,7 +76,6 @@ const Payments = () => {
         return {
           ...pending,
           amount: parseFloat(pending.amount), // Convert to number here
-          receiptNumber: `PAY-${pending.payment_id.toString().padStart(6, '0')}`,
           transaction_date: new Date(pending.transaction_date).toLocaleDateString(),
           student_name: pending.student_name || `Student ID: ${pending.student_id}`
         };
@@ -78,7 +87,7 @@ const Payments = () => {
         return !pendingWithNames.some(pending => pending.payment_id === payment.payment_id);
       });
       
-      setPayments([...pendingWithNames, ...allPayments]);
+            setPayments([...pendingWithNames, ...allPayments]);
     } catch (error) {
       console.error("Error fetching payments:", error);
       
@@ -88,6 +97,7 @@ const Payments = () => {
         navigate('/admin/sign-in');
       } else {
         setErrorMessage(error.response?.data?.message || "Failed to load payment data.");
+        showToast('Failed to load payments', 'error');
       }
     } finally {
       setIsLoading(false);
@@ -119,10 +129,10 @@ const Payments = () => {
       ));
       
       // Show success toast
-      showToast('Payment approved successfully', 'success');
+      showToast(`Payment #${paymentId} approved successfully`, 'success');
     } catch (error) {
       console.error("Approval error:", error);
-      showToast('Failed to approve payment', 'error');
+      showToast(`Failed to approve payment #${paymentId}`, 'error');
     } finally {
       setIsApproving(false);
     }
@@ -154,10 +164,10 @@ const Payments = () => {
       ));
       
       // Show success toast
-      showToast('Payment marked as not approved', 'success');
+      showToast(`Payment #${paymentId} marked as pending`, 'success');
     } catch (error) {
       console.error("Unapproval error:", error);
-      showToast('Failed to update payment status', 'error');
+      showToast(`Failed to update payment #${paymentId} status`, 'error');
     }
   };
 
@@ -187,10 +197,10 @@ const Payments = () => {
       ));
       
       // Show success toast
-      showToast('Payment rejected', 'success');
+      showToast(`Payment #${paymentId} rejected successfully`, 'success');
     } catch (error) {
       console.error("Rejection error:", error);
-      showToast('Failed to reject payment', 'error');
+      showToast(`Failed to reject payment #${paymentId}`, 'error');
     }
   };
 
@@ -213,26 +223,15 @@ const Payments = () => {
   };
   
   const showToast = (message, type = 'success') => {
-    // Import styles in your component
-    const toast = document.createElement("div");
-    
-    // Apply module styles using a data attribute approach
-    toast.setAttribute('class', 'toast-notification');
-    toast.classList.add(type);
-    
-    // Style this toast with regular CSS in a separate global CSS file
-    // or add global styles for toast in your index.css
-    
-    // Use icon based on type
-    const iconName = type === 'success' ? 'CheckCircle' : 'AlertCircle';
-    toast.innerHTML = `<span class="toast-icon">${iconName}</span> ${message}`;
-    
-    document.body.appendChild(toast);
-    setTimeout(() => document.body.removeChild(toast), 3000);
+    setToast({
+      visible: true,
+      message: message,
+      type: type
+    });
   };
 
   const filteredPayments = payments.filter(payment => {
-    const matchesSearch = (payment.receiptNumber?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    const matchesSearch = (payment.payment_id?.toString().toLowerCase().includes(searchQuery.toLowerCase())) ||
                           (payment.student_name?.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesStatus = filterStatus === 'all' || payment.status === filterStatus;
     return matchesSearch && matchesStatus;
@@ -248,6 +247,15 @@ const Payments = () => {
       <main className={`main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="page-container">
           <div className={styles['payments-content']}>
+            {toast.visible && (
+              <div className={`${styles['toast-notification']} ${styles[toast.type]}`}>
+                <span className={styles['toast-icon']}>
+                  {toast.type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
+                </span>
+                <span className={styles['toast-message']}>{toast.message}</span>
+              </div>
+            )}
+
             <header className={styles['page-header']}>
               <div className={styles['header-title']}>
                 <h1>
@@ -267,7 +275,7 @@ const Payments = () => {
                   <input
                     type="text"
                     className={styles['search-input']}
-                    placeholder="Search by receipt number or student name..."
+                    placeholder="Search by payment ID or student name..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -339,7 +347,7 @@ const Payments = () => {
                 <table className={styles['payments-table']}>
                   <thead>
                     <tr>
-                      <th>Receipt No.</th>
+                      <th>Payment ID</th>
                       <th>Student</th>
                       <th>Package</th>
                       <th>Amount</th>
@@ -352,7 +360,7 @@ const Payments = () => {
                   <tbody>
                     {filteredPayments.map(payment => (
                       <tr key={payment.payment_id} className={payment.status === 'pending' ? styles['pending-row'] : ''}>
-                        <td className={styles['receipt-number']}>{payment.receiptNumber}</td>
+                        <td className={styles['receipt-number']}>{payment.payment_id}</td>
                         <td className={styles['student-name']}>
                           <div className={styles['name-cell']}>
                             <div className={styles['avatar']}>

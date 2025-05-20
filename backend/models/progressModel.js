@@ -69,6 +69,67 @@ export const markSessionAsCompleted = (bookingId, callback) => {
     });
 };
 
+export const markSessionAsNotCompleted = (bookingId, callback) => {
+    // First, get the session details from the bookings table with student name
+    const getBookingDetailsQuery = `
+    SELECT 
+      bookings.student_id,
+      CONCAT(student.FIRST_NAME, ' ', student.LAST_NAME) AS student_name,
+      bookings.vehicle, 
+      bookings.time_slot
+    FROM bookings
+    JOIN student ON bookings.student_id = student.STU_ID
+    WHERE bookings.booking_id = ?
+    `;
+  
+    sqldb.query(getBookingDetailsQuery, [bookingId], (err, result) => {
+        if (err) {
+          console.error('Error fetching booking:', err);
+          return callback(err);
+        }
+        if (result.length === 0) {
+          console.log('No booking found with ID:', bookingId);
+          return callback(new Error('Booking not found.'));
+        }
+        console.log('Booking found:', result[0]);
+  
+        const { student_id, student_name, vehicle, time_slot } = result[0];
+        const status = 'Not Completed';
+  
+        // Insert session not-completion record into progress table
+        const insertQuery = `
+          INSERT INTO progress (
+            booking_id,
+            student_id,
+            student_name, 
+            vehicle, 
+            time_slot, 
+            status, 
+            completed_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?, NOW())
+          ON DUPLICATE KEY UPDATE
+            student_name = VALUES(student_name),
+            vehicle = VALUES(vehicle),
+            time_slot = VALUES(time_slot),
+            status = VALUES(status),
+            completed_at = NOW()
+        `;
+  
+        sqldb.query(insertQuery, [bookingId, student_id, student_name, vehicle, time_slot, status], (insertErr, insertResult) => {
+          if (insertErr) return callback(insertErr);
+  
+          // Update the booking status
+          const updateQuery = `UPDATE bookings SET status = ? WHERE booking_id = ?`;
+          sqldb.query(updateQuery, [status, bookingId], (updateErr) => {
+            if (updateErr) return callback(updateErr);
+            
+            return callback(null, { message: 'Session marked as not completed.' });
+          });
+        });
+    });
+};
+
 // Helper function to update student_progress table
 const updateStudentProgress = (studentId, vehicleType, callback) => {
   // First, get the vehicle ID based on the vehicle type

@@ -2,6 +2,20 @@ import sqldb from '../config/sqldb.js';
 
 export async function getInstructorStats(instructorId) {
   try {
+    // Get instructor details - ADD THIS NEW QUERY
+    const [instructorResult] = await sqldb.promise().query(
+      `SELECT 
+         ins_id, 
+         firstName, 
+         lastName, 
+         email, 
+         phone,
+         vehicleCategory
+       FROM instructors
+       WHERE ins_id = ?`,
+      [instructorId]
+    );
+
     // Get total students in system
     const [totalResult] = await sqldb.promise().query(
       `SELECT COUNT(*) as totalStudents FROM student`
@@ -36,6 +50,16 @@ export async function getInstructorStats(instructorId) {
       [instructorId]
     );
 
+    // Get today's not completed sessions count for this instructor
+    const [notCompletedResult] = await sqldb.promise().query(
+      `SELECT COUNT(*) as notCompletedSessions
+       FROM bookings
+       WHERE instructor_id = ? 
+       AND status = 'Not Completed'
+       AND date = CURDATE()`,
+      [instructorId]
+    );
+
     // Get upcoming sessions (today's scheduled sessions)
     const [sessions] = await sqldb.promise().query(
       `SELECT 
@@ -55,10 +79,13 @@ export async function getInstructorStats(instructorId) {
     );
 
     return {
+      // Include instructor details in the response
+      instructor: instructorResult[0] || null,
       totalStudents: totalResult[0].totalStudents,
       assignedStudents: assignedResult[0].assignedStudents || 0,
       scheduledSessions: scheduledResult[0].scheduledSessions || 0,
       completedSessions: completedResult[0].completedSessions || 0,
+      notCompletedSessions: notCompletedResult[0].notCompletedSessions || 0,
       upcomingSessions: sessions
     };
 

@@ -49,7 +49,7 @@ const Profile = () => {
   const handleDeleteAccount = async () => {
     try {
       const token = localStorage.getItem("authToken");
-      await axios.delete("http://localhost:8081/api/auth/delete", {
+      await axios.delete("http://localhost:8081/api/auth/user/delete", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -128,115 +128,84 @@ const Profile = () => {
         <div className="profile-content">
           <div className="profile-wrapper">
             <div className="profile-header">
-              <h1 className="page-title">
-                <i className="bi bi-person-circle"></i>
-                Student Profile
-              </h1>
-              <p className="page-subtitle">Manage your personal information and account settings</p>
+              <div className="header-content">
+                <div className="header-icon">
+                  <i className="bi bi-person-circle"></i>
+                </div>
+                <div className="header-text">
+                  <h1 className="page-title">Student Profile</h1>
+                  <p className="page-subtitle">Manage your personal information and account settings</p>
+                </div>
+              </div>
             </div>
 
-            <div className="profile-grid">
-              {/* Personal Info Card */}
-              <div className="profile-card info-card">
-                <div className="card-header">
-                  <h2 className="card-title">
-                    <i className="bi bi-person-badge"></i>
-                    Personal Information
-                  </h2>
-                  <span className="profile-id">
-                    Student ID: {student?.STU_ID || "N/A"}
-                  </span>
-                </div>
-                <div className="card-body">
-                  <div className="profile-overview">
-                    <div className="profile-avatar">
-                      <span>{student?.FIRST_NAME?.charAt(0)}{student?.LAST_NAME?.charAt(0)}</span>
-                    </div>
-                    <div className="profile-name">
-                      <h3>{student?.FIRST_NAME} {student?.LAST_NAME}</h3>
-                      <p>{student?.EMAIL}</p>
-                    </div>
+            {/* Single Card for Profile Info */}
+            <div className="profile-card info-card">
+              <div className="card-header">
+                <h2 className="card-title">
+                  <i className="bi bi-person-badge"></i>
+                  Personal Information
+                </h2>
+                <span className="profile-id">
+                  Student ID: {student?.STU_ID || "N/A"}
+                </span>
+              </div>
+              <div className="card-body">
+                <div className="profile-overview">
+                  <div className="profile-avatar">
+                    <span>{student?.FIRST_NAME?.charAt(0)}{student?.LAST_NAME?.charAt(0)}</span>
                   </div>
-                  <div className="personal-info-section">
-                    <div className="info-group">
-                      <h4 className="info-section-title">Personal Details</h4>
-                      <div className="info-item">
-                        <span className="info-label">NIC</span>
-                        <span className="info-value">{student?.NIC || "Not provided"}</span>
-                        </div>
-                        <div className="info-item">
-                          <span className="info-label">Date of Birth</span>
-                          <span className="info-value">{student?.BIRTHDAY ? student.BIRTHDAY.split("T")[0] : "Not provided"}</span>
-                        </div>
-                    </div>
-  
-                    <div className="info-group">
-                      <h4 className="info-section-title">Contact Information</h4>
-                      <div className="info-item">
-                        <span className="info-label">
-                          <i className="bi bi-telephone"></i> Phone
-                        </span>
-                        <span className="info-value">{student?.PHONE || "Not provided"}</span>
-                      </div>
-                      <div className="info-item">
-                        <span className="info-label">
-                          <i className="bi bi-envelope"></i> Email
-                        </span>
-                        <span className="info-value">{student?.EMAIL || "Not provided"}</span>
-                      </div>
-                      <div className="info-item">
-                        <span className="info-label">
-                          <i className="bi bi-geo-alt"></i> Address
-                        </span>
-                        <span className="info-value">{student?.ADDRESS || "Not provided"}</span>
-                      </div>
-                    </div>
+                  <div className="profile-name">
+                    <h3>{student?.FIRST_NAME} {student?.LAST_NAME}</h3>
+                    <p>{student?.EMAIL}</p>
+                  </div>
+                </div>
+                
+                {/* Horizontal Info Section */}
+                <div className="horizontal-info-section">
+                  <div className="info-item">
+                    <span className="info-label">NIC</span>
+                    <span className="info-value">{student?.NIC || "Not provided"}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Date of Birth</span>
+                    <span className="info-value">
+                      {student?.BIRTHDAY ? student.BIRTHDAY.split("T")[0] : "Not provided"}
+                    </span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">
+                      <i className="bi bi-telephone"></i> Phone
+                    </span>
+                    <span className="info-value">{student?.PHONE || "Not provided"}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">
+                      <i className="bi bi-envelope"></i> Email
+                    </span>
+                    <span className="info-value">{student?.EMAIL || "Not provided"}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">
+                      <i className="bi bi-geo-alt"></i> Address
+                    </span>
+                    <span className="info-value">{student?.ADDRESS || "Not provided"}</span>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Account Actions Card */}
-              <div className="profile-card actions-card">
-                <div className="card-header">
-                  <h2 className="card-title">
-                    <i className="bi bi-gear"></i>
-                    Account Actions
-                  </h2>
-                </div>
-                <div className="card-body">
-                  <div className="action-options">
-                    <div className="action-option" onClick={handleEditProfile}>
-                      <div className="action-icon">
-                        <i className="bi bi-pencil-square"></i>
-                      </div>
-                      <div className="action-details">
-                        <h4>Edit Profile</h4>
-                        <p>Update your personal information</p>
-                      </div>
-                    </div>
-                    
-                    <div className="action-option" onClick={handleLogout}>
-                      <div className="action-icon">
-                        <i className="bi bi-box-arrow-right"></i>
-                      </div>
-                      <div className="action-details">
-                        <h4>Logout</h4>
-                        <p>Sign out from your account</p>
-                      </div>
-                    </div>
-                    
-                    <div className="action-option danger" onClick={() => setShowDeleteConfirm(true)}>
-                      <div className="action-icon">
-                        <i className="bi bi-trash"></i>
-                      </div>
-                      <div className="action-details">
-                        <h4>Delete Account</h4>
-                        <p>Permanently remove your account</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {/* Action Buttons Row */}
+            <div className="profile-actions">
+              <button className="action-button edit" onClick={handleEditProfile}>
+                <i className="bi bi-pencil-square"></i>
+                Edit Profile
+              </button>
+              
+              <button className="action-button delete" onClick={() => setShowDeleteConfirm(true)}>
+                <i className="bi bi-trash"></i>
+                Delete Account
+              </button>
             </div>
           </div>
         </div>

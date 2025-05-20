@@ -124,6 +124,36 @@ const InstructorSchedule = () => {
     }
   };
 
+  // Function to check if a date is today
+  const isToday = (dateString) => {
+    if (!dateString) return false;
+    
+    try {
+      // Parse the date
+      const parts = dateString.split('-');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // JS months are 0-indexed
+        const day = parseInt(parts[2], 10);
+        
+        if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+          const sessionDate = new Date(year, month, day);
+          sessionDate.setHours(0, 0, 0, 0);
+          
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          return sessionDate.getTime() === today.getTime();
+        }
+      }
+      
+      return false;
+    } catch (e) {
+      console.error("Error checking if date is today:", e);
+      return false;
+    }
+  };
+
   const handleCompleteSession = async (lesson) => {
     try {
       const response = await fetch("http://localhost:8081/api/progress/mark-completed", {
@@ -175,7 +205,6 @@ const InstructorSchedule = () => {
     }
   };  
 
-  // Add this function below handleCompleteSession
   const handleNotCompleteSession = async (lesson) => {
     try {
       const response = await fetch("http://localhost:8081/api/progress/mark-not-completed", {
@@ -185,12 +214,13 @@ const InstructorSchedule = () => {
         },
         body: JSON.stringify({
           bookingId: lesson.id,
+          status: "not completed" // Added status field to ensure backend recognizes the request
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to mark session as not completed.");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to mark session as not completed. Status: ${response.status}`);
       }
 
       const result = await response.json();
@@ -207,10 +237,10 @@ const InstructorSchedule = () => {
 
       // Update status in state - ensure it's lowercase for consistency
       setSchedule(prev =>
-        prev.map(item => item.id === lesson.id ? { ...item, status: "not_completed" } : item)
+        prev.map(item => item.id === lesson.id ? { ...item, status: "not completed" } : item)
       );
       setFilteredSchedule(prev =>
-        prev.map(item => item.id === lesson.id ? { ...item, status: "not_completed" } : item)
+        prev.map(item => item.id === lesson.id ? { ...item, status: "not completed" } : item)
       );
     } catch (error) {
       console.error("Error marking session as not completed:", error);
@@ -342,27 +372,35 @@ const InstructorSchedule = () => {
                     </div>
 
                     <div className={styles['session-actions']}>
-                      {lesson.status !== "completed" && lesson.status !== "not_completed" ? (
-                        <button
-                          onClick={() => handleCompleteSession(lesson)}
-                          className={styles['btn-complete']}
-                        >
-                          Completed
-                        </button>
+                      {lesson.status !== "completed" && lesson.status !== "not completed" ? (
+                        isToday(lesson.date) ? (
+                          <button
+                            onClick={() => handleCompleteSession(lesson)}
+                            className={styles['btn-complete']}
+                          >
+                            Completed
+                          </button>
+                        ) : (
+                          <div className={styles['date-restriction-message']}>
+                            <span>⚠️ Can only mark status on scheduled date</span>
+                          </div>
+                        )
                       ) : lesson.status === "completed" ? (
                         <div className={styles['completed-message']}>
                           <span>✅ Session completed</span>
                         </div>
                       ) : null}
 
-                      {lesson.status !== "completed" && lesson.status !== "not_completed" ? (
-                        <button
-                          onClick={() => handleNotCompleteSession(lesson)}
-                          className={styles['btn-not-complete']}
-                        >
-                          Not Completed
-                        </button>
-                      ) : lesson.status === "not_completed" ? (
+                      {lesson.status !== "completed" && lesson.status !== "not completed" ? (
+                        isToday(lesson.date) ? (
+                          <button
+                            onClick={() => handleNotCompleteSession(lesson)}
+                            className={styles['btn-not-complete']}
+                          >
+                            Not Completed
+                          </button>
+                        ) : null
+                      ) : lesson.status === "not completed" ? (
                         <div className={styles['not-completed-message']}>
                           <span>⚠️ Session not completed</span>
                         </div>

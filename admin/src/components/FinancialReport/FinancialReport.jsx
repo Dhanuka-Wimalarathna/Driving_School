@@ -10,6 +10,7 @@ const FinancialReport = () => {
   const [endDate, setEndDate] = useState('');
   const [reportType, setReportType] = useState('full');
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [expenses, setExpenses] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pdfUrl, setPdfUrl] = useState('');
@@ -24,6 +25,13 @@ const FinancialReport = () => {
 
   const generateReport = async (e) => {
     e.preventDefault();
+    
+    // Validate that both start and end dates are provided
+    if (!startDate || !endDate) {
+      setError('Please select both start date and end date to generate a report.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setPdfUrl('');
@@ -35,6 +43,7 @@ const FinancialReport = () => {
       if (endDate) params.append('endDate', endDate);
       if (reportType) params.append('reportType', reportType);
       if (paymentMethod) params.append('paymentMethod', paymentMethod);
+      if (expenses) params.append('expenses', expenses);
 
       // Get token from local storage
       const token = localStorage.getItem('authToken');
@@ -88,7 +97,6 @@ const FinancialReport = () => {
       case 'full': return 'Full Financial Report';
       case 'summary': return 'Summary Report';
       case 'revenue': return 'Revenue Analysis';
-      case 'profit': return 'Profit & Loss Report';
       default: return 'Financial Report';
     }
   };
@@ -191,6 +199,7 @@ const FinancialReport = () => {
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
+                        required
                       />
                     </div>
                   </Col>
@@ -202,6 +211,7 @@ const FinancialReport = () => {
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
+                        required
                       />
                     </div>
                   </Col>
@@ -218,7 +228,6 @@ const FinancialReport = () => {
                         <option value="full">Full Financial Report</option>
                         <option value="summary">Summary Only</option>
                         <option value="revenue">Revenue Analysis</option>
-                        <option value="profit">Profit & Loss</option>
                       </Form.Select>
                     </div>
                   </Col>
@@ -235,6 +244,22 @@ const FinancialReport = () => {
                         <option value="card">Card</option>
                         <option value="bank">Bank Transfer</option>
                       </Form.Select>
+                    </div>
+                  </Col>
+                </Row>
+
+                <Row className="mb-3">
+                  <Col md={12}>
+                    <div className={styles['form-group']}>
+                      <Form.Label className={styles['form-label']}>Total Expenses happens in Selected Period (LKR)</Form.Label>
+                      <Form.Control
+                        type="number"
+                        placeholder="Enter total expenses for the selected period"
+                        value={expenses}
+                        onChange={(e) => setExpenses(e.target.value)}
+                        min="0"
+                        step="0.01"
+                      />
                     </div>
                   </Col>
                 </Row>

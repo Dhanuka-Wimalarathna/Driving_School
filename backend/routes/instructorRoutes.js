@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, getProfile, updateProfile, getAllInstructors, deleteInstructor } from '../controllers/instructorController.js';
+import { register, login, getProfile, updateProfile, getAllInstructors, deleteInstructor, updateInstructorById } from '../controllers/instructorController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -12,7 +12,9 @@ router.post('/login', login);
 router.get('/me', authMiddleware, getProfile);
 router.put('/update', authMiddleware, updateProfile);
 
-router.get("/", getAllInstructors);
-router.delete("/:id", deleteInstructor);
+// Admin routes (should be protected in production with admin middleware)
+router.get('/', getAllInstructors);
+router.delete('/:id', deleteInstructor);
+router.put('/:id', updateInstructorById);
 
 export default router;

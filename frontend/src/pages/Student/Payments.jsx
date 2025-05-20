@@ -130,6 +130,9 @@ const Payments = () => {
 
   const handlePaymentMethodChange = (method) => {
     setPaymentMethod(method);
+    if (method === 'bank') {
+      showToast('Please include your name and student ID in the bank transfer reference', 'info');
+    }
   };
 
   const handlePaymentClick = () => {
@@ -145,18 +148,44 @@ const Payments = () => {
     setPaymentError('');
   };
 
+  const showToast = (message, type) => {
+    const toast = document.createElement("div");
+    toast.className = `toast-notification ${type}`;
+    
+    // Create icon element
+    const icon = document.createElement("i");
+    icon.className = `bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-circle'}`;
+    icon.style.marginRight = "8px";
+    
+    // Create message text node
+    const messageText = document.createTextNode(message);
+    
+    // Append icon and message to toast
+    toast.appendChild(icon);
+    toast.appendChild(messageText);
+    
+    document.body.appendChild(toast);
+    
+    // Remove toast after animation
+    setTimeout(() => {
+      if (document.body.contains(toast)) {
+        document.body.removeChild(toast);
+      }
+    }, 3000);
+  };
+
   const validatePayment = () => {
     const amount = parseFloat(paymentAmount);
     if (isNaN(amount)) {
-      setPaymentError('Please enter a valid number');
+      showToast('Please enter a valid number', 'error');
       return false;
     }
     if (amount <= 0) {
-      setPaymentError('Amount must be greater than 0');
+      showToast('Amount must be greater than 0', 'error');
       return false;
     }
     if (amount > remainingAmount) {
-      setPaymentError(`Amount cannot exceed remaining balance (${formatCurrency(remainingAmount)})`);
+      showToast(`Amount cannot exceed remaining balance (${formatCurrency(remainingAmount)})`, 'error');
       return false;
     }
     return true;
@@ -172,16 +201,14 @@ const Payments = () => {
     try {
       const amount = parseFloat(paymentAmount);
       
-      // Optimistic update
       const newPayment = {
-        id: Date.now(), // temporary ID
+        id: Date.now(),
         amount,
         date: new Date().toISOString(),
-        status: 'pending', // Changed from 'paid' to 'pending'
+        status: 'pending',
         method: paymentMethod
       };
 
-      // Note: We don't update the paid total or remaining amount until payment is approved
       setPaymentHistory([...paymentHistory, newPayment]);
 
       const response = await fetch(
@@ -203,16 +230,14 @@ const Payments = () => {
 
       if (!response.ok) throw new Error('Payment failed');
 
-      // Final data refresh
       setPaymentAmount('');
       setShowPaymentModal(false);
       fetchData();
       
-      alert(`Payment of ${formatCurrency(amount)} via ${paymentMethod} submitted! Status: Pending Approval`);
+      showToast(`Payment of ${formatCurrency(amount)} via ${paymentMethod} Pending`, 'success');
     } catch (err) {
       console.error('Payment error:', err);
-      setPaymentError('Payment failed. Please try again.');
-      // Rollback optimistic update
+      showToast('Payment failed. Please try again.', 'error');
       fetchData();
     }
   };
@@ -478,9 +503,9 @@ const Payments = () => {
                   <div className="bank-info-box">
                     <h4>Bank Account Details</h4>
                     <p><strong>Account Name:</strong> Madushani Driving School</p>
-                    <p><strong>Account Number:</strong> 1234567890</p>
+                    <p><strong>Account Number:</strong> +94 76 360 8450</p>
                     <p><strong>Bank Name:</strong> Bank of Ceylon</p>
-                    <p><strong>Branch:</strong> Colombo</p>
+                    <p><strong>Branch:</strong> Bandarawela</p>
                     <p className="bank-note">Please include your name and student ID as reference</p>
                   </div>
                 )}

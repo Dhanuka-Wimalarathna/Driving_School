@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { 
   Search, 
   Plus,
@@ -38,10 +39,19 @@ const Packages = () => {
     van_sessions: false,
   });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    // Check authentication
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/admin/sign-in');
+      return;
+    }
+    
+    // Fetch packages data
     fetchPackages();
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     if (searchQuery.trim() === "") {
@@ -220,17 +230,6 @@ const Packages = () => {
               </div>
               
               <div className={styles['header-actions']}>
-                <button
-                  className={styles['add-package-btn']}
-                  onClick={() => {
-                    setEditingPackage(null);
-                    setShowModal(true);
-                  }}
-                >
-                  <Plus size={18} />
-                  <span>Add Package</span>
-                </button>
-
                 <div className={styles['search-wrapper']}>
                   <div className={styles['search-container']}>
                     <Search className={styles['search-icon']} size={18} />
@@ -243,6 +242,17 @@ const Packages = () => {
                     />
                   </div>
                 </div>
+
+                <button
+                  className={styles['add-package-btn']}
+                  onClick={() => {
+                    setEditingPackage(null);
+                    setShowModal(true);
+                  }}
+                >
+                  <Plus size={18} />
+                  <span>Add Package</span>
+                </button>
               </div>
             </header>
 

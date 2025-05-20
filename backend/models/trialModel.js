@@ -146,6 +146,13 @@ export const updateTrialExam = (studentId, vehicleType, updateData, callback) =>
 };
 
 // New function to update only status and result by exam ID
+export const updateTrialExamStatusAndResult = (examId, status, result, callback) => {
+  const updateData = { status, result };
+  
+  return updateTrialExamStatusResult(examId, updateData, callback);
+};
+
+// Helper function for updating status and result by exam ID
 export const updateTrialExamStatusResult = (examId, updateData, callback) => {
   // Validate result value if it's being updated
   if (updateData.result && !['Pass', 'Fail', 'Not Taken', 'Absent'].includes(updateData.result)) {

@@ -255,13 +255,13 @@ const StudentDetails = () => {
                   <FileText size={18} />
                   <span>Payment History</span>
                 </button>
-                <button 
+                {/* <button 
                   className={`${styles['action-btn']} ${styles['notify']}`}
                   onClick={() => setShowNotificationForm(true)}
                 >
                   <Send size={18} />
                   <span>Send Notification</span>
-                </button>
+                </button> */}
               </div>
             </div>
           </div>

@@ -188,15 +188,70 @@ export const updateProfile = (req, res) => {
         }
 
         if (result.affectedRows === 0) {
-          return res.status(404).json({ message: 'Instructor not found' });
+          return res.status(404).json({ message: 'Instructor not found or no changes made' });
         }
 
-        res.status(200).json({ message: 'Profile updated successfully' });
+        // Fetch the updated instructor data to return
+        Instructor.findById(instructorId, (err, results) => {
+          if (err) {
+            console.error('Error fetching updated instructor:', err);
+            return res.status(200).json({ message: 'Profile updated successfully' });
+          }
+
+          if (results.length === 0) {
+            return res.status(200).json({ message: 'Profile updated successfully' });
+          }
+
+          // Return the updated data
+          return res.status(200).json(results[0]);
+        });
       });
     }
   });
 };
 
+// Update instructor by ID (for specific field updates like status)
+export const updateInstructorById = (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
+  
+  if (!id) {
+    return res.status(400).json({ message: 'Instructor ID is required' });
+  }
+  
+  // Verify instructor exists
+  Instructor.findById(id, (err, results) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ message: 'Server error' });
+    }
+    
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Instructor not found' });
+    }
+    
+    // Proceed with update
+    Instructor.updateById(id, updateData, (err, result) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ message: 'Server error' });
+      }
+      
+      if (result.affectedRows === 0) {
+        return res.status(400).json({ message: 'No changes were made' });
+      }
+      
+      // Fetch and return updated data
+      Instructor.findById(id, (err, results) => {
+        if (err || results.length === 0) {
+          return res.status(200).json({ message: 'Instructor updated successfully' });
+        }
+        
+        return res.status(200).json(results[0]);
+      });
+    });
+  });
+};
 
 // Fetch all instructors
 export const getAllInstructors = (req, res) => {

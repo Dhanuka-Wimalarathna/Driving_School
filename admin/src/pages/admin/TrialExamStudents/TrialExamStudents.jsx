@@ -31,7 +31,12 @@ const TrialExamStudents = () => {
     status: ''
   });
 
-  useEffect(() => {
+  useEffect(() => {    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/admin/sign-in');
+      return;
+    }
+
     fetchTrialStudents();
   }, []);
 
@@ -213,8 +218,18 @@ const TrialExamStudents = () => {
       setTimeout(() => document.body.removeChild(toast), 3000);
     }
   };
-
   const handleUpdateClick = (student, trial) => {
+    // Check if the trial has "Completed" status and "Pass" result
+    if (trial.status === 'Completed' && trial.result === 'Pass') {
+      // Show message that this trial cannot be updated
+      const toast = document.createElement("div");
+      toast.className = `${styles['toast-notification']} ${styles['info']}`;
+      toast.innerHTML = `<div>Completed and passed trial exams cannot be updated.</div>`;
+      document.body.appendChild(toast);
+      setTimeout(() => document.body.removeChild(toast), 3000);
+      return; // Exit the function without showing the modal
+    }
+    
     setSelectedStudent({
       ...student,
       ...trial
@@ -395,14 +410,15 @@ const TrialExamStudents = () => {
                             <td>
                               <div className={`${styles['result-badge']} ${styles[trial.result.toLowerCase().replace(' ', '-')]}`}>
                                 {trial.result}
-                              </div>
-                            </td>
+                              </div>                            </td>
                             <td>
                               <button 
-                                className={styles['edit-btn']}
+                                className={`${styles['edit-btn']} ${trial.status === 'Completed' && trial.result === 'Pass' ? styles['edit-btn-disabled'] : ''}`}
                                 onClick={() => handleUpdateClick(groupedStudent.studentInfo, trial)}
+                                disabled={trial.status === 'Completed' && trial.result === 'Pass'}
+                                title={trial.status === 'Completed' && trial.result === 'Pass' ? 'Cannot update a completed and passed trial exam' : 'Update trial exam'}
                               >
-                                Update
+                                {trial.status === 'Completed' && trial.result === 'Pass' ? 'Completed' : 'Update'}
                               </button>
                             </td>
                           </tr>

@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerUser, loginUser, getUserDetails, updateProfile } from '../controllers/authControllers.js';
+import { registerUser, loginUser, getUserDetails, updateProfile, deleteUser } from '../controllers/authControllers.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -15,5 +15,8 @@ router.get('/user', authMiddleware, getUserDetails);
 
 // Update user profile (Protected route)
 router.put('/update', authMiddleware, updateProfile);
+
+// Delete user account (Protected route)
+router.delete('/user/delete', authMiddleware, deleteUser);
 
 export default router;

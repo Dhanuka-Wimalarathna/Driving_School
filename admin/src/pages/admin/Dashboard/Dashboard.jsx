@@ -77,9 +77,17 @@ function Dashboard() {
   };
 
   useEffect(() => {
+    // Check for authentication token
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/admin/sign-in');
+      return;
+    }
+    
+    // Fetch dashboard data
     fetchDashboardStats();
     fetchMonthlyStats();
-  }, []);
+  }, [navigate]);
 
   const fetchDashboardStats = async () => {
     try {
@@ -228,7 +236,6 @@ function Dashboard() {
                 <div className={styles['stat-content']}>
                   <h3 className={styles['stat-title']}>Total Students</h3>
                   <p className={styles['stat-value']}>{stats.totalStudents}</p>
-                  <p className={`${styles['stat-change']} ${styles.positive}`}>+3.2% from last month</p>
                 </div>
               </div>
 
@@ -239,7 +246,6 @@ function Dashboard() {
                 <div className={styles['stat-content']}>
                   <h3 className={styles['stat-title']}>Active Instructors</h3>
                   <p className={styles['stat-value']}>{stats.activeInstructors}</p>
-                  <p className={`${styles['stat-change']} ${styles.positive}`}>+2.1% from last month</p>
                 </div>
               </div>
 
@@ -250,7 +256,6 @@ function Dashboard() {
                 <div className={styles['stat-content']}>
                   <h3 className={styles['stat-title']}>Total Revenue</h3>
                   <p className={styles['stat-value']}>LKR {stats.totalRevenue}</p>
-                  <p className={`${styles['stat-change']} ${styles.positive}`}>+4.7% from last month</p>
                 </div>
               </div>
 
@@ -261,12 +266,6 @@ function Dashboard() {
                 <div className={styles['stat-content']}>
                   <h3 className={styles['stat-title']}>This Month's Revenue</h3>
                   <p className={styles['stat-value']}>LKR {currentMonthRevenue}</p>
-                  <p className={`${styles['stat-change']} ${styles.positive}`}>
-                    {monthlyStats.length > 1 ? 
-                      `+${Math.round(((currentMonthRevenue - monthlyStats[monthlyStats.length - 2].total_amount) / 
-                        monthlyStats[monthlyStats.length - 2].total_amount) * 100)}% from last month` 
-                      : 'No previous data'}
-                  </p>
                 </div>
               </div>
             </div>

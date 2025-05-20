@@ -4,6 +4,7 @@ import {
   createTrialExam as createTrialExamModel,
   getTrialExamsByStudent,
   updateTrialExamStatus as updateTrialExamStatusModel,
+  updateTrialExamStatusAndResult as updateTrialExamStatusAndResultModel,
   deleteTrialExam as deleteTrialExamModel,
   getAllTrialStudents,
   updateTrialExam as updateTrialExamModel
@@ -221,6 +222,34 @@ export const fetchAllTrialStudents = (req, res) => {
     res.status(200).json({
       success: true,
       data: results
+    });
+  });
+};
+
+export const updateTrialExamStatusAndResult = (req, res) => {
+  const examId = req.params.id;
+  const { status, result } = req.body;
+
+  if (!examId || !status || result === undefined) {
+    return res.status(400).json({
+      success: false,
+      error: 'Exam ID, status, and result are required'
+    });
+  }
+
+  updateTrialExamStatusAndResultModel(examId, status, result, (err, result) => {
+    if (err) {
+      console.error('Error updating trial exam status and result:', err);
+      return res.status(400).json({
+        success: false,
+        error: err.message || 'Failed to update trial exam status and result'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: 'Trial exam status and result updated successfully',
+      data: result
     });
   });
 };

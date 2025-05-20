@@ -398,19 +398,32 @@
   box-shadow: 0 8px 20px rgba(76, 201, 240, 0.4);
 }
 
-/* .confirm-button.active {
-  background: linear-gradient(135deg, #4cc9f0 0%, #3a86ff 100%);
-  color: white;
-  box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
+/* On leave styling */
+.instructor-on-leave {
+  opacity: 0.6;
+  background-color: #f0f0f0;
+  border-color: #e0e0e0;
+  cursor: not-allowed;
+  position: relative;
 }
 
-.confirm-button.disabled {
-  background-color: #f8f9fa; 
-  color: #adb5bd; 
-  border: 1px solid #ced4da;
-  cursor: not-allowed;
-  opacity: 1;
-} */
+.instructor-on-leave:hover {
+  border-color: #e0e0e0;
+  background-color: #f0f0f0;
+}
+
+.on-leave-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #6366f1;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  margin-left: 0.5rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
 
 /* Toast Notification Styles */
 .toast-notification {

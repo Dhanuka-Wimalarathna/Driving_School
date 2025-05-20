@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import sqldb from '../config/sqldb.js';  // Using regular MySQL2 (Callback-based)
+import sqldb from '../config/sqldb.js';  
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -182,6 +182,38 @@ export const updateProfile = async (req, res) => {
         );
     } catch (error) {
         console.error('Error updating user details:', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Delete User Account Controller
+export const deleteUser = async (req, res) => {
+    const userId = req.userId;
+
+    if (!userId) {
+        return res.status(400).json({ message: "User ID not found in token" });
+    }
+
+    try {
+        // Delete user account from the database
+        sqldb.query(
+            'DELETE FROM student WHERE STU_ID = ?',
+            [userId],
+            (err, result) => {
+                if (err) {
+                    console.error('Error deleting user account:', err);
+                    return res.status(500).json({ message: 'Server error' });
+                }
+
+                if (result.affectedRows === 0) {
+                    return res.status(404).json({ message: 'User not found' });
+                }
+
+                return res.status(200).json({ message: 'User account deleted successfully' });
+            }
+        );
+    } catch (error) {
+        console.error('Error deleting user account:', error);
         return res.status(500).json({ message: 'Server error' });
     }
 };

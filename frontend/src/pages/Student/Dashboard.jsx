@@ -479,6 +479,11 @@ const Dashboard = () => {
                                   <i className="bi bi-clock"></i> {booking.time}
                                 </p>
                               </div>
+                              <div className="lesson-status">
+                                <span className={`status-badge ${booking.status ? booking.status.toLowerCase().replace(' ', '-') : "scheduled"}`}>
+                                  {booking.status || "Scheduled"}
+                                </span>
+                              </div>
                             </div>
                           ))
                         }
@@ -599,7 +604,7 @@ const Dashboard = () => {
                           </p>
                         </div>
                         <div className="lesson-status">
-                          <span className="status-badge">
+                          <span className={`status-badge ${booking.status ? booking.status.toLowerCase().replace(' ', '-') : "scheduled"}`}>
                             {booking.status || "Scheduled"}
                           </span>
                         </div>

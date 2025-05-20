@@ -14,12 +14,15 @@ import StudentDetails from './pages/admin/StudentDetails/StudentDetails';
 import TrialExamStudents from './pages/admin/TrialExamStudents/TrialExamStudents';
 import Payments from './pages/admin/Payments/Payments';
 import FinancialReport from './components/FinancialReport/FinancialReport';
+import StudyMaterials from './pages/admin/StudyMaterials/StudyMaterials';
 
 import InstructorDashboard from './pages/instructor/InstructorDashboard/InstructorDashboard';
 import InstructorVehicles from './pages/instructor/InstructorVehicles/InstructorVehicles';
 import InstructorStudents from './pages/instructor/InstructorStudents/InstructorStudents';
 import InstructorSchedule from './pages/instructor/InstructorSchedule/InstructorSchedule';      
 import MarkProgress from './pages/instructor/MarkProgress/MarkProgress';
+import InstructorProfile from './pages/instructor/Profile/InstructorProfile';
+import DailyReport from './pages/instructor/DailyReport/DailyReport';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -46,6 +49,7 @@ function App() {
         <Route path="/admin/payments" element={<Payments />} />
         <Route path="/trial-exam-students" element={<TrialExamStudents />} />
         <Route path="/admin/financial-reports" element={<FinancialReport />} />
+        <Route path="/admin/study-materials" element={<StudyMaterials />} />
 
         {/* Instructor Pages */}
         <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
@@ -53,6 +57,8 @@ function App() {
         <Route path="/instructor/students" element={<InstructorStudents />} />
         <Route path="/instructor/schedule" element={<InstructorSchedule />} />
         <Route path="/instructor/students/:id" element={<MarkProgress />} />
+        <Route path="/instructor/profile" element={<InstructorProfile />} />
+        <Route path="/instructor/daily-report" element={<DailyReport />} />
       </Routes>
     </Router>
   );

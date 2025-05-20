@@ -371,7 +371,8 @@ body {
   border-radius: 12px;
   padding: 1rem 1.25rem; /* Increase padding for better spacing */
   display: flex;
-  flex-direction: column; /* Stack content vertically */
+  justify-content: space-between;
+  align-items: center;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   border-left: 3px solid #4cc9f0;
@@ -380,6 +381,46 @@ body {
 .lesson-item:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.lesson-info {
+  flex: 1;
+}
+
+.lesson-status .status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+/* Status badge colors */
+.status-badge.scheduled {
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+
+.status-badge.completed {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.status-badge.not-completed {
+  background-color: #ffedd5;
+  color: #ea580c;
+}
+
+.status-badge.cancelled {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+/* Ensure all status badges at least have a default style */
+.status-badge {
+  background-color: #f3f4f6;
+  color: #6b7280;
 }
 
 .lesson-title {

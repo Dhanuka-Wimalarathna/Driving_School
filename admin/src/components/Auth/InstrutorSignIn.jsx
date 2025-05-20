@@ -81,6 +81,7 @@ const InstructorSignIn = () => {
       // Store the token and instructor ID in localStorage
       localStorage.setItem('token', data.token);  // Store the token
       localStorage.setItem('instructorId', data.instructor.ins_id); // Store instructor ID
+      localStorage.setItem('instructorEmail', data.instructor.email); // Store the email for profile lookups
     
       // Log to verify it's stored
       console.log('Instructor ID stored in localStorage:', localStorage.getItem('instructorId'));

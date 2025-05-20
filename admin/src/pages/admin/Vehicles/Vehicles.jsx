@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../components/Sidebar/Sidebar";
 import { 
-  Search, 
   Edit,
   Plus,
   Trash2,
@@ -13,8 +13,6 @@ import styles from './Vehicles.module.css';
 
 const Vehicles = () => {
   const [vehicles, setVehicles] = useState([]);
-  const [filteredVehicles, setFilteredVehicles] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -29,31 +27,20 @@ const Vehicles = () => {
   });
   const [newStatus, setNewStatus] = useState("Available");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const navigate = useNavigate();
 
   // Vehicle types and statuses from database schema
   const vehicleTypes = ['Van', 'Three-Wheeler', 'Bike'];
   const vehicleStatuses = ['Available', 'Unavailable', 'In Service', 'In use'];
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/admin/sign-in');
+      return;
+    }
     fetchVehicles();
   }, []);
-
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredVehicles(vehicles);
-    } else {
-      const query = searchQuery.toLowerCase();
-      const filtered = vehicles.filter(
-        (vehicle) =>
-          vehicle.name.toLowerCase().includes(query) ||
-          (vehicle.model && vehicle.model.toLowerCase().includes(query)) ||
-          vehicle.plate_number.toLowerCase().includes(query) ||
-          vehicle.type.toLowerCase().includes(query) ||
-          vehicle.status.toLowerCase().includes(query)
-      );
-      setFilteredVehicles(filtered);
-    }
-  }, [searchQuery, vehicles]);
 
   const fetchVehicles = async () => {
     setIsLoading(true);
@@ -61,19 +48,13 @@ const Vehicles = () => {
     try {
       const response = await axios.get("http://localhost:8081/api/vehicles");
       setVehicles(response.data);
-      setFilteredVehicles(response.data);
     } catch (error) {
       console.error("Error fetching vehicles:", error);
       setErrorMessage(error.response?.data?.message || "Failed to load vehicle data. Please try again later.");
       setVehicles([]);
-      setFilteredVehicles([]);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
   };
 
   const handleEditStatusClick = (vehicle) => {
@@ -95,9 +76,6 @@ const Vehicles = () => {
       setVehicles(vehicles.map(v => 
         v.id === currentVehicle.id ? { ...v, status: newStatus } : v
       ));
-      setFilteredVehicles(filteredVehicles.map(v => 
-        v.id === currentVehicle.id ? { ...v, status: newStatus } : v
-      ));
 
       setShowStatusModal(false);
       setCurrentVehicle(null);
@@ -113,7 +91,6 @@ const Vehicles = () => {
     try {
       await axios.delete(`http://localhost:8081/api/vehicles/${id}`);
       setVehicles(vehicles.filter(v => v.id !== id));
-      setFilteredVehicles(filteredVehicles.filter(v => v.id !== id));
     } catch (error) {
       console.error("Error deleting vehicle:", error);
       alert(error.response?.data?.message || "Failed to delete vehicle. Please try again.");
@@ -139,7 +116,6 @@ const Vehicles = () => {
       
       // Add the new vehicle to the list
       setVehicles(prev => [...prev, response.data.vehicle]);
-      setFilteredVehicles(prev => [...prev, response.data.vehicle]);
       
       // Reset form and close modal
       setNewVehicle({ 
@@ -184,21 +160,11 @@ const Vehicles = () => {
                 Vehicles
               </h1>
               <p className={styles['subtitle']}>
-                {filteredVehicles.length} {filteredVehicles.length === 1 ? "vehicle" : "vehicles"} in database
+                {vehicles.length} {vehicles.length === 1 ? "vehicle" : "vehicles"} in database
               </p>
             </div>
             
-            <div className={styles['search-wrapper']}>
-              <div className={styles['search-container']}>
-                <Search className={styles['search-icon']} size={18} />
-                <input
-                  type="text"
-                  className={styles['search-input']}
-                  placeholder="Search by name, plate, type..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                />
-              </div>
+            <div className={styles['header-actions']}>
               <button 
                 className={styles['add-vehicle-btn']}
                 onClick={() => setShowModal(true)}
@@ -222,9 +188,9 @@ const Vehicles = () => {
             </div>
           ) : (
             <>
-              {filteredVehicles.length > 0 ? (
+              {vehicles.length > 0 ? (
                 <div className={styles['vehicle-cards-container']}>
-                  {filteredVehicles.map((vehicle) => (
+                  {vehicles.map((vehicle) => (
                     <div key={vehicle.id} className={styles['vehicle-card']}>
                       <div className={styles['vehicle-image']}>
                         <div className={styles['vehicle-type-icon']}>
@@ -279,16 +245,7 @@ const Vehicles = () => {
                   <div className={styles['no-data']}>
                     <Car size={64} />
                     <h3>No Vehicles Found</h3>
-                    <p>
-                      {searchQuery
-                        ? "No vehicles matching your search criteria"
-                        : "No vehicles in the database yet"}
-                    </p>
-                    {searchQuery && (
-                      <button className={styles['clear-search']} onClick={() => setSearchQuery("")}>
-                        Clear search
-                      </button>
-                    )}
+                    <p>No vehicles in the database yet</p>
                   </div>
                 </div>
               )}

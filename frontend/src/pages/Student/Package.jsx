@@ -8,11 +8,7 @@ const Package = () => {
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [expandedId, setExpandedId] = useState(null);
   const [selectedPackageId, setSelectedPackageId] = useState(null);
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupMessage, setPopupMessage] = useState("");
-  const [popupType, setPopupType] = useState("success");
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -57,12 +53,30 @@ const Package = () => {
     fetchSelectedPackage();
   }, []);
 
-  const toggleExpand = (id) => {
-    setExpandedId(expandedId === id ? null : id);
-  };
-
-  const handleClosePopup = () => {
-    setShowPopup(false);
+  const showToast = (message, type) => {
+    const toast = document.createElement("div");
+    toast.className = `toast-notification ${type}`;
+    
+    // Create icon element
+    const icon = document.createElement("i");
+    icon.className = `bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-circle'}`;
+    icon.style.marginRight = "8px";
+    
+    // Create message text node
+    const messageText = document.createTextNode(message);
+    
+    // Append icon and message to toast
+    toast.appendChild(icon);
+    toast.appendChild(messageText);
+    
+    document.body.appendChild(toast);
+    
+    // Remove toast after animation
+    setTimeout(() => {
+      if (document.body.contains(toast)) {
+        document.body.removeChild(toast);
+      }
+    }, 3000);
   };
 
   const handleSelectPackage = async (e, packageId) => {
@@ -70,9 +84,7 @@ const Package = () => {
     const token = localStorage.getItem("authToken");
 
     if (!token) {
-      setPopupMessage("Please login to select a package.");
-      setPopupType("error");
-      setShowPopup(true);
+      showToast("Please login to select a package.", "error");
       return;
     }
 
@@ -87,21 +99,15 @@ const Package = () => {
         }
       );
 
-      setPopupMessage("Package selected successfully!");
-      setPopupType("success");
-      setShowPopup(true);
+      showToast("Package selected successfully!", "success");
       setSelectedPackageId(packageId);
     } catch (error) {
       console.error("Error selecting package:", error);
-      setPopupMessage(error.response?.data?.message || "Failed to select package. Please try again.");
-      setPopupType("error");
-      setShowPopup(true);
+      showToast(
+        error.response?.data?.message || "Failed to select package. Please try again.",
+        "error"
+      );
     }
-  };
-
-  const getVehicleSessions = (pkg, vehicleId) => {
-    const vehicle = pkg.vehicles?.find(v => v.vehicle_id === vehicleId);
-    return vehicle ? vehicle.lesson_count : 0;
   };
 
   if (loading) {
@@ -151,28 +157,10 @@ const Package = () => {
               </div>
             )}
 
-            {showPopup && (
-              <div className="popup-overlay">
-                <div className={`popup-container ${popupType}`}>
-                  <div className="popup-icon">
-                    {popupType === "success" ? (
-                      <i className="bi bi-check-circle-fill"></i>
-                    ) : (
-                      <i className="bi bi-exclamation-circle-fill"></i>
-                    )}
-                  </div>
-                  <div className="popup-message">{popupMessage}</div>
-                  <button className="popup-close" onClick={handleClosePopup}>
-                    <i className="bi bi-x"></i>
-                  </button>
-                </div>
-              </div>
-            )}
-
             <div className="packages-grid">
               {packages.map((pkg) => (
-                <div key={pkg.id} className={`dashboard-card package-card ${expandedId === pkg.id ? "expanded" : ""}`}>
-                  <div className="package-top" onClick={() => toggleExpand(pkg.id)}>
+                <div key={pkg.id} className="dashboard-card package-card">
+                  <div className="package-top">
                     <div className="card-header">
                       <h2 className="card-title">
                         <i className="bi bi-box-seam"></i>
@@ -183,17 +171,12 @@ const Package = () => {
 
                     <div className="card-body">
                       <div className="package-summary">
-                        {pkg.description?.substring(0, 80)}...
-                      </div>
-                      
-                      <div className="view-details-button">
-                        <span>{expandedId === pkg.id ? "View less" : "View details"}</span>
-                        <i className={`bi ${expandedId === pkg.id ? 'bi-chevron-up' : 'bi-chevron-down'}`}></i>
+                        {pkg.description}
                       </div>
                     </div>
                   </div>
 
-                  <div className={`package-details ${expandedId === pkg.id ? 'open' : ''}`}>
+                  <div className="package-details">
                     <div className="details-content">
                       {pkg.details && (
                         <>

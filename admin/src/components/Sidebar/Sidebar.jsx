@@ -105,6 +105,17 @@ const Sidebar = () => {
             <i className="bi bi-credit-card"></i>
             <span>Payments</span>
           </NavLink>
+
+          <NavLink
+            to="/admin/study-materials"
+            end
+            className={({ isActive }) =>
+              `nav-item ${isActive ? 'active' : ''}`
+            }
+          >
+            <i className="bi bi-file-earmark-text"></i>
+            <span>Study Materials</span>
+          </NavLink>
         </div>
         
         {/* Bottom section with dropdown */}

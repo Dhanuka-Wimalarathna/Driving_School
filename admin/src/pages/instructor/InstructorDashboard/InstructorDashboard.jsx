@@ -6,7 +6,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 // Change this import to use your CSS modules properly
 import styles from './InstructorDashboard.module.css';
 import InstructorSidebar from '../../../components/Sidebar/InstructorSidebar';
-import { Users, Calendar, LogOut, Car, Clock, Book } from 'lucide-react'; 
+import { Users, Calendar, LogOut, Car, Clock, Book, FileText } from 'lucide-react'; 
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -17,6 +17,7 @@ function InstructorDashboard() {
     assignedStudents: 0,
     scheduledSessions: 0,
     completedSessions: 0,
+    notCompletedSessions: 0,
     upcomingSessions: []
   });
   const [loading, setLoading] = useState(true);
@@ -32,6 +33,13 @@ function InstructorDashboard() {
     localStorage.removeItem('userRole');
     navigate('/instructor/sign-in');
   };
+  
+  // Handle daily report generation
+  const handleDailyReport = () => {
+    // You can navigate to a report page or open a modal
+    navigate('/instructor/daily-report');
+    // Alternatively, you can implement a function to generate and download a report
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -43,7 +51,8 @@ function InstructorDashboard() {
         setStats({
           ...response.data.data,
           scheduledSessions: Number(response.data.data.scheduledSessions) || 0,
-          completedSessions: Number(response.data.data.completedSessions) || 0
+          completedSessions: Number(response.data.data.completedSessions) || 0,
+          notCompletedSessions: Number(response.data.data.notCompletedSessions) || 0
         });
       } catch (error) {
         setError(error.response?.data?.message || "Failed to load dashboard data");
@@ -55,18 +64,18 @@ function InstructorDashboard() {
   }, []);
 
   // Calculate completion percentage for additional insights
-  const completionPercentage = stats.scheduledSessions + stats.completedSessions > 0
-    ? Math.round((stats.completedSessions / (stats.scheduledSessions + stats.completedSessions)) * 100)
+  const completionPercentage = stats.scheduledSessions + stats.completedSessions + stats.notCompletedSessions > 0
+    ? Math.round((stats.completedSessions / (stats.scheduledSessions + stats.completedSessions + stats.notCompletedSessions)) * 100)
     : 0;
 
   // Pie chart data configuration for today's sessions
   const pieChartData = {
-    labels: ['Scheduled', 'Completed'],
+    labels: ['Scheduled', 'Completed', 'Not Completed'],
     datasets: [
       {
-        data: [stats.scheduledSessions, stats.completedSessions],
-        backgroundColor: ['#4f46e5', '#10b981'],
-        hoverBackgroundColor: ['#4338ca', '#059669'],
+        data: [stats.scheduledSessions, stats.completedSessions, stats.notCompletedSessions],
+        backgroundColor: ['#4f46e5', '#10b981', '#f59e0b'],
+        hoverBackgroundColor: ['#4338ca', '#059669', '#d97706'],
         borderWidth: 0,
         borderRadius: 4,
       },
@@ -137,6 +146,13 @@ function InstructorDashboard() {
           <div className={styles['dashboard-content']}>
             <div className={styles['page-header']}>
               <h1>Instructor Dashboard</h1>
+              <button 
+                className={styles['report-button']} 
+                onClick={handleDailyReport}
+              >
+                <FileText size={16} />
+                <span>Daily Report</span>
+              </button>
             </div>
 
             {/* Stats Cards */}
@@ -147,8 +163,8 @@ function InstructorDashboard() {
                 </div>
                 <div className={styles['stat-content']}>
                   <h3 className={styles['stat-title']}>Total Students</h3>
-                  <p className={styles['stat-value']}>{stats.totalStudents}</p>
-                  <p className={styles['stat-change']}>In the system</p>
+                  <p className={styles['stat-value']}>{stats.totalStudents}</p> 
+                  {/* <p className={styles['stat-change']}>In the system</p> */}
                 </div>
               </div>
 
@@ -159,7 +175,7 @@ function InstructorDashboard() {
                 <div className={styles['stat-content']}>
                   <h3 className={styles['stat-title']}>Your Students</h3>
                   <p className={styles['stat-value']}>{stats.assignedStudents}</p>
-                  <p className={styles['stat-change']}>Assigned to you</p>
+                  {/* <p className={styles['stat-change']}>Assigned to you</p> */}
                 </div>
               </div>
 
@@ -169,10 +185,12 @@ function InstructorDashboard() {
                 </div>
                 <div className={styles['stat-content']}>
                   <h3 className={styles['stat-title']}>Today's Sessions</h3>
-                  <p className={styles['stat-value']}>{stats.scheduledSessions + stats.completedSessions}</p>
-                  <p className={styles['stat-change']}>
-                    <span className={styles.positive}>{stats.completedSessions} completed</span>, {stats.scheduledSessions} upcoming
-                  </p>
+                  <p className={styles['stat-value']}>{stats.scheduledSessions + stats.completedSessions + stats.notCompletedSessions}</p>
+                  {/* <p className={styles['stat-change']}>
+                    <span className={styles.positive}>{stats.completedSessions} completed</span>, 
+                    <span className={styles.warning}>{stats.notCompletedSessions} not completed</span>, 
+                    {stats.scheduledSessions} upcoming
+                  </p> */}
                 </div>
               </div>
 
@@ -183,9 +201,9 @@ function InstructorDashboard() {
                 <div className={styles['stat-content']}>
                   <h3 className={styles['stat-title']}>Completion Rate</h3>
                   <p className={styles['stat-value']}>{completionPercentage}%</p>
-                  <p className={`${styles['stat-change']} ${styles.positive}`}>
+                  {/* <p className={`${styles['stat-change']} ${styles.positive}`}>
                     Today's progress
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </div>

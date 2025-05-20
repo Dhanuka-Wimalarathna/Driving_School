@@ -114,6 +114,7 @@ export const getStudentBookings = (req, res) => {
       b.date,
       b.time_slot AS time,
       b.vehicle AS vehicle_type,
+      b.status,
       CONCAT(i.firstName, ' ', i.lastName) AS instructor_name
     FROM bookings b
     JOIN instructors i ON b.instructor_id = i.ins_id

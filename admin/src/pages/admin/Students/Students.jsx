@@ -20,6 +20,11 @@ const Students = () => {
   const token = localStorage.getItem("authToken");
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/admin/sign-in');
+      return;
+    }
     fetchStudents();
   }, []);
 

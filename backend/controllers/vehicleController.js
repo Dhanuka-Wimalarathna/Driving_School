@@ -23,7 +23,7 @@ export const addVehicle = (req, res) => {
     }
 
     // Validate status enum
-    const validStatuses = ['Available', 'Unavailable', 'In Service', 'In_use'];
+    const validStatuses = ['Available', 'Unavailable', 'In Service', 'In use'];
     if (!validStatuses.includes(status)) {
         return res.status(400).json({ 
             message: "Invalid vehicle status" 
@@ -74,7 +74,7 @@ export const updateVehicleStatus = (req, res) => {
     const { status } = req.body;
 
     // Validate status enum
-    const validStatuses = ['Available', 'Unavailable', 'In Service', 'In_use'];
+    const validStatuses = ['Available', 'Unavailable', 'In Service', 'In use'];
     if (!validStatuses.includes(status)) {
         return res.status(400).json({ 
             message: "Invalid vehicle status" 

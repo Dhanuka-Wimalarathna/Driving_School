@@ -6,18 +6,27 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './Booking.css';
 
 const Booking = () => {
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(() => {
+    // Set initial date to exactly one week from today
+    const oneWeekFromNow = new Date();
+    oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+    return oneWeekFromNow;
+  });
   const [selectedVehicles, setSelectedVehicles] = useState([]);
   const [selectedSlots, setSelectedSlots] = useState({});
   const [instructors, setInstructors] = useState({});
   const [instructorForVehicle, setInstructorForVehicle] = useState({});
   const [loading, setLoading] = useState(true);
 
+  // Calculate one week from today for minDate
+  const oneWeekFromNow = new Date();
+  oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+
   const vehicles = ['Bike', 'Tricycle', 'Van'];
 
   const vehicleToGrade = {
-    Bike: 'motorbikes',
-    Tricycle: 'threeWheelers',
+    Bike: 'bike',
+    Tricycle: 'tricycle',
     Van: 'van'
   };
 
@@ -52,6 +61,19 @@ const Booking = () => {
     return instructors[grade] || [];
   };
 
+  // New function to check if an instructor is on leave
+  const isInstructorOnLeave = (instructor) => {
+    return instructor.status === 'on_leave';
+  };
+
+  // New function to get instructor status display class
+  const getInstructorStatusClass = (instructor) => {
+    if (instructor.status === 'on_leave') {
+      return 'instructor-on-leave';
+    }
+    return '';
+  };
+
   const timeRanges = {
     Bike: generateTimeSlots('08:00', '10:00'),
     Tricycle: generateTimeSlots('10:00', '11:00'),
@@ -84,6 +106,17 @@ const Booking = () => {
   };
 
   const handleInstructorSelect = (vehicle, instructorId) => {
+    // Get the instructor object
+    const grade = vehicleToGrade[vehicle];
+    const instructor = instructors[grade]?.find(ins => ins.ins_id === instructorId);
+    
+    // Check if instructor is on leave
+    if (instructor && instructor.status === 'on_leave') {
+      showToast('This instructor is on leave and cannot be selected.', 'error');
+      return;
+    }
+    
+    // If not on leave, proceed with selection
     setInstructorForVehicle(prev => ({
       ...prev,
       [vehicle]: instructorId
@@ -202,12 +235,15 @@ const Booking = () => {
                       <Calendar
                         onChange={setDate}
                         value={date}
-                        minDate={new Date()}
+                        minDate={oneWeekFromNow}
                         className="modern-calendar"
                       />
                       {isSunday && (
                         <p className="text-danger mt-2">No sessions available on Sunday.</p>
                       )}
+                      <p className="mt-2" style={{ color: 'black' }}>
+                        <i className="bi bi-info-circle"></i> Bookings are only available starting one week from today.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -233,8 +269,13 @@ const Booking = () => {
                             {getInstructorsByVehicle(vehicle).map((instructor) => (
                               <div 
                                 key={instructor.ins_id} 
-                                className={`instructor-name ${selectedVehicles.includes(vehicle) && instructorForVehicle[vehicle] === instructor.ins_id ? 'selected' : selectedVehicles.includes(vehicle) ? 'vehicle-active' : ''}`}
+                                className={`instructor-name ${getInstructorStatusClass(instructor)} ${selectedVehicles.includes(vehicle) && instructorForVehicle[vehicle] === instructor.ins_id ? 'selected' : selectedVehicles.includes(vehicle) ? 'vehicle-active' : ''}`}
                                 onClick={() => {
+                                  if (isInstructorOnLeave(instructor)) {
+                                    showToast('This instructor is on leave and cannot be selected.', 'error');
+                                    return;
+                                  }
+                                  
                                   if (selectedVehicles.includes(vehicle)) {
                                     handleInstructorSelect(vehicle, instructor.ins_id);
                                   } else {
@@ -246,6 +287,7 @@ const Booking = () => {
                               >
                                 <i className={`bi ${selectedVehicles.includes(vehicle) && instructorForVehicle[vehicle] === instructor.ins_id ? 'bi-check-circle-fill' : 'bi-circle'}`}></i> 
                                 {`${instructor.firstName} ${instructor.lastName}`}
+                                {instructor.status === 'on_leave' && <span className="on-leave-badge">On Leave</span>}
                               </div>
                             ))}
                           </div>

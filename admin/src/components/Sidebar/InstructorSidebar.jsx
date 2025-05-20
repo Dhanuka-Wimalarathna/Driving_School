@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import "./Sidebar.css"; // Reuse the existing CSS
+import "./Sidebar.css";
 
 const InstructorSidebar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -28,7 +28,8 @@ const InstructorSidebar = () => {
   
   const handleLogout = () => {
     // Add your logout logic here
-    localStorage.removeItem('instructorToken'); // Adjust based on your auth implementation
+    localStorage.removeItem('token'); // Changed from instructorToken to match sign-in
+    localStorage.removeItem('instructorId');
     navigate('/instructor/sign-in');
   };
 
