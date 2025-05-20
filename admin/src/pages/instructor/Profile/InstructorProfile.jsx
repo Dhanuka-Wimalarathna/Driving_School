@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import InstructorSidebar from "../../../components/Sidebar/InstructorSidebar";
-import { User, Mail, Phone, Calendar, MapPin, Truck, AlertCircle, Edit, Clock, X } from "lucide-react";
+import { User, Mail, Phone, Calendar, MapPin, Truck, AlertCircle, Edit, Clock, X, CheckCircle } from "lucide-react";
 import styles from "./InstructorProfile.module.css";
 
 const InstructorProfile = () => {
+  // Keep existing state variables
   const [instructor, setInstructor] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,6 +22,11 @@ const InstructorProfile = () => {
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState(null);
+  
+  // Add toast notification state (similar to Booking page structure)
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState("success"); // success or error
 
   // Status options for the instructor
   const statusOptions = [
@@ -33,25 +39,32 @@ const InstructorProfile = () => {
     fetchInstructorData();
   }, []);
 
-  // Hide success message after 3 seconds
+  // Replace the existing success/error timeouts with a toast timeout
   useEffect(() => {
-    if (updateSuccess) {
+    if (showToast) {
       const timer = setTimeout(() => {
-        setUpdateSuccess(false);
+        setShowToast(false);
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [updateSuccess]);
+  }, [showToast]);
 
-  // Hide error message after 5 seconds
-  useEffect(() => {
-    if (updateError) {
-      const timer = setTimeout(() => {
-        setUpdateError(null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [updateError]);
+  // Function to show toast notification (replace existing functions)
+  const showToastNotification = (message, type = "success") => {
+    setToastMessage(message);
+    setToastType(type);
+    setShowToast(true);
+  };
+
+  // Update the showSuccessMessage to use toast
+  const showSuccessMessage = (message = "Profile updated successfully!") => {
+    showToastNotification(message, "success");
+  };
+
+  // Update the showErrorMessage to use toast
+  const showErrorMessage = (message) => {
+    showToastNotification(message, "error");
+  };
 
   const fetchInstructorData = async () => {
     setIsLoading(true);
@@ -121,19 +134,9 @@ const InstructorProfile = () => {
     });
   };
 
-  // Function to show success message
-  const showSuccessMessage = () => {
-    setUpdateSuccess(true);
-  };
-
-  // Function to show error message
-  const showErrorMessage = (message) => {
-    setUpdateError(message);
-  };
-
   const handleStatusChange = async (newStatus) => {
     if (!instructor || !instructor.ins_id) {
-      alert("Cannot update status. Instructor ID not found.");
+      showErrorMessage("Cannot update status. Instructor ID not found.");
       return;
     }
 
@@ -144,7 +147,7 @@ const InstructorProfile = () => {
 
     setIsUpdating(true);
     
-    // Update UI immediately for better user experience
+    // Optimistically update UI immediately for better user experience
     const originalStatus = instructor.status;
     
     // Optimistically update UI
@@ -187,7 +190,7 @@ const InstructorProfile = () => {
           status: newStatus
         });
         
-        showSuccessMessage();
+        showSuccessMessage("Status updated successfully!");
       } else {
         throw new Error("Failed to update status. Server response: " + response.status);
       }
@@ -277,7 +280,8 @@ const InstructorProfile = () => {
         });
         
         setIsEditing(false);
-        showSuccessMessage();
+        closeModal();
+        showSuccessMessage("Profile updated successfully!");
         
         // Optionally refresh data from server to ensure we have latest
         fetchInstructorData();
@@ -369,7 +373,8 @@ const InstructorProfile = () => {
       <main className="main-content">
         <div className={styles.profileContainer}>
           <div className={styles.profileHeader}>
-            <h1>My Profile</h1>            <div className={styles.headerActions}>
+            <h1>My Profile</h1>            
+            <div className={styles.headerActions}>
               <button 
                 className={styles.editButton}
                 onClick={() => setShowModal(true)}
@@ -379,20 +384,6 @@ const InstructorProfile = () => {
               </button>
             </div>
           </div>
-
-          {updateSuccess && (
-            <div className={styles.successAlert}>
-              <div className={styles.successIcon}>✓</div>
-              Profile updated successfully!
-            </div>
-          )}
-          
-          {updateError && (
-            <div className={styles.errorAlert}>
-              <div className={styles.errorIcon}>⚠</div>
-              {updateError}
-            </div>
-          )}
 
           <div className={styles.profileCard}>
             <div className={styles.profileBasic}>
@@ -860,6 +851,18 @@ const InstructorProfile = () => {
               </form>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Add Toast Notification - Similar to Booking page */}
+      {showToast && (
+        <div className={`toast-notification ${toastType}`}>
+          {toastType === 'success' ? (
+            <i className="bi bi-check-circle"></i>
+          ) : (
+            <i className="bi bi-exclamation-triangle"></i>
+          )}
+          {toastMessage}
         </div>
       )}
     </div>
