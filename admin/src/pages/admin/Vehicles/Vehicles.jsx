@@ -7,7 +7,10 @@ import {
   Plus,
   Trash2,
   AlertCircle,
-  Car
+  Car,
+  Truck,
+  Bike,
+  Navigation
 } from "lucide-react";
 import styles from './Vehicles.module.css';
 
@@ -132,16 +135,6 @@ const Vehicles = () => {
     }
   };
 
-  const getVehicleIcon = (type) => {
-    switch(type) {
-      case 'Van': return <i className="bi bi-truck"></i>;
-      case 'Car': return <i className="bi bi-car-front"></i>;
-      case 'Three-Wheeler': return <i className="bi bi-tricycle"></i>;
-      case 'Bike': return <i className="bi bi-bicycle"></i>;
-      default: return <i className="bi bi-question-circle"></i>;
-    }
-  };
-
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
@@ -193,9 +186,13 @@ const Vehicles = () => {
                   {vehicles.map((vehicle) => (
                     <div key={vehicle.id} className={styles['vehicle-card']}>
                       <div className={styles['vehicle-image']}>
-                        <div className={styles['vehicle-type-icon']}>
-                          {getVehicleIcon(vehicle.type)}
-                        </div>
+                        {vehicle.image_url ? (
+                          <img src={vehicle.image_url} alt={vehicle.name} />
+                        ) : (
+                          <div className={styles['vehicle-avatar']}>
+                            {vehicle.name.charAt(0)}{vehicle.model?.charAt(0) || 'V'}
+                          </div>
+                        )}
                       </div>
                       <div className={styles['vehicle-details']}>
                         <h3 className={styles['vehicle-name']}>{vehicle.name}</h3>
