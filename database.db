@@ -4,34 +4,48 @@ USE driving_school;
 
 show tables;
 
-drop table student;
-drop table otp_verifications;
-drop table payments;
-drop table user_packages;
-
 CREATE TABLE IF NOT EXISTS student (
     STU_ID INT AUTO_INCREMENT PRIMARY KEY,
     FIRST_NAME VARCHAR(50) NOT NULL,
     LAST_NAME VARCHAR(50) NOT NULL,
-   ADDRESS TEXT NOT NULL,
-       EMAIL VARCHAR(100) NOT NULL UNIQUE,
+    ADDRESS TEXT NOT NULL,
+    EMAIL VARCHAR(100) NOT NULL UNIQUE,
     PASSWORD VARCHAR(255) NOT NULL,
     NIC VARCHAR(20) NOT NULL UNIQUE,
     PHONE VARCHAR(15) NOT NULL,
     BIRTHDAY DATE NOT NULL,
-  CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+drop table student;
 
-CREATE TABLE IF NOT EXISTS otp_verifications (
-    OTP_ID INT AUTO_INCREMENT PRIMARY KEY,
-    STU_ID INT NOT NULL,  -- Reference to student via STU_ID
-    OTP_CODE VARCHAR(6) NOT NULL,
-    EXPIRES_AT DATETIME NOT NULL,
-    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (STU_ID) REFERENCES student(STU_ID) ON DELETE CASCADE  -- Foreign key relationship to STU_ID
+CREATE TABLE IF NOT EXISTS instructors (
+    ins_id INT AUTO_INCREMENT PRIMARY KEY,
+    firstName VARCHAR(100) NOT NULL,
+    lastName VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    nic VARCHAR(20) NOT NULL UNIQUE,
+    licenseNo VARCHAR(50) NOT NULL UNIQUE,
+    birthday DATE NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    phone VARCHAR(15) NOT NULL UNIQUE,
+    vehicleCategory ENUM('van', 'tricycle', 'bike') NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    status ENUM('available', 'unavailable', 'on_leave') DEFAULT 'available',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+drop table instructors;
 
-CREATE TABLE packages (
+CREATE TABLE IF NOT EXISTS admins (
+    admin_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    email VARCHAR(255) UNIQUE,
+    password VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+drop table admins;
+
+CREATE TABLE IF NOT EXISTS packages (
     package_id INT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(255) NOT NULL,
     description TEXT,
@@ -44,7 +58,7 @@ CREATE TABLE packages (
 );
 drop table packages;
 
-CREATE TABLE vehicles (
+CREATE TABLE IF NOT EXISTS vehicles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     model VARCHAR(255) NOT NULL,
@@ -54,42 +68,6 @@ CREATE TABLE vehicles (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 drop table vehicles;
-
-CREATE TABLE package_vehicles (
-  package_id INT NOT NULL,
-  vehicle_id INT NOT NULL,
-  lesson_count INT UNSIGNED NOT NULL DEFAULT 0,
-  PRIMARY KEY (package_id, vehicle_id),
-  FOREIGN KEY (package_id) REFERENCES packages(package_id),
-  FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
-);
-drop table package_vehicles;
-
-CREATE TABLE admins (
-    admin_id INT AUTO_INCREMENT PRIMARY KEY,
-    first_name VARCHAR(100),
-    last_name VARCHAR(100),
-    email VARCHAR(255) UNIQUE,
-    password VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE instructors (
-    ins_id INT AUTO_INCREMENT PRIMARY KEY,
-    firstName VARCHAR(100) NOT NULL,
-    lastName VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    nic VARCHAR(20) NOT NULL UNIQUE,
-    licenseNo VARCHAR(50) NOT NULL UNIQUE,
-    birthday DATE NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    phone VARCHAR(15) NOT NULL UNIQUE,
-    vehicleCategory ENUM('van', 'tricycle', 'bike') NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    status ENUM('available', 'busy', 'unavailable', 'on_leave') DEFAULT 'available',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-drop table instructors;
 
 CREATE TABLE IF NOT EXISTS selected_packages (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -101,17 +79,17 @@ CREATE TABLE IF NOT EXISTS selected_packages (
 );
 drop table selected_packages;
 
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
   notification_id INT AUTO_INCREMENT PRIMARY KEY,
   student_id INT NOT NULL,
   message TEXT NOT NULL,
-  is_read BOOLEAN DEFAULT 0, -- 0 = unread, 1 = read
+  is_read BOOLEAN DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (student_id) REFERENCES student(STU_ID) ON DELETE CASCADE
 );
 drop table notifications;
 
-CREATE TABLE bookings (
+CREATE TABLE IF NOT EXISTS bookings (
   booking_id INT AUTO_INCREMENT PRIMARY KEY,
   student_id INT NOT NULL,
   vehicle VARCHAR(50) NOT NULL,
@@ -138,18 +116,7 @@ CREATE TABLE IF NOT EXISTS progress (
 );
 drop table progress;
 
--- CREATE TABLE student_progress (
---   id INT AUTO_INCREMENT PRIMARY KEY,
---   student_id INT NOT NULL,
---   vehicle_type ENUM('Bike', 'Three-Wheeler', 'Van') NOT NULL,
---   completed_sessions INT DEFAULT 0,
---   total_sessions INT NOT NULL,
---   last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
---   FOREIGN KEY (student_id) REFERENCES student(STU_ID) ON DELETE CASCADE
--- );
--- drop table student_progress;
-
-CREATE TABLE completed_sessions (
+CREATE TABLE IF NOT EXISTS completed_sessions (
   id INT AUTO_INCREMENT PRIMARY KEY,
   student_id INT NOT NULL,
   vehicle_type ENUM('Bike', 'Three-Wheeler', 'Van') NOT NULL,
@@ -189,3 +156,66 @@ CREATE TABLE IF NOT EXISTS trial_exams (
     CONSTRAINT unique_student_vehicle UNIQUE (stu_id, vehicle_type)
 );
 drop table trial_exams;
+
+CREATE TABLE IF NOT EXISTS study_materials (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  file_url VARCHAR(255) NOT NULL,
+  file_type VARCHAR(100),
+  file_size INT,
+  cloudinary_id VARCHAR(255),
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Add index for better performance
+CREATE INDEX idx_study_materials_created_by ON study_materials(created_by); 
+
+CREATE TABLE IF NOT EXISTS otp_verifications (
+    OTP_ID INT AUTO_INCREMENT PRIMARY KEY,
+    STU_ID INT NOT NULL,
+    OTP_CODE VARCHAR(6) NOT NULL,
+    EXPIRES_AT DATETIME NOT NULL,
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (STU_ID) REFERENCES student(STU_ID) ON DELETE CASCADE  -- Foreign key relationship to STU_ID
+);
+drop table otp_verifications;
+
+CREATE TABLE instructor_otp_verifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  INS_ID INT NOT NULL,
+  OTP_CODE VARCHAR(6) NOT NULL,
+  EXPIRES_AT DATETIME NOT NULL,
+  CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (INS_ID) REFERENCES instructors(ins_id) ON DELETE CASCADE
+);
+drop table instructor_otp_verifications;
+
+
+
+
+-- CREATE TABLE package_vehicles (
+--   package_id INT NOT NULL,
+--   vehicle_id INT NOT NULL,
+--   lesson_count INT UNSIGNED NOT NULL DEFAULT 0,
+--   PRIMARY KEY (package_id, vehicle_id),
+--   FOREIGN KEY (package_id) REFERENCES packages(package_id),
+--   FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+-- );
+-- drop table package_vehicles;
+
+-- CREATE TABLE student_progress (
+--   id INT AUTO_INCREMENT PRIMARY KEY,
+--   student_id INT NOT NULL,
+--   vehicle_type ENUM('Bike', 'Three-Wheeler', 'Van') NOT NULL,
+--   completed_sessions INT DEFAULT 0,
+--   total_sessions INT NOT NULL,
+--   last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--   FOREIGN KEY (student_id) REFERENCES student(STU_ID) ON DELETE CASCADE
+-- );
+-- drop table student_progress;
+
+
+
