@@ -17,6 +17,7 @@ const Booking = () => {
   const [instructors, setInstructors] = useState({});
   const [instructorForVehicle, setInstructorForVehicle] = useState({});
   const [loading, setLoading] = useState(true);
+  const [existingBookings, setExistingBookings] = useState([]);
 
   // Calculate one week from today for minDate
   const oneWeekFromNow = new Date();
@@ -56,6 +57,10 @@ const Booking = () => {
       });
   }, []);
 
+  useEffect(() => {
+    fetchExistingBookings(date);
+  }, [date]);
+
   const getInstructorsByVehicle = (vehicle) => {
     const grade = vehicleToGrade[vehicle];
     return instructors[grade] || [];
@@ -81,6 +86,14 @@ const Booking = () => {
   };
 
   const handleVehicleSelect = (vehicle) => {
+    // Check if vehicle is already booked
+    const alreadyBooked = existingBookings.some(booking => booking.vehicle === vehicle);
+    
+    if (alreadyBooked) {
+      showToast(`You already have a ${vehicle} session booked for this date`, 'error');
+      return;
+    }
+    
     if (selectedVehicles.includes(vehicle)) {
       setSelectedVehicles(prev => prev.filter(v => v !== vehicle));
       setSelectedSlots(prev => {
@@ -141,6 +154,26 @@ const Booking = () => {
     // Validate selections
     const validationErrors = [];
     
+    // First check if date is Sunday
+    if (isSunday) {
+      showToast('No sessions available on Sunday.', 'error');
+      return;
+    }
+    
+    // Check for any attempt to book already booked categories
+    const bookedCategories = existingBookings.map(booking => booking.vehicle);
+    const attemptingToBookAlreadyBooked = selectedVehicles.some(v => bookedCategories.includes(v));
+    
+    if (attemptingToBookAlreadyBooked) {
+      showToast('You cannot book the same vehicle category twice in one day', 'error');
+      return;
+    }
+    
+    // Check if selections are complete
+    if (selectedVehicles.length === 0) {
+      validationErrors.push('Please select at least one vehicle');
+    }
+    
     selectedVehicles.forEach(vehicle => {
       if (!selectedSlots[vehicle]) {
         validationErrors.push(`Please select a time slot for ${vehicle}`);
@@ -183,6 +216,9 @@ const Booking = () => {
         setSelectedVehicles([]);
         setSelectedSlots({});
         setInstructorForVehicle({});
+        
+        // Refresh bookings to update UI with the new booking
+        refreshBookings();
       } else {
         console.error('Booking failed:', result);
         showToast(result.message || 'Error while booking.', 'error');
@@ -191,6 +227,56 @@ const Booking = () => {
       console.error('Error booking:', error);
       showToast('An error occurred while booking.', 'error');
     }
+  };
+
+  const fetchExistingBookings = async (selectedDate) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const formattedDate = selectedDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+      
+      const response = await fetch(`http://localhost:8081/api/booking/student-bookings?date=${formattedDate}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const bookings = await response.json();
+        setExistingBookings(bookings);
+        
+        // Reset selections for already booked vehicle categories
+        const bookedCategories = bookings.map(booking => booking.vehicle);
+        
+        // Remove any selected vehicles that are already booked
+        setSelectedVehicles(prev => prev.filter(v => !bookedCategories.includes(v)));
+        
+        // Remove any selected slots for vehicles that are already booked
+        setSelectedSlots(prev => {
+          const newSlots = {...prev};
+          bookedCategories.forEach(category => {
+            delete newSlots[category];
+          });
+          return newSlots;
+        });
+        
+        // Remove any selected instructors for vehicles that are already booked
+        setInstructorForVehicle(prev => {
+          const newInstructors = {...prev};
+          bookedCategories.forEach(category => {
+            delete newInstructors[category];
+          });
+          return newInstructors;
+        });
+      } else {
+        console.error('Failed to fetch existing bookings');
+      }
+    } catch (error) {
+      console.error('Error fetching existing bookings:', error);
+    }
+  };
+
+  const refreshBookings = () => {
+    fetchExistingBookings(date);
   };
 
   return (
@@ -306,30 +392,41 @@ const Booking = () => {
                   </h2>
                 </div>
                 <div className="card-body">
-                  {vehicles.map((vehicle) => (
-                    <div key={vehicle} className="vehicle-section">
-                      <div
-                        className={`vehicle-name ${selectedVehicles.includes(vehicle) ? 'selected' : ''}`}
-                        onClick={() => handleVehicleSelect(vehicle)}
-                      >
-                        <i className={`bi ${selectedVehicles.includes(vehicle) ? 'bi-check-circle-fill' : 'bi-circle'}`}></i> {vehicle}
-                      </div>
-
-                      {selectedVehicles.includes(vehicle) && (
-                        <div className="time-slots mt-2">
-                          {timeRanges[vehicle].map((slot, idx) => (
-                            <div
-                              key={idx}
-                              className={`time-slot ${selectedSlots[vehicle] === slot ? 'selected' : ''}`}
-                              onClick={() => handleTimeSlotSelect(vehicle, slot)}
-                            >
-                              <i className="bi bi-clock"></i> {slot}
-                            </div>
-                          ))}
+                  {vehicles.map((vehicle) => {
+                    const alreadyBooked = existingBookings.some(booking => booking.vehicle === vehicle);
+                    return (
+                      <div key={vehicle} className="vehicle-section">
+                        <div
+                          className={`vehicle-name ${selectedVehicles.includes(vehicle) ? 'selected' : ''} ${alreadyBooked ? 'disabled' : ''}`}
+                          onClick={() => {
+                            if (!alreadyBooked) {
+                              handleVehicleSelect(vehicle);
+                            } else {
+                              showToast(`You already have a ${vehicle} session booked for this date`, 'error');
+                            }
+                          }}
+                        >
+                          <i className={`bi ${selectedVehicles.includes(vehicle) ? 'bi-check-circle-fill' : 'bi-circle'}`}></i> 
+                          {vehicle}
+                          {alreadyBooked && <span className="booked-badge">Already Booked</span>}
                         </div>
-                      )}
-                    </div>
-                  ))}
+
+                        {selectedVehicles.includes(vehicle) && (
+                          <div className="time-slots mt-2">
+                            {timeRanges[vehicle].map((slot, idx) => (
+                              <div
+                                key={idx}
+                                className={`time-slot ${selectedSlots[vehicle] === slot ? 'selected' : ''}`}
+                                onClick={() => handleTimeSlotSelect(vehicle, slot)}
+                              >
+                                <i className="bi bi-clock"></i> {slot}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 

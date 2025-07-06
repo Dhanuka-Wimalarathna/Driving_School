@@ -1,5 +1,5 @@
 import sqldb from '../config/sqldb.js';
-import { insertBooking, checkSlotAvailability, getScheduleByInstructorId } from '../models/bookingModel.js';
+import { insertBooking, checkSlotAvailability, checkStudentVehicleCategoryBooking, getScheduleByInstructorId } from '../models/bookingModel.js';
 
 export const createBooking = (req, res) => {
   const studentId = req.userId;
@@ -11,20 +11,43 @@ export const createBooking = (req, res) => {
 
   const formattedDate = new Date(date).toISOString().split('T')[0];
 
-  // First check all slots are available
-  const availabilityChecks = vehicle_slots.map(({ vehicle, time_slot, instructor_id }) => {
+  // Check if the selected date is a Sunday
+  const selectedDate = new Date(date);
+  if (selectedDate.getDay() === 0) { // 0 represents Sunday
+    return res.status(400).json({ message: 'Bookings are not available on Sundays' });
+  }
+
+  // First, check if the student already has bookings for any of the requested vehicle categories on the same date
+  const categoryChecks = vehicle_slots.map(({ vehicle }) => {
     return new Promise((resolve, reject) => {
-      checkSlotAvailability(formattedDate, time_slot, vehicle, instructor_id, (err, isAvailable) => {
+      checkStudentVehicleCategoryBooking(studentId, formattedDate, vehicle, (err, hasBooking) => {
         if (err) return reject(err);
-        if (!isAvailable) {
-          return reject(new Error(`Slot not available for ${vehicle} at ${time_slot}`));
+        if (hasBooking) {
+          return reject(new Error(`You already have a ${vehicle} session booked for this date`));
         }
         resolve();
       });
     });
   });
 
-  Promise.all(availabilityChecks)
+  // Then proceed with availability checks
+  Promise.all(categoryChecks)
+    .then(() => {
+      // Check if all requested slots are available
+      const availabilityChecks = vehicle_slots.map(({ vehicle, time_slot, instructor_id }) => {
+        return new Promise((resolve, reject) => {
+          checkSlotAvailability(formattedDate, time_slot, vehicle, instructor_id, (err, isAvailable) => {
+            if (err) return reject(err);
+            if (!isAvailable) {
+              return reject(new Error(`Slot not available for ${vehicle} at ${time_slot}`));
+            }
+            resolve();
+          });
+        });
+      });
+
+      return Promise.all(availabilityChecks);
+    })
     .then(() => {
       // All slots available, proceed with booking
       sqldb.beginTransaction(err => {
@@ -126,6 +149,40 @@ export const getStudentBookings = (req, res) => {
     if (err) {
       console.error('Error fetching student bookings:', err);
       return res.status(500).json({ error: 'Failed to fetch bookings' });
+    }
+
+    res.status(200).json(results);
+  });
+};
+
+// Get student bookings for a specific date
+export const getStudentBookingsByDate = (req, res) => {
+  const studentId = req.userId;
+  const { date } = req.query;
+
+  if (!date) {
+    return res.status(400).json({ message: 'Date parameter is required' });
+  }
+
+  const sql = `
+    SELECT 
+      b.booking_id AS id,
+      b.date,
+      b.time_slot AS time_slot,
+      b.vehicle,
+      b.status,
+      b.instructor_id,
+      CONCAT(i.firstName, ' ', i.lastName) AS instructor_name
+    FROM bookings b
+    JOIN instructors i ON b.instructor_id = i.ins_id
+    WHERE b.student_id = ? AND b.date = ?
+    ORDER BY b.time_slot
+  `;
+
+  sqldb.query(sql, [studentId, date], (err, results) => {
+    if (err) {
+      console.error('Error fetching student bookings by date:', err);
+      return res.status(500).json({ error: 'Failed to fetch bookings for the specified date' });
     }
 
     res.status(200).json(results);
